@@ -14,13 +14,13 @@ find_package(fmt CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 
 # Recursively gather files
-file(GLOB_RECURSE library_srcs 
+file(GLOB_RECURSE srcs 
   ${CMAKE_CURRENT_SOURCE_DIR}/include/small_gl/*.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
 # Configure small_gl library build target
-add_library(small_gl library_srcs)
+add_library(small_gl ${srcs})
 target_link_libraries(small_gl PRIVATE
   glad::glad
   Eigen3::Eigen
