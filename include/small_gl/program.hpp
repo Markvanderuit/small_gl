@@ -1,7 +1,7 @@
 #pragma once
 
-#include <metameric/gl/detail/fwd.h>
-#include <metameric/gl/detail/handle.h>
+#include <small_gl/detail/fwd.hpp>
+#include <small_gl/detail/handle.hpp>
 
 namespace gl {
   // ...
