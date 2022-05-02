@@ -18,7 +18,7 @@ namespace gl {
   /**
    * Sampler object wrapping OpenGL sampler object.
    */
-  struct Sampler : public Handle<> {
+  struct Sampler : public detail::Handle<> {
     /* constr/destr */
 
     Sampler() = default;
@@ -40,7 +40,7 @@ namespace gl {
     void set_depth_compare_mode(SamplerCompareMode compare_mode);
 
   private:
-    using Base = Handle<>;
+    using Base = detail::Handle<>;
 
     SamplerMinFilter _min_filter;
     SamplerMagFilter _mag_filter;

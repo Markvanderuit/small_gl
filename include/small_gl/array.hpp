@@ -41,7 +41,7 @@ namespace gl {
   /**
    * Array object wrapping OpenGL vertex array object.
    */
-  struct Array : public Handle<> {
+  struct Array : public detail::Handle<> {
     /* constr/destr */
     
     Array() = default;
@@ -58,7 +58,7 @@ namespace gl {
     void unbind() const;
 
   private:
-    using Base = Handle<>;
+    using Base = detail::Handle<>;
 
     bool _has_elements;
 

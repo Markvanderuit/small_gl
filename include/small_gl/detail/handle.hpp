@@ -2,7 +2,7 @@
 
 #include <small_gl/detail/fwd.hpp>
 
-namespace gl {
+namespace gl::detail {
   template <typename T = uint>
   struct Handle {
     /* public getters/setters */
@@ -42,4 +42,4 @@ namespace gl {
 
     gl_declare_noncopyable(Handle)
   };
-} // namespace gl
+} // namespace gl::detail

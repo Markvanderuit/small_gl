@@ -1,4 +1,5 @@
 #include <small_gl/framebuffer.hpp>
+#include <small_gl/texture.hpp>
 #include <small_gl/detail/exception.hpp>
 
 namespace gl {

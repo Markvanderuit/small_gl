@@ -4,7 +4,7 @@
 
 namespace gl {
   Array::Array(ArrayCreateInfo info)
-  : Handle<>(true), 
+  : Base(true), 
     _has_elements(info.elements) {
     detail::expr_check(info.buffers.size() > 0, "no vertex buffer info was provided");
     detail::expr_check(info.attributes.size() > 0, "no vertex attribute info was provided");

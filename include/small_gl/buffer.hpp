@@ -17,7 +17,7 @@ namespace gl {
   /**
    * Buffer object wrapping OpenGL buffer object.
    */
-  struct Buffer : public Handle<> {
+  struct Buffer : public detail::Handle<> {
     /* constr/destr */
 
     Buffer() = default;
@@ -66,7 +66,7 @@ namespace gl {
     static Buffer make_from(uint object);
 
   private:
-    using Base = Handle<>;
+    using Base = detail::Handle<>;
 
     bool _is_mapped;
     size_t _size;

@@ -148,8 +148,8 @@ namespace gl {
   
   // Created type for gl::Texture<...>(...) construction
   enum class TextureType {
-    eBase,
-    eArray,
+    eImage, // default type
+    eImageArray,
     eCubemap,
     eCubemapArray,
     eMultisample,

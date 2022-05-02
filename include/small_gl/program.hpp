@@ -36,7 +36,7 @@ namespace gl {
   /**
    * Program object wrapping OpenGL shader program object.
    */
-  struct Program : public Handle<> {
+  struct Program : public detail::Handle<> {
     /* constr/destr */
 
     Program() = default;
@@ -54,7 +54,7 @@ namespace gl {
     void unbind() const;
 
   private:
-    using Base = Handle<>;
+    using Base = detail::Handle<>;
     
     // Unordered map caches uniform locations matching string values
     int loc(std::string_view s);

@@ -11,7 +11,7 @@ namespace gl {
   } // namespace detail
 
   Buffer::Buffer(BufferCreateInfo info)
-  : Handle<>(true), 
+  : Base(true), 
     _is_mapped(false),
     _flags(info.flags),
     _size(info.size > 0 ? info.size : info.data.size_bytes()) {

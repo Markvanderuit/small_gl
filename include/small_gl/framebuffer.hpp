@@ -6,15 +6,21 @@
 #include <span>
 
 namespace gl {
+  /**
+   * Helper object to create framebuffer object by defining a single
+   * framebuffer attachment.
+   */
   struct FramebufferCreateInfo {
     FramebufferType type;
-    const Handle<> *texture;
+    const AbstractTexture *texture;
     uint index = 0;
     uint level = 0;
   };
   
-  
-  struct Framebuffer : public Handle<> {
+  /**
+   * Framebuffer object wrapping OpenGL framebuffer object.
+   */
+  struct Framebuffer : public detail::Handle<> {
     /* constr/destr */
 
     Framebuffer() = default;
@@ -32,15 +38,15 @@ namespace gl {
 
     /* miscellaneous */  
 
-    // Return an uninitialized object masking as 
-    // a "placeholder" for a default framebuffer
+    // Return an uninitialized object masking as a "placeholder" 
+    // for a default framebuffer
     static Framebuffer make_default();
 
     // Assume lifetime ownership over a provided buffer
     static Framebuffer make_from(uint object);
 
   private:
-    using Base = Handle<>;
+    using Base = detail::Handle<>;
   
   public:
     inline void swap(Framebuffer &o) {

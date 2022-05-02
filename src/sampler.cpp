@@ -3,7 +3,7 @@
 
 namespace gl {
   Sampler::Sampler(SamplerCreateInfo info)
-  : Handle<>(true), _min_filter(info.min_filter), _mag_filter(info.mag_filter), 
+  : Base(true), _min_filter(info.min_filter), _mag_filter(info.mag_filter), 
     _wrap(info.wrap), _compare_func(info.compare_func), _compare_mode(info.compare_mode) {
     
     glCreateSamplers(1, &_object);
