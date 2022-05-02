@@ -126,7 +126,7 @@ namespace gl {
 
   // Attachment types for gl::Framebuffer(...) construction
   // and for gl::Framebuffer::clear(...) targets
-  enum class FramebufferAttachmentType : uint {
+  enum class FramebufferType : uint {
     eColor               = GL_COLOR,
     eDepth               = GL_DEPTH,
     eStencil             = GL_STENCIL

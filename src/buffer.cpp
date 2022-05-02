@@ -1,8 +1,15 @@
 #include <small_gl/buffer.hpp>
 #include <small_gl/detail/exception.hpp>
-#include <small_gl/detail/detail_buffer.hpp>
 
 namespace gl {
+  namespace detail {
+    GLint get_buffer_param_iv(GLuint object, GLenum name) {
+      GLint value;
+      glGetNamedBufferParameteriv(object, name, &value);
+      return value;
+    }
+  } // namespace detail
+
   Buffer::Buffer(BufferCreateInfo info)
   : Handle<>(true), 
     _is_mapped(false),
