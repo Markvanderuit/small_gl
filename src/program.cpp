@@ -102,7 +102,7 @@ namespace gl {
       return object;
     }
 
-    ShaderCreateInfo zip_loaded_info(std::vector<std::byte> data, const ShaderLoadInfo &load_info) {
+    ShaderCreateInfo zip_loaded_info(const std::vector<std::byte> &data, const ShaderLoadInfo &load_info) {
       return ShaderCreateInfo{ .type = load_info.type, 
                                 .data = data, 
                                 .is_spirv_binary = load_info.is_spirv_binary, 
@@ -168,7 +168,7 @@ namespace gl {
     if (f == _loc.end()) {
       // Obtain handle and check if it is actually valid
       GLint handle = glGetUniformLocation(_object, s.data());
-      detail::expr_check(handle >= 0), fmt::format("failed for uniform name \"{}\"", s);
+      detail::expr_check(handle >= 0, fmt::format("failed for uniform name \"{}\"", s));
 
       // Insert value into map
       f = _loc.insert({s.data(), handle}).first;
