@@ -7,13 +7,11 @@ namespace gl {
   struct Handle {
     /* public getters/setters */
 
-    T Object() const { return _object; }
-    T& Object() { return _object; }
+    T object() const { return _object; }
+    T& object() { return _object; }
     bool is_init() const { return _is_init; }
 
   protected:
-    /* protected objects */
-
     bool _is_init = false;
     T _object = 0;
 
