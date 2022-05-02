@@ -5,6 +5,7 @@
 
 namespace gl {
   void attach_callbacks(Window &window) {
+    guard( window._is_init);
     GLFWwindow *object = (GLFWwindow *) window.object();
 
     glfwSetWindowUserPointer(object, &window);
@@ -21,7 +22,7 @@ namespace gl {
       window._is_maximized = maximized != 0;
     });
     glfwSetWindowPosCallback(object, [](GLFWwindow *object, int x, int y) {
-      gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
+    gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
       window._window_pos = { x, y };
     });
     glfwSetWindowSizeCallback(object, [](GLFWwindow *object, int x, int y) {
@@ -37,6 +38,7 @@ namespace gl {
   }
 
   void detach_callbacks(Window &window) {
+    guard(window._is_init);
     GLFWwindow *object = (GLFWwindow *) window.object();
 
     glfwSetWindowUserPointer(object, nullptr);
