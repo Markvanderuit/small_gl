@@ -5,13 +5,13 @@
 
 namespace gl {
   // OpenGL object wrappers
+  class Array;
   class Buffer;
   class Fence;
   class Framebuffer;
   class Program;
   class Sampler;
   class Shader;
-  class Vertexarray;
   class Window;
   class Query;
 
