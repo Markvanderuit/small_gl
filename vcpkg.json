@@ -1,0 +1,11 @@
+{
+  "name" : "small-gl",
+  "version-string" : "1.0.0",
+  "dependencies" : [
+    "eigen3",
+    "fmt",
+    "glfw3",
+    { "name": "glad", 
+      "features": [ "gl-api-latest" ] }
+  ]
+}
