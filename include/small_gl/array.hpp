@@ -22,7 +22,7 @@ namespace gl {
     uint attribute_binding;
     uint buffer_binding;
     
-    VertexFormatType format_type;
+    VertexFormatType format_type = VertexFormatType::eFloat;
     VertexFormatSize format_size = VertexFormatSize::e1;
 
     uint relative_offset = 0;

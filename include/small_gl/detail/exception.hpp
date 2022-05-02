@@ -47,12 +47,10 @@ namespace gl::detail {
     guard(!expr);
 
     Exception e;
-
     e["who"] = "gl::detail::expr_check(...), from the small_gl library";
     e["msg"] = msg;
     e["file"] = fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column());
     e["func"] = sl.function_name();
-
     throw e;
   }
 
@@ -66,13 +64,11 @@ namespace gl::detail {
     guard(err != GL_NO_ERROR);
 
     Exception e;
-
     e["who"] = "gl::detail::gl_check(...), from the small_gl library";
     e["msg"] = msg;
     e["file"] = fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column());
     e["func"] = sl.function_name();
     e["gl_err"] = std::to_string(err);
-
     throw e;
   }
 } // namespace gl::detail
