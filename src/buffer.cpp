@@ -26,6 +26,8 @@ namespace gl {
   Buffer::~Buffer() {  
     guard(_is_init);
     glDeleteBuffers(1, &object());
+    
+    detail::gl_check();
   }
 
   void Buffer::get(std::span<std::byte> data, size_t size, size_t offset) const {
@@ -33,6 +35,8 @@ namespace gl {
 
     size_t safe_size = (size == 0) ? _size : size;
     glGetNamedBufferSubData(_object, offset, safe_size, data.data());
+
+    detail::gl_check();
   }
 
   void Buffer::set(std::span<const std::byte> data, size_t size, size_t offset) {
@@ -40,6 +44,8 @@ namespace gl {
 
     size_t safe_size = (size == 0) ? _size : size;
     glNamedBufferSubData(_object, offset, safe_size, data.data());
+
+    detail::gl_check();
   }
   
   void Buffer::clear(std::span<const std::byte> data, size_t stride, size_t size, size_t offset) {
@@ -55,6 +61,8 @@ namespace gl {
     
     size_t safe_size = (size == 0) ? _size : size;
     glClearNamedBufferSubData(_object, intr_fmt, offset, safe_size, fmt, GL_UNSIGNED_INT, data.data());
+
+    detail::gl_check();
   }
 
   void Buffer::bind_to(BufferTargetType target, uint index, size_t size, size_t offset) const {
@@ -62,6 +70,8 @@ namespace gl {
 
     size_t safe_size = (size == 0) ? _size : size;
     glBindBufferRange((uint) target, index, _object, offset, safe_size);
+
+    detail::gl_check();
   }
   
   std::span<std::byte> Buffer::map(size_t size, size_t offset, BufferAccessFlags flags) {
@@ -73,6 +83,9 @@ namespace gl {
 
     // Obtain a pointer to a mapped ranger, and return this as a std::span object 
     void *data = glMapNamedBufferRange(_object, offset, safe_size, (uint) flags);
+
+    detail::gl_check();
+
     return { reinterpret_cast<std::byte *>(data), safe_size };
   }
 
@@ -82,6 +95,8 @@ namespace gl {
 
     size_t safe_size = (size == 0) ? _size : size;
     glFlushMappedNamedBufferRange(_object, offset, safe_size);
+
+    detail::gl_check();
   }
 
   void Buffer::unmap() {
@@ -90,6 +105,8 @@ namespace gl {
 
     _is_mapped  = false;
     glUnmapNamedBuffer(_object);
+
+    detail::gl_check();
   }
 
   Buffer Buffer::make_from(uint object) {

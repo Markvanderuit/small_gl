@@ -44,6 +44,8 @@ namespace gl::detail {
   void expr_check(bool expr,
                   const std::string_view &msg = "",
                   const source_location sl = source_location::current()) {
+#ifdef NDEBUG
+#else
     guard(!expr);
 
     Exception e;
@@ -52,6 +54,7 @@ namespace gl::detail {
     e["file"] = fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column());
     e["func"] = sl.function_name();
     throw e;
+#endif
   }
 
   // Check whether OpenGL's glGetError() passes, and otherwise throw
@@ -60,6 +63,8 @@ namespace gl::detail {
   inline
   void gl_check(const std::string_view &msg = "",
                 const source_location sl = source_location::current()) {
+#ifdef NDEBUG
+#else
     GLenum err = glGetError();
     guard(err != GL_NO_ERROR);
 
@@ -70,5 +75,6 @@ namespace gl::detail {
     e["func"] = sl.function_name();
     e["gl_err"] = std::to_string(err);
     throw e;
+#endif
   }
 } // namespace gl::detail
