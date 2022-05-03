@@ -1,5 +1,5 @@
 #include <small_gl/buffer.hpp>
-#include <small_gl/detail/exception.hpp>
+#include <small_gl/exception.hpp>
 
 namespace gl {
   namespace detail {
@@ -15,41 +15,41 @@ namespace gl {
     _is_mapped(false),
     _flags(info.flags),
     _size(info.size > 0 ? info.size : info.data.size_bytes()) {
-    detail::expr_check(_size >= info.data.size_bytes(), "buffer size is smaller than data size");
+    expr_check(_size >= info.data.size_bytes(), "buffer size is smaller than data size");
 
     glCreateBuffers(1, &_object);
     glNamedBufferStorage(object(), _size,info.data.data(),(uint) info.flags);
 
-    detail::gl_check();
+    gl_check();
   }
 
   Buffer::~Buffer() {  
     guard(_is_init);
     glDeleteBuffers(1, &object());
     
-    detail::gl_check();
+    gl_check();
   }
 
   void Buffer::get(std::span<std::byte> data, size_t size, size_t offset) const {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? _size : size;
     glGetNamedBufferSubData(_object, offset, safe_size, data.data());
 
-    detail::gl_check();
+    gl_check();
   }
 
   void Buffer::set(std::span<const std::byte> data, size_t size, size_t offset) {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? _size : size;
     glNamedBufferSubData(_object, offset, safe_size, data.data());
 
-    detail::gl_check();
+    gl_check();
   }
   
   void Buffer::clear(std::span<const std::byte> data, size_t stride, size_t size, size_t offset) {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_init, "attempt to use an uninitialized object");
 
     int intr_fmt, fmt;
     switch (stride) {
@@ -62,21 +62,21 @@ namespace gl {
     size_t safe_size = (size == 0) ? _size : size;
     glClearNamedBufferSubData(_object, intr_fmt, offset, safe_size, fmt, GL_UNSIGNED_INT, data.data());
 
-    detail::gl_check();
+    gl_check();
   }
 
   void Buffer::bind_to(BufferTargetType target, uint index, size_t size, size_t offset) const {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? _size : size;
     glBindBufferRange((uint) target, index, _object, offset, safe_size);
 
-    detail::gl_check();
+    gl_check();
   }
   
   std::span<std::byte> Buffer::map(size_t size, size_t offset, BufferAccessFlags flags) {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
-    detail::expr_check(!_is_mapped, "attempt to map a previously mapped buffer");
+    expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(!_is_mapped, "attempt to map a previously mapped buffer");
 
     _is_mapped  = true;
     size_t safe_size = (size == 0) ? _size : size;
@@ -84,33 +84,33 @@ namespace gl {
     // Obtain a pointer to a mapped ranger, and return this as a std::span object 
     void *data = glMapNamedBufferRange(_object, offset, safe_size, (uint) flags);
 
-    detail::gl_check();
+    gl_check();
 
     return { reinterpret_cast<std::byte *>(data), safe_size };
   }
 
   void Buffer::flush(size_t size, size_t offset) {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
-    detail::expr_check(_is_mapped, "attempt to flush a unmapped buffer");
+    expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_mapped, "attempt to flush a unmapped buffer");
 
     size_t safe_size = (size == 0) ? _size : size;
     glFlushMappedNamedBufferRange(_object, offset, safe_size);
 
-    detail::gl_check();
+    gl_check();
   }
 
   void Buffer::unmap() {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
-    detail::expr_check(_is_mapped, "attempt to unmap a unmapped buffer");
+    expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_mapped, "attempt to unmap a unmapped buffer");
 
     _is_mapped  = false;
     glUnmapNamedBuffer(_object);
 
-    detail::gl_check();
+    gl_check();
   }
 
   Buffer Buffer::make_from(uint object) {
-    detail::expr_check(glIsBuffer(object), "attempt to take ownership over a non-buffer handle");
+    expr_check(glIsBuffer(object), "attempt to take ownership over a non-buffer handle");
     
     // Fill in object details manually
     Buffer buffer;

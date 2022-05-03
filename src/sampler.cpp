@@ -1,5 +1,5 @@
 #include <small_gl/sampler.hpp>
-#include <small_gl/detail/exception.hpp>
+#include <small_gl/exception.hpp>
 
 namespace gl {
   Sampler::Sampler(SamplerCreateInfo info)
@@ -16,59 +16,59 @@ namespace gl {
     glSamplerParameteri(_object, GL_TEXTURE_COMPARE_FUNC, (uint) info.compare_func);
     glSamplerParameteri(_object, GL_TEXTURE_COMPARE_MODE, (uint) info.compare_mode);
 
-    detail::gl_check();
+    gl_check();
   }
 
   Sampler::~Sampler() {
     guard(_is_init);
     glDeleteSamplers(1, &_object);
-    detail::gl_check();
+    gl_check();
   }
 
   void Sampler::set_min_filter(SamplerMinFilter min_filter) {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_init, "attempt to use an uninitialized object");
     
     _min_filter = min_filter;
     glSamplerParameteri(_object, GL_TEXTURE_MIN_FILTER, (uint) min_filter);
     
-    detail::gl_check();
+    gl_check();
   }
 
   void Sampler::set_mag_filter(SamplerMagFilter mag_filter) {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_init, "attempt to use an uninitialized object");
 
     _mag_filter = mag_filter;
     glSamplerParameteri(_object, GL_TEXTURE_MAG_FILTER, (uint) mag_filter);
 
-    detail::gl_check();
+    gl_check();
   }
 
   void Sampler::set_wrap(SamplerWrap wrap) {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_init, "attempt to use an uninitialized object");
 
     _wrap = wrap;
     glSamplerParameteri(_object, GL_TEXTURE_WRAP_R, (uint) wrap);
     glSamplerParameteri(_object, GL_TEXTURE_WRAP_S, (uint) wrap);
     glSamplerParameteri(_object, GL_TEXTURE_WRAP_T, (uint) wrap);
 
-    detail::gl_check();
+    gl_check();
   }
 
   void Sampler::set_depth_compare_func(SamplerCompareFunc compare_func) {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_init, "attempt to use an uninitialized object");
 
     _compare_func = compare_func;
     glSamplerParameteri(_object, GL_TEXTURE_COMPARE_FUNC, (uint) compare_func);
 
-    detail::gl_check();
+    gl_check();
   }
 
   void Sampler::set_depth_compare_mode(SamplerCompareMode compare_mode) {
-    detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    expr_check(_is_init, "attempt to use an uninitialized object");
 
     _compare_mode = compare_mode;
     glSamplerParameteri(_object, GL_TEXTURE_COMPARE_MODE, (uint) compare_mode);
 
-    detail::gl_check();
+    gl_check();
   }
 } // namespace gl

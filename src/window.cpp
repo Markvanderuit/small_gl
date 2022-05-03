@@ -1,5 +1,5 @@
 #include <small_gl/window.hpp>
-#include <small_gl/detail/exception.hpp>
+#include <small_gl/exception.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -66,7 +66,7 @@ namespace gl {
 
     // Initialize the GLFW library before any function calls can be made
     if (_is_main_context) {
-      detail::expr_check(glfwInit(), "glfwInit() failed");
+      expr_check(glfwInit(), "glfwInit() failed");
     }
 
     // Determine correct profile flag to pass to GLFW
@@ -116,12 +116,12 @@ namespace gl {
 
     // Initialize a GLFW window 
     _object = (void *) glfwCreateWindow(_window_size.x(), _window_size.y(), _title.c_str(), mon, shared);
-    detail::expr_check(_object, "glfwCreateWindow(...) failed");
+    expr_check(_object, "glfwCreateWindow(...) failed");
     
     // Finally, load GLAD bindings
     if (_is_main_context) {
       set_context_current(true);
-      detail::expr_check(gladLoadGL(), "gladLoadGL() failed");
+      expr_check(gladLoadGL(), "gladLoadGL() failed");
     }
 
     // Instantiate miscellaneous window properties

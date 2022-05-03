@@ -1,4 +1,4 @@
-#include <small_gl/detail/exception.hpp>
+#include <small_gl/exception.hpp>
 #include <small_gl/array.hpp>
 #include <small_gl/buffer.hpp>
 #include <small_gl/dispatch.hpp>
@@ -7,7 +7,7 @@
 
 namespace gl {
   void dispatch(DrawInfo info) {
-    detail::expr_check(info.array, "DrawInfo submitted without array object");
+    expr_check(info.array, "DrawInfo submitted without array object");
     info.array->bind();
     if (info.program) info.program->bind();
 
@@ -32,11 +32,11 @@ namespace gl {
       }
     }
 
-    detail::gl_check();
+    gl_check();
   }
 
   void dispatch(DrawIndirectInfo info) {
-    detail::expr_check(info.array, "DrawIndirectInfo submitted without array object");
+    expr_check(info.array, "DrawIndirectInfo submitted without array object");
     info.array->bind();
     if (info.program) info.program->bind();
 
@@ -49,7 +49,7 @@ namespace gl {
       glDrawArraysIndirect((uint) info.type, nullptr);
     }
     
-    detail::gl_check();
+    gl_check();
   }
 
   void dispatch(ComputeInfo info) {
@@ -57,7 +57,7 @@ namespace gl {
     
     glDispatchCompute(info.groups_x, info.groups_y, info.groups_z);
     
-    detail::gl_check();
+    gl_check();
   }
 
   void dispatch(ComputeIndirectInfo info) {
@@ -68,6 +68,6 @@ namespace gl {
 
     glDispatchComputeIndirect(0);
     
-    detail::gl_check();
+    gl_check();
   }
 } // namespace gl

@@ -1,19 +1,19 @@
 #include <small_gl/array.hpp>
 #include <small_gl/buffer.hpp>
 #include <small_gl/utility.hpp>
-#include <small_gl/detail/exception.hpp>
+#include <small_gl/exception.hpp>
 #include <fmt/format.h>
 #include <fstream>
 
 namespace gl {
   std::vector<std::byte> load_shader_binary(fs::path path) {
     // Check that file path exists
-    detail::expr_check(fs::exists(path),
+    expr_check(fs::exists(path),
       fmt::format("failed to resolve path \"{}\"", path.string()));
 
     // Attempt to open file stream
     std::ifstream ifs(path, std::ios::ate | std::ios::binary);
-    detail::expr_check(ifs.is_open(),
+    expr_check(ifs.is_open(),
       fmt::format("failed to open file \"{}\"", path.string()));
 
     // Read file size and construct vector to hold data
@@ -29,7 +29,7 @@ namespace gl {
   }
 
   gl::Buffer to_indirect(DrawInfo info, BufferStorageFlags flags) {
-    detail::expr_check(info.array, "DrawInfo submitted without array object");
+    expr_check(info.array, "DrawInfo submitted without array object");
 
     gl::Buffer buffer;
     if (info.array->has_elements()) {
