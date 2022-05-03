@@ -27,6 +27,10 @@ namespace gl::detail {
   // Consteval function determining a texture's correct pixel format
   template <typename T>
   consteval uint texture_pixel_format();
+
+  // Consteval function determining a texture's pixel format size in machine units
+  template <typename T>
+  consteval uint texture_pixel_size_bytes() { return sizeof(T); }
   
   // Enum types matching the five kinds of glTextureStorage*(...)
   enum class StorageType { e1D, e2D, e3D, e2DMSAA, e3DMSAA };
@@ -115,6 +119,10 @@ namespace gl::detail {
   template <> consteval uint texture_pixel_format<float>()            { return GL_FLOAT; }
   template <> consteval uint texture_pixel_format<DepthComponent>()   { return GL_FLOAT; }
   template <> consteval uint texture_pixel_format<StencilComponent>() { return GL_UNSIGNED_BYTE; }
+
+  // Template specializations for the above declared texture_pixel_size_bytes() for special types
+  template <> consteval uint texture_pixel_size_bytes<DepthComponent>()   { return sizeof(float); }
+  template <> consteval uint texture_pixel_size_bytes<StencilComponent>() { return sizeof(std::byte); }
 
   // Template specializations for the above declared texture_storage_type();
   template <> consteval StorageType texture_storage_type<1, TextureType::eImage>()            { return StorageType::e1D; }

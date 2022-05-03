@@ -5,6 +5,9 @@ namespace gl {
   template <typename T, uint D, uint Components, TextureType Ty>
   Texture<T, D, Components, Ty>::Texture(TextureCreateInfo info)
   : Base(true), _size(info.size), _levels(info.levels) {
+    detail::expr_check((_size > 0).all(), "texture size must be all >= 1");
+    detail::expr_check(_levels > 1, "texture level must be >= 1");
+
     glCreateTextures(detail::texture_target<D, Ty>(), 1, &_object);
 
     constexpr auto internal_format = detail::texture_internal_format<Components, T>();
@@ -22,6 +25,7 @@ namespace gl {
     } else if constexpr (storage_type == detail::StorageType::e3DMSAA) {
       glTextureStorage3DMultisample(_object, 4, internal_format, _size.x(), _size.y(), _size.z(), true);
     }
+    detail::gl_check();
 
     // If prior data was provided, process this or return early
     guard(info.data.data());
@@ -33,6 +37,7 @@ namespace gl {
   Texture<T, D, Components, Ty>::~Texture() {
     guard(_is_init);
     glDeleteTextures(1, &_object);
+    detail::gl_check();
   }
 
   /* operands for most texture types follow */
@@ -42,8 +47,13 @@ namespace gl {
   requires(!detail::is_cubemap_type<Ty>) {
     constexpr auto format = detail::texture_format<Components, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
+    constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
     const Array safe_size = (size == 0).all() ? _size : size;
+
+    const size_t size_bytes = (safe_size - offset).prod() * Components * pixel_size;
+    detail::expr_check(!data.data() || data.size_bytes() >= size_bytes,
+      "provided data span is too small for requested texture region to be written");
 
     if constexpr (storage_type == detail::StorageType::e1D) {
       glGetTextureSubImage(_object, level, 
@@ -63,6 +73,8 @@ namespace gl {
         safe_size.x(), safe_size.y(), safe_size.z(), 
         format, pixel_format, data.size_bytes(), data.data());
     }
+    
+    detail::gl_check();
   }
 
   template <typename T, uint D, uint Components, TextureType Ty>
@@ -70,8 +82,13 @@ namespace gl {
   requires(!detail::is_cubemap_type<Ty>) {
     constexpr auto format = detail::texture_format<Components, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
+    constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
     const Array safe_size = (size == 0).all() ? _size : size;
+
+    const size_t size_bytes = (safe_size - offset).prod() * Components * pixel_size;
+    detail::expr_check(!data.data() || data.size_bytes() >= size_bytes,
+      "provided data span is too small for requested texture region to be read");
 
     if constexpr (storage_type == detail::StorageType::e1D) {
       glTextureSubImage1D(_object, level, 
@@ -91,6 +108,8 @@ namespace gl {
         safe_size.x(), safe_size.y(), safe_size.z(),
         format, pixel_format, data.data());
     }
+    
+    detail::gl_check();
   }
 
   template <typename T, uint D, uint Components, TextureType Ty>
@@ -98,8 +117,13 @@ namespace gl {
   requires(!detail::is_cubemap_type<Ty>) {
     constexpr auto format = detail::texture_format<Components, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
+    constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
     const Array safe_size = (size == 0).all() ? _size : size;
+
+    const size_t size_bytes = Components * pixel_size;
+    detail::expr_check(!data.data() || data.size_bytes() >= size_bytes,
+      "provided data span is too small for requested texture to be cleared");
 
     if constexpr (storage_type == detail::StorageType::e1D) {
       glClearTexSubImage(_object, level, 
@@ -119,6 +143,8 @@ namespace gl {
         safe_size.x(), safe_size.y(), safe_size.z(), 
         format, pixel_format, data.data());
     }
+    
+    detail::gl_check();
   }
 
   /* operands for cubemap texture types follow */
@@ -128,8 +154,13 @@ namespace gl {
   requires(detail::is_cubemap_type<Ty>) {
     constexpr auto format = detail::texture_format<Components, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
+    constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
     const Array safe_size = (size == 0).all() ? _size : size;
+
+    const size_t size_bytes = (safe_size - offset).prod() * Components * pixel_size;
+    detail::expr_check(!data.data() || data.size_bytes() >= size_bytes,
+      "provided data span is too small for requested texture region to be written");
     
     if constexpr (storage_type == detail::StorageType::e2D) {
       glGetTextureSubImage(_object, level, 
@@ -142,6 +173,8 @@ namespace gl {
         safe_size.x(), safe_size.y(), safe_size.z(), 
         format, pixel_format, data.size_bytes(), data.data());
     }
+
+    detail::gl_check();
   }
 
   template <typename T, uint D, uint Components, TextureType Ty>
@@ -149,8 +182,13 @@ namespace gl {
   requires(detail::is_cubemap_type<Ty>) {
     constexpr auto format = detail::texture_format<Components, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
+    constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
     const Array safe_size = (size == 0).all() ? _size : size;
+
+    const size_t size_bytes = (safe_size - offset).prod() * Components * pixel_size;
+    detail::expr_check(!data.data() || data.size_bytes() >= size_bytes,
+      "provided data span is too small for requested texture region to be read");
 
     if constexpr (storage_type == detail::StorageType::e2D) {
       glTextureSubImage3D(_object, level, 
@@ -163,6 +201,8 @@ namespace gl {
       safe_size.x(), safe_size.y(), safe_size.z(), 
       format, pixel_format, data.data());
     }
+
+    detail::gl_check();
   }
 
   template <typename T, uint D, uint Components, TextureType Ty>
@@ -170,8 +210,13 @@ namespace gl {
   requires(detail::is_cubemap_type<Ty>) {
     constexpr auto format = detail::texture_format<Components, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
+    constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
     const Array safe_size = (size == 0).all() ? _size : size;
+
+    const size_t size_bytes = Components * pixel_size;
+    detail::expr_check(!data.data() || data.size_bytes() >= size_bytes,
+      "provided data span is too small for requested texture to be cleared");
     
     if constexpr (storage_type == detail::StorageType::e2D) {
       glClearTexSubImage(_object, level,
@@ -184,17 +229,21 @@ namespace gl {
         safe_size.x(), safe_size.y(), safe_size.z(),
         format, pixel_format, data.data());
     }
+
+    detail::gl_check();
   }
   
   template <typename T, uint D, uint Components, TextureType Ty>
   void Texture<T, D, Components, Ty>::bind_to(uint index) const {
     glBindTextureUnit(index, _object);
+    detail::gl_check();
   }
 
   template <typename T, uint D, uint Components, TextureType Ty>
   void Texture<T, D, Components, Ty>::generate_mipmaps() {
     guard(_levels > 1);
     glGenerateTextureMipmap(_object);
+    detail::gl_check();
   }
 
   /* Explicit template instantiations of gl::Texture<...> */
