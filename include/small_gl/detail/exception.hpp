@@ -15,25 +15,21 @@ namespace gl::detail {
    * which are output line-by-line in a formatted manner.
    */
   class Exception : public std::exception {
-    mutable std::string _what;
-    std::map<std::string, std::string> _attached;
+    mutable std::string _message = "Exception\n";
+    std::map<std::string, std::string> _messages;
 
   public:
     std::string& operator[](const std::string &key) {
-      return _attached[key];
+      return _messages[key];
     }
 
     const char * what() const noexcept override {
-      constexpr std::string_view fmt = "- {:<7} : {}\n";
-      std::string s = "Exception\n";
-
-      for (const auto &[key, msg] : _attached) {
+      for (const auto &[key, msg] : _messages) {
         if (!msg.empty()) {
-          s += fmt::format(fmt, key, msg);
+          _message += fmt::format("- {:<7} : {}\n", key, msg);
         }
       }
-
-      return (_what = s).c_str();
+      return _message.c_str();
     }
   };
 

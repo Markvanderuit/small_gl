@@ -74,6 +74,7 @@ namespace gl {
       check_shader_compile(object);
       glAttachShader(program, object);
 
+      detail::gl_check();
       return object;
     }
 
@@ -99,14 +100,14 @@ namespace gl {
       std::ranges::for_each(shader_objects, 
         [object] (const auto &i) { detach_shader_object(object, i); });
 
+      detail::gl_check();
       return object;
     }
 
     ShaderCreateInfo zip_loaded_info(const std::vector<std::byte> &data, const ShaderLoadInfo &load_info) {
-      return ShaderCreateInfo{ .type = load_info.type, 
-                                .data = data, 
-                                .is_spirv_binary = load_info.is_spirv_binary, 
-                                .spirv_entry_point = load_info.spirv_entry_point };
+      return ShaderCreateInfo{ .type = load_info.type,  .data = data, 
+                               .is_spirv_binary = load_info.is_spirv_binary, 
+                               .spirv_entry_point = load_info.spirv_entry_point };
     }
   } // namespace detail
 
@@ -150,16 +151,19 @@ namespace gl {
   Program::~Program() {
     guard(_is_init);
     glDeleteProgram(_object);
+    detail::gl_check();
   }
 
   void Program::bind() const {
     detail::expr_check(_is_init, "attempt to use an uninitialized object");
     glUseProgram(_object);
+    detail::gl_check();
   }
 
   void Program::unbind() const {
     detail::expr_check(_is_init, "attempt to use an uninitialized object");
     glUseProgram(0);
+    detail::gl_check();
   }
 
   int Program::loc(std::string_view s) {
@@ -169,6 +173,7 @@ namespace gl {
       // Obtain handle and check if it is actually valid
       GLint handle = glGetUniformLocation(_object, s.data());
       detail::expr_check(handle >= 0, fmt::format("failed for uniform name \"{}\"", s));
+      detail::gl_check();
 
       // Insert value into map
       f = _loc.insert({s.data(), handle}).first;
@@ -181,45 +186,58 @@ namespace gl {
   #define gl_explicit_uniform_template(type, type_short)\
     template <> void Program::uniform<type>\
     (std::string_view s, type v)\
-    { glProgramUniform1 ## type_short (_object, loc(s), v); }\
+    { glProgramUniform1 ## type_short (_object, loc(s), v);\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Array<type, 2, 1>>\
     (std::string_view s, eig::Array<type, 2, 1> v)\
-    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]); }\
+    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]);\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Array<type, 3, 1>>\
     (std::string_view s, eig::Array<type, 3, 1> v)\
-    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]); }\
+    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]);\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Array<type, 4, 1>>\
     (std::string_view s, eig::Array<type, 4, 1> v)\
-    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]); }\
+    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]);\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Vector<type, 2>>\
     (std::string_view s, eig::Vector<type, 2> v)\
-    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]); }\
+    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]);\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Vector<type, 3>>\
     (std::string_view s, eig::Vector<type, 3> v)\
-    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]); }\
+    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]);\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Vector<type, 4>>\
     (std::string_view s, eig::Vector<type, 4> v)\
-    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]); }
+    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]);\
+      detail::gl_check(); }
 
   #define gl_explicit_uniform_template_mat(type, type_short)\
     template <> void Program::uniform<eig::Array<type, 2, 2>>\
     (std::string_view s, eig::Array<type, 2, 2> v)\
-    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
+    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data());\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Array<type, 3, 3>>\
     (std::string_view s, eig::Array<type, 3, 3> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Array<type, 4, 4>>\
     (std::string_view s, eig::Array<type, 4, 4> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Matrix<type, 2, 2>>\
     (std::string_view s, eig::Matrix<type, 2, 2> v)\
-    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
+    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data());\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Matrix<type, 3, 3>>\
     (std::string_view s, eig::Matrix<type, 3, 3> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
+      detail::gl_check(); }\
     template <> void Program::uniform<eig::Matrix<type, 4, 4>>\
     (std::string_view s, eig::Matrix<type, 4, 4> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
+      detail::gl_check(); }
 
   gl_explicit_uniform_template(bool, ui)
   gl_explicit_uniform_template(uint, ui)

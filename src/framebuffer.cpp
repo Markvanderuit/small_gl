@@ -34,7 +34,7 @@ namespace gl {
 
   Framebuffer::~Framebuffer() {
     guard(_is_init);
-    guard(glIsFramebuffer(_object)); // default framebuffer makes this a special case
+    guard(_object != 0); // Default framebuffer 0 makes this a special case
     glDeleteFramebuffers(1, &_object);
     detail::gl_check();
   }
@@ -47,6 +47,7 @@ namespace gl {
 
   void Framebuffer::unbind() const {
     detail::expr_check(_is_init, "attempt to use an uninitialized object");
+    guard(_object != 0); // Default framebuffer 0 makes this a special case
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     detail::gl_check();
   }
@@ -54,6 +55,7 @@ namespace gl {
   Framebuffer Framebuffer::make_default() {
     Framebuffer framebuffer;
     framebuffer._is_init = true;
+    framebuffer._object = 0;
     return framebuffer;
   }
 
