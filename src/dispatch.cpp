@@ -41,7 +41,7 @@ namespace gl {
     if (info.program) info.program->bind();
 
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, info.buffer->object());
-    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+    sync::set_barrier(BarrierFlags::eIndirectBuffer);
 
     if (info.array->has_elements()) {
       glDrawElementsIndirect((uint) info.type, GL_UNSIGNED_INT, nullptr);
@@ -64,7 +64,7 @@ namespace gl {
     if (info.program) info.program->bind();
 
     glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, info.buffer->object());
-    glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+    sync::set_barrier(BarrierFlags::eIndirectBuffer);
 
     glDispatchComputeIndirect(0);
     

@@ -9,16 +9,14 @@
 #include <span>
 #include <unordered_map>
 
-namespace gl {
-  namespace fs = std::filesystem;
-  
+namespace gl {  
   /**
    * Helper object to create program object with path to shader
    * object's file data.
    */
   struct ShaderLoadInfo {
     ShaderType type;
-    fs::path path;
+    std::filesystem::path path;
 
     bool is_spirv_binary = true;
     std::string spirv_entry_point = "main";

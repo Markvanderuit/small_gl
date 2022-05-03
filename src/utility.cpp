@@ -6,9 +6,9 @@
 #include <fstream>
 
 namespace gl {
-  std::vector<std::byte> load_shader_binary(fs::path path) {
+  std::vector<std::byte> load_shader_binary(std::filesystem::path path) {
     // Check that file path exists
-    expr_check(fs::exists(path),
+    expr_check(std::filesystem::exists(path),
       fmt::format("failed to resolve path \"{}\"", path.string()));
 
     // Attempt to open file stream
@@ -57,6 +57,33 @@ namespace gl {
                         .flags = flags });
     return std::move(buffer);
   }
+
+  namespace sync {
+    void set_barrier(BarrierFlags flags) {
+      glMemoryBarrier((uint) flags);
+    }
+
+    Fence::Fence() : Base(true) {
+      _object = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+      gl_check();
+    }
+
+    Fence::~Fence() {
+      guard(_is_init);
+      glDeleteSync((GLsync) _object);
+      gl_check();
+    }
+
+    void Fence::cpu_wait(time_ns max_time) {
+      glClientWaitSync((GLsync) _object, 0, max_time.count());
+      gl_check();
+    }
+
+    void Fence::gpu_wait() {
+      glWaitSync((GLsync) _object, 0, GL_TIMEOUT_IGNORED);
+      gl_check();
+    }
+  } // namespace sync
 
   namespace state {
     void set(DrawCapability capability, bool enabled) {
