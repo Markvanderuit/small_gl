@@ -140,46 +140,57 @@ namespace gl {
   }
 
   void Window::swap_buffers() {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     glfwSwapBuffers((GLFWwindow *) _object);
   }
 
   void Window::poll_events() {
+    expr_check(_is_init, "attempt to use an uninitialized object");
+
     _did_window_resize = false;
     _did_framebuffer_resize = false;
+
     if (_is_main_context) {
       glfwPollEvents();
     }
   }
 
   void Window::attach_context() {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     guard(!is_current_context());
     glfwMakeContextCurrent((GLFWwindow *) _object);
   }
 
   void Window::detach_context() {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     guard(is_current_context());
     glfwMakeContextCurrent( nullptr);
   }
 
   bool Window::is_current_context() const {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     return glfwGetCurrentContext() == (GLFWwindow *) _object;
   }
 
   void Window::set_window_pos(Array2i window_pos) {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     glfwSetWindowPos((GLFWwindow *) _object, window_pos[0], window_pos[1]);
   }
 
   void Window::set_window_size(Array2i window_size) {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     glfwSetWindowSize((GLFWwindow *) _object, window_size[0], window_size[1]);
   }
   
   void Window::set_swap_interval(uint swap_interval) {
-    is_current_context(true);
+    expr_check(_is_init, "attempt to use an uninitialized object");
+    attach_context();
     _swap_interval = swap_interval;
     glfwSwapInterval(_swap_interval);
   }
 
   void Window::set_visible(bool visible) {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     _is_visible = visible;
     if (_is_visible) {
       glfwShowWindow((GLFWwindow *) _object);
@@ -189,23 +200,28 @@ namespace gl {
   }
 
   void Window::set_maximized() {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     glfwMaximizeWindow((GLFWwindow *) _object);
   }
 
   void Window::set_focused() {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     glfwFocusWindow((GLFWwindow *) _object);
   }
 
   void Window::set_should_close() {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     glfwSetWindowShouldClose((GLFWwindow *) _object, GLFW_TRUE);
   }
 
   void Window::set_title(const std::string &title) {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     _title = title;
     glfwSetWindowTitle((GLFWwindow *) _object, _title.c_str());
   }
 
   void Window::request_attention() const {
+    expr_check(_is_init, "attempt to use an uninitialized object");
     glfwRequestWindowAttention((GLFWwindow *) _object);
   }
 

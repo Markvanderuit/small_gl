@@ -43,7 +43,8 @@ namespace gl {
   template <typename T,       // Underlying pixel type (float, int, uint, DepthComponent, ...)
             uint D,           // Nr. of dimensions (1, 2, 3)
             uint Components,  // Nr. of pixel components (1, 2, 3, 4)
-            TextureType Ty>   // Special texture type (array, cubemap, multisampled)
+            TextureType Ty    // Special texture type (array, cubemap, multisampled)
+            = TextureType::eImage>   
   class Texture : public AbstractTexture {
     using Array = Eigen::Array<int, detail::texture_dims<D, Ty>(), 1>;
     using TextureCreateInfo = TextureCreateInfo<T, D, Ty>;
