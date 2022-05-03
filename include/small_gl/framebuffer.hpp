@@ -1,6 +1,7 @@
 #pragma once
 
 #include <small_gl/detail/fwd.hpp>
+#include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <initializer_list>
@@ -37,7 +38,15 @@ namespace gl {
     void bind() const;
     void unbind() const;
 
-    /* miscellaneous */  
+  /* miscellaneous */  
+
+  void blit_to(gl::Framebuffer &dst,
+                Array2i src_size,
+                Array2i src_offset,
+                Array2i dst_size,
+                Array2i dst_offset,
+                FramebufferMaskFlags flags,
+                SamplerMagFilter filter = SamplerMagFilter::eNearest) const;
 
     // Return an uninitialized object masking as a "placeholder" 
     // for a default framebuffer

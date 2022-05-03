@@ -40,6 +40,10 @@ namespace gl {
     void set_depth_compare_func(SamplerCompareFunc compare_func);
     void set_depth_compare_mode(SamplerCompareMode compare_mode);
 
+    /* state */
+
+    void bind_to(uint index) const;
+    
   private:
     using Base = detail::Handle<>;
 

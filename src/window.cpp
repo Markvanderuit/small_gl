@@ -152,6 +152,7 @@ namespace gl {
   }
 
   void Window::set_context_current(bool context_current) {
+    guard(!is_context_current());
     glfwMakeContextCurrent(context_current ? (GLFWwindow *) _object : nullptr);
   }
 
@@ -168,6 +169,7 @@ namespace gl {
   }
   
   void Window::set_swap_interval(uint swap_interval) {
+    set_context_current(true);
     _swap_interval = swap_interval;
     glfwSwapInterval(_swap_interval);
   }

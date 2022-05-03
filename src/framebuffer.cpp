@@ -51,6 +51,23 @@ namespace gl {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     gl_check();
   }
+
+  void Framebuffer::blit_to(gl::Framebuffer &dst,
+                            Array2i src_size,
+                            Array2i src_offset,
+                            Array2i dst_size,
+                            Array2i dst_offset,
+                            FramebufferMaskFlags flags,
+                            SamplerMagFilter filter) const {
+    
+    glBlitNamedFramebuffer(_object, dst.object(),
+      src_offset[0], src_offset[1],
+      src_size[0], src_size[1],
+      dst_offset[0], dst_offset[1],
+      dst_size[0], dst_size[1],
+      (uint) flags, (uint) filter);
+    gl_check();
+  }
   
   Framebuffer Framebuffer::make_default() {
     Framebuffer framebuffer;

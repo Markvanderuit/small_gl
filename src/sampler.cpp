@@ -71,4 +71,9 @@ namespace gl {
 
     gl_check();
   }
+
+  void Sampler::bind_to(uint index) const {
+    glBindSampler(index, _object);
+    gl_check();
+  }
 } // namespace gl

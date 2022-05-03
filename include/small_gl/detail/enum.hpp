@@ -144,6 +144,14 @@ namespace gl {
     eStencil             = GL_STENCIL
   };
 
+  // Mask types for gl::Framebuffer()::blit_to(...)
+  enum class FramebufferMaskFlags : uint {
+    eColor               = GL_COLOR_BUFFER_BIT,
+    eDepth               = GL_DEPTH_BUFFER_BIT,
+    eStencil             = GL_STENCIL_BUFFER_BIT
+  };
+  gl_declare_bitflag(FramebufferMaskFlags)
+
   /* Shader enums */
 
   // Created type for gl::Program(...) internal construction
