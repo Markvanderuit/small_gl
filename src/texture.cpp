@@ -5,8 +5,8 @@ namespace gl {
   template <typename T, uint D, uint Components, TextureType Ty>
   Texture<T, D, Components, Ty>::Texture(TextureCreateInfo info)
   : Base(true), _size(info.size), _levels(info.levels) {
-    expr_check((_size > 0).all(), "texture size must be all >= 1");
-    expr_check(_levels > 1, "texture level must be >= 1");
+    expr_check((_size >= 1).all(), "texture size must be all >= 1");
+    expr_check(_levels >= 1, "texture level must be >= 1");
 
     glCreateTextures(detail::texture_target<D, Ty>(), 1, &_object);
 
