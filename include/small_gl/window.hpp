@@ -42,8 +42,9 @@ namespace gl {
     void swap_buffers();
     void poll_events();
 
-    void set_context_current(bool context_current);
-    bool is_context_current() const;
+    void attach_context();
+    void detach_context();
+    bool is_current_context() const;
 
     /* getters/setters */
 

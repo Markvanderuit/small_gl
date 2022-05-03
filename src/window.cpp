@@ -120,7 +120,7 @@ namespace gl {
     
     // Finally, load GLAD bindings
     if (_is_main_context) {
-      set_context_current(true);
+      attach_context();
       expr_check(gladLoadGL(), "gladLoadGL() failed");
     }
 
@@ -151,12 +151,17 @@ namespace gl {
     }
   }
 
-  void Window::set_context_current(bool context_current) {
-    guard(!is_context_current());
-    glfwMakeContextCurrent(context_current ? (GLFWwindow *) _object : nullptr);
+  void Window::attach_context() {
+    guard(!is_current_context());
+    glfwMakeContextCurrent((GLFWwindow *) _object);
   }
 
-  bool Window::is_context_current() const {
+  void Window::detach_context() {
+    guard(is_current_context());
+    glfwMakeContextCurrent( nullptr);
+  }
+
+  bool Window::is_current_context() const {
     return glfwGetCurrentContext() == (GLFWwindow *) _object;
   }
 
@@ -169,7 +174,7 @@ namespace gl {
   }
   
   void Window::set_swap_interval(uint swap_interval) {
-    set_context_current(true);
+    is_current_context(true);
     _swap_interval = swap_interval;
     glfwSwapInterval(_swap_interval);
   }
