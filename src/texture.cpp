@@ -198,75 +198,73 @@ namespace gl {
   }
 
   /* Explicit template instantiations of gl::Texture<...> */
-
-  #define MET_TEXTURE_INST_FOR(type, dims, components, texture_type)\
+  
+  #define gl_explicit_texture(type, dims, components, texture_type)\
     template class Texture<type, dims, components, texture_type>;
 
-  #define MET_TEXTURE_INST_COMPONENTS_1(type, dims, texture_type)\
-    MET_TEXTURE_INST_FOR(type, dims, 1, texture_type)
+  #define gl_explicit_texture_components_123(type, dims, texture_type)\
+    gl_explicit_texture(type, dims, 1, texture_type)\
+    gl_explicit_texture(type, dims, 2, texture_type)\
+    gl_explicit_texture(type, dims, 3, texture_type)
 
-  #define MET_TEXTURE_INST_COMPONENTS_1_2(type, dims, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1(type, dims, texture_type)\
-    MET_TEXTURE_INST_FOR(type, dims, 2, texture_type)
+  #define gl_explicit_texture_components_1234(type, dims, texture_type)\
+    gl_explicit_texture(type, dims, 1, texture_type)\
+    gl_explicit_texture(type, dims, 2, texture_type)\
+    gl_explicit_texture(type, dims, 3, texture_type)\
+    gl_explicit_texture(type, dims, 4, texture_type)
 
-  #define MET_TEXTURE_INST_COMPONENTS_1_2_3(type, dims, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2(type, dims, texture_type)\
-    MET_TEXTURE_INST_FOR(type, dims, 3, texture_type)
+  // Image texture explicit template instantiations (1/2/3d, rgba, all pixel types)
+  #define gl_explicit_texture_dims_123(type, texture_type)\
+    gl_explicit_texture_components_1234(type, 1, texture_type)\
+    gl_explicit_texture_components_1234(type, 2, texture_type)\
+    gl_explicit_texture_components_1234(type, 3, texture_type)
+  gl_explicit_texture_dims_123(ushort, TextureType::eImage)
+  gl_explicit_texture_dims_123(short, TextureType::eImage)
+  gl_explicit_texture_dims_123(uint, TextureType::eImage)
+  gl_explicit_texture_dims_123(int, TextureType::eImage)
+  gl_explicit_texture_dims_123(float, TextureType::eImage)
 
-  #define MET_TEXTURE_INST_COMPONENTS_1_2_3_4(type, dims, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2_3(type, dims, texture_type)\
-    MET_TEXTURE_INST_FOR(type, dims, 4, texture_type)
+  // Image array texture explicit template instantiations (1/2d, rgba, all pixel types)
+  #define gl_explicit_texture_dims_12(type, texture_type)\
+    gl_explicit_texture_components_1234(type, 1, texture_type)\
+    gl_explicit_texture_components_1234(type, 2, texture_type)
+  gl_explicit_texture_dims_12(ushort, TextureType::eImageArray)
+  gl_explicit_texture_dims_12(short, TextureType::eImageArray)
+  gl_explicit_texture_dims_12(uint, TextureType::eImageArray)
+  gl_explicit_texture_dims_12(int, TextureType::eImageArray)
+  gl_explicit_texture_dims_12(float, TextureType::eImageArray)
 
-  #define MET_TEXTURE_INST_DIMS_1_2_3_special(type, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1(type, 1, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1(type, 2, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1(type, 3, texture_type)
+  // Cubemap/MSAA texture explicit template instantiations (2d only, rgba, all pixel types)
+  #define gl_explicit_texture_2d_rgba_all_types(texture_type)\
+    gl_explicit_texture_components_1234(ushort, 2, texture_type)\
+    gl_explicit_texture_components_1234(short, 2, texture_type)\
+    gl_explicit_texture_components_1234(uint, 2, texture_type)\
+    gl_explicit_texture_components_1234(int, 2, texture_type)\
+    gl_explicit_texture_components_1234(float, 2, texture_type)
+  gl_explicit_texture_2d_rgba_all_types(TextureType::eCubemap)
+  gl_explicit_texture_2d_rgba_all_types(TextureType::eCubemapArray)
+  gl_explicit_texture_2d_rgba_all_types(TextureType::eMultisample)
+  gl_explicit_texture_2d_rgba_all_types(TextureType::eMultisampleArray)
 
-  #define MET_TEXTURE_INST_DIMS_1_2_rgba(type, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2_3_4(type, 1, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2_3_4(type, 2, texture_type)
+  // Depth texture explicit template instantiations (1/2/3d/array/cubemap/msaa, r, depth component)
+  gl_explicit_texture(gl::DepthComponent, 1, 1, TextureType::eImage)
+  gl_explicit_texture(gl::DepthComponent, 2, 1, TextureType::eImage)
+  gl_explicit_texture(gl::DepthComponent, 3, 1, TextureType::eImage)
+  gl_explicit_texture(gl::DepthComponent, 1, 1, TextureType::eImageArray)
+  gl_explicit_texture(gl::DepthComponent, 2, 1, TextureType::eImageArray)
+  gl_explicit_texture(gl::DepthComponent, 2, 1, TextureType::eCubemap)
+  gl_explicit_texture(gl::DepthComponent, 2, 1, TextureType::eCubemapArray)
+  gl_explicit_texture(gl::DepthComponent, 2, 1, TextureType::eMultisample)
+  gl_explicit_texture(gl::DepthComponent, 2, 1, TextureType::eMultisampleArray)
 
-  #define MET_TEXTURE_INST_DIMS_1_2_3_rgba(type, texture_type)\
-    MET_TEXTURE_INST_DIMS_1_2_rgba(type, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2_3_4(type, 3, texture_type)
-
-  #define MET_TEXTURE_INST_TYPES_2d_rgba(texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2_3_4(ushort, 2, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2_3_4(short, 2, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2_3_4(uint, 2, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2_3_4(int, 2, texture_type)\
-    MET_TEXTURE_INST_COMPONENTS_1_2_3_4(float, 2, texture_type)
-
-  MET_TEXTURE_INST_DIMS_1_2_3_rgba(ushort, TextureType::eImage)
-  MET_TEXTURE_INST_DIMS_1_2_3_rgba(short, TextureType::eImage)
-  MET_TEXTURE_INST_DIMS_1_2_3_rgba(uint, TextureType::eImage)
-  MET_TEXTURE_INST_DIMS_1_2_3_rgba(int, TextureType::eImage)
-  MET_TEXTURE_INST_DIMS_1_2_3_rgba(float, TextureType::eImage)
-
-  MET_TEXTURE_INST_DIMS_1_2_rgba(ushort, TextureType::eImageArray)
-  MET_TEXTURE_INST_DIMS_1_2_rgba(short, TextureType::eImageArray)
-  MET_TEXTURE_INST_DIMS_1_2_rgba(uint, TextureType::eImageArray)
-  MET_TEXTURE_INST_DIMS_1_2_rgba(int, TextureType::eImageArray)
-  MET_TEXTURE_INST_DIMS_1_2_rgba(float, TextureType::eImageArray)
-
-  MET_TEXTURE_INST_TYPES_2d_rgba(TextureType::eCubemap)
-  MET_TEXTURE_INST_TYPES_2d_rgba(TextureType::eCubemapArray)
-  MET_TEXTURE_INST_TYPES_2d_rgba(TextureType::eMultisample)
-  MET_TEXTURE_INST_TYPES_2d_rgba(TextureType::eMultisampleArray)
-
-  MET_TEXTURE_INST_DIMS_1_2_3_special(gl::DepthComponent, TextureType::eImage)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::DepthComponent, 1, TextureType::eImageArray)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::DepthComponent, 2, TextureType::eImageArray)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::DepthComponent, 2, TextureType::eCubemap)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::DepthComponent, 2, TextureType::eCubemapArray)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::DepthComponent, 2, TextureType::eMultisample)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::DepthComponent, 2, TextureType::eMultisampleArray)
-
-  MET_TEXTURE_INST_DIMS_1_2_3_special(gl::StencilComponent, TextureType::eImage)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::StencilComponent, 1, TextureType::eImageArray)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::StencilComponent, 2, TextureType::eImageArray)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::StencilComponent, 2, TextureType::eCubemap)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::StencilComponent, 2, TextureType::eCubemapArray)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::StencilComponent, 2, TextureType::eMultisample)
-  MET_TEXTURE_INST_COMPONENTS_1(gl::StencilComponent, 2, TextureType::eMultisampleArray)
+  // Stemcil texture explicit template instantiations (1/2/3d/array/cubemap/msaa, r, stencil component)
+  gl_explicit_texture(gl::StencilComponent, 1, 1, TextureType::eImage)
+  gl_explicit_texture(gl::StencilComponent, 2, 1, TextureType::eImage)
+  gl_explicit_texture(gl::StencilComponent, 3, 1, TextureType::eImage)
+  gl_explicit_texture(gl::StencilComponent, 1, 1, TextureType::eImageArray)
+  gl_explicit_texture(gl::StencilComponent, 2, 1, TextureType::eImageArray)
+  gl_explicit_texture(gl::StencilComponent, 2, 1, TextureType::eCubemap)
+  gl_explicit_texture(gl::StencilComponent, 2, 1, TextureType::eCubemapArray)
+  gl_explicit_texture(gl::StencilComponent, 2, 1, TextureType::eMultisample)
+  gl_explicit_texture(gl::StencilComponent, 2, 1, TextureType::eMultisampleArray)
 } // namespace gl

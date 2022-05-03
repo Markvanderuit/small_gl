@@ -48,8 +48,30 @@ namespace gl {
     detail::expr_check(_is_init, "attempt to use an uninitialized object");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
+  
+  Framebuffer Framebuffer::make_default() {
+    Framebuffer framebuffer;
+    framebuffer._is_init = true;
+    return framebuffer;
+  }
 
-  #define MET_IMPL_CLEAR(type, type_short)\
+  Framebuffer Framebuffer::make_from(uint object) {
+    detail::expr_check(glIsFramebuffer(object), 
+      "attempt to take ownership over a non-framebuffer handle");
+    detail::expr_check(
+      glCheckNamedFramebufferStatus(object, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, 
+      "attempt to take ownership of an incomplete framebuffer");
+    
+    Framebuffer framebuffer;
+    framebuffer._is_init = true;
+    framebuffer._object = object;
+
+    return framebuffer;
+  }
+
+  /* Explicit template instantiations of gl::Framebuffer::clear<...>(...) */
+
+  #define gl_explicit_clear_template(type, type_short)\
     template <> void Framebuffer::clear<type>\
     (FramebufferType t, type v, uint i)\
     { detail::expr_check(_is_init, "attempt to use an uninitialized object");\
@@ -65,32 +87,22 @@ namespace gl {
     template <> void Framebuffer::clear<eig::Array<type, 4, 1>>\
     (FramebufferType t, eig::Array<type, 4, 1> v, uint i)\
     { detail::expr_check(_is_init, "attempt to use an uninitialized object");\
+      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, v.data()); }\
+    template <> void Framebuffer::clear<eig::Vector<type, 2>>\
+    (FramebufferType t, eig::Vector<type, 2> v, uint i)\
+    { detail::expr_check(_is_init, "attempt to use an uninitialized object");\
+      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, v.data()); }\
+    template <> void Framebuffer::clear<eig::Vector<type, 3>>\
+    (FramebufferType t, eig::Vector<type, 3> v, uint i)\
+    { detail::expr_check(_is_init, "attempt to use an uninitialized object");\
+      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, v.data()); }\
+    template <> void Framebuffer::clear<eig::Vector<type, 4>>\
+    (FramebufferType t, eig::Vector<type, 4> v, uint i)\
+    { detail::expr_check(_is_init, "attempt to use an uninitialized object");\
       glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, v.data()); }
 
   // Explicit template specializations
-  MET_IMPL_CLEAR(float, f)
-  MET_IMPL_CLEAR(uint, ui)
-  MET_IMPL_CLEAR(int, i)
-
-  
-  Framebuffer Framebuffer::make_default() {
-    Framebuffer framebuffer;
-    framebuffer._is_init = true;
-
-    return framebuffer;
-  }
-
-  Framebuffer Framebuffer::make_from(uint object) {
-    detail::expr_check(glIsFramebuffer(object), "attempt to take ownership over a non-framebuffer handle");
-    detail::expr_check(
-      glCheckNamedFramebufferStatus(object, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, 
-      "attempt to take ownership of an incomplete framebuffer");
-    
-    Framebuffer framebuffer;
-    framebuffer._is_init = true;
-    framebuffer._object = object;
-
-    return framebuffer;
-  }
-
+  gl_explicit_clear_template(float, f)
+  gl_explicit_clear_template(uint, ui)
+  gl_explicit_clear_template(int, i)
 } // namespace gl
