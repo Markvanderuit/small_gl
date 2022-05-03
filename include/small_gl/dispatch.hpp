@@ -1,6 +1,7 @@
 #pragma once
 
 #include <small_gl/detail/fwd.hpp>
+#include <small_gl/detail/enum.hpp>
 
 namespace gl {
   /**

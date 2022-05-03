@@ -1,14 +1,17 @@
 #pragma once
 
 #include <small_gl/detail/fwd.hpp>
+#include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
-#include <small_gl/utility.hpp>
 #include <initializer_list>
+#include <filesystem>
 #include <string>
 #include <span>
 #include <unordered_map>
 
 namespace gl {
+  namespace fs = std::filesystem;
+  
   /**
    * Helper object to create program object with path to shader
    * object's file data.

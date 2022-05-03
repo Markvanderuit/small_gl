@@ -1,11 +1,17 @@
 #pragma once
 
 #include <small_gl/detail/fwd.hpp>
+#include <small_gl/detail/enum.hpp>
 #include <fmt/format.h>
 #include <exception>
 #include <map>
 #include <string>
 #include <source_location>
+
+// Simple guard statement syntactic sugar
+#define guard(expr,...) if (!(expr)) { return __VA_ARGS__ ; }
+#define guard_continue(expr) if (!(expr)) { continue; }
+#define guard_break(expr) if (!(expr)) { break; }
 
 namespace gl::detail {
   using source_location = std::source_location;

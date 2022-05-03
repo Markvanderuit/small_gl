@@ -1,8 +1,10 @@
 #pragma once
 
 #include <small_gl/detail/fwd.hpp>
+#include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/texture.hpp>
+#include <small_gl/detail/eigen.hpp>
 #include <span>
 
 namespace gl {
@@ -11,7 +13,7 @@ namespace gl {
    */
   template <typename T, uint D, TextureType Ty = TextureType::eImage>
   class TextureCreateInfo {
-    using Array = eig::Array<int, detail::texture_dims<D, Ty>(), 1>;
+    using Array = Eigen::Array<int, detail::texture_dims<D, Ty>(), 1>;
 
   public:
     Array size;
@@ -20,7 +22,7 @@ namespace gl {
   };
 
   /* Abstract intermediate for storing pointer to any specific texture */
-  class AbstractTexture : public detail::Handle<> {
+  struct AbstractTexture : public detail::Handle<> {
   protected:
     constexpr AbstractTexture() = default;
     constexpr AbstractTexture(bool init) noexcept : detail::Handle<>(init) { }
@@ -43,7 +45,7 @@ namespace gl {
             uint Components,  // Nr. of pixel components (1, 2, 3, 4)
             TextureType Ty>   // Special texture type (array, cubemap, multisampled)
   class Texture : public AbstractTexture {
-    using Array = eig::Array<int, detail::texture_dims<D, Ty>(), 1>;
+    using Array = Eigen::Array<int, detail::texture_dims<D, Ty>(), 1>;
     using TextureCreateInfo = TextureCreateInfo<T, D, Ty>;
 
   public:

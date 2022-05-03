@@ -1,5 +1,6 @@
-#include <small_gl/utility.hpp>
 #include <small_gl/array.hpp>
+#include <small_gl/buffer.hpp>
+#include <small_gl/utility.hpp>
 #include <small_gl/detail/exception.hpp>
 #include <fmt/format.h>
 #include <fstream>

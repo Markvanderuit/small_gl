@@ -188,54 +188,54 @@ namespace gl {
     (std::string_view s, type v)\
     { glProgramUniform1 ## type_short (_object, loc(s), v);\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Array<type, 2, 1>>\
-    (std::string_view s, eig::Array<type, 2, 1> v)\
+    template <> void Program::uniform<Eigen::Array<type, 2, 1>>\
+    (std::string_view s, Eigen::Array<type, 2, 1> v)\
     { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]);\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Array<type, 3, 1>>\
-    (std::string_view s, eig::Array<type, 3, 1> v)\
+    template <> void Program::uniform<Eigen::Array<type, 3, 1>>\
+    (std::string_view s, Eigen::Array<type, 3, 1> v)\
     { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]);\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Array<type, 4, 1>>\
-    (std::string_view s, eig::Array<type, 4, 1> v)\
+    template <> void Program::uniform<Eigen::Array<type, 4, 1>>\
+    (std::string_view s, Eigen::Array<type, 4, 1> v)\
     { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]);\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Vector<type, 2>>\
-    (std::string_view s, eig::Vector<type, 2> v)\
+    template <> void Program::uniform<Eigen::Vector<type, 2>>\
+    (std::string_view s, Eigen::Vector<type, 2> v)\
     { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]);\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Vector<type, 3>>\
-    (std::string_view s, eig::Vector<type, 3> v)\
+    template <> void Program::uniform<Eigen::Vector<type, 3>>\
+    (std::string_view s, Eigen::Vector<type, 3> v)\
     { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]);\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Vector<type, 4>>\
-    (std::string_view s, eig::Vector<type, 4> v)\
+    template <> void Program::uniform<Eigen::Vector<type, 4>>\
+    (std::string_view s, Eigen::Vector<type, 4> v)\
     { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]);\
       detail::gl_check(); }
 
   #define gl_explicit_uniform_template_mat(type, type_short)\
-    template <> void Program::uniform<eig::Array<type, 2, 2>>\
-    (std::string_view s, eig::Array<type, 2, 2> v)\
+    template <> void Program::uniform<Eigen::Array<type, 2, 2>>\
+    (std::string_view s, Eigen::Array<type, 2, 2> v)\
     { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data());\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Array<type, 3, 3>>\
-    (std::string_view s, eig::Array<type, 3, 3> v)\
+    template <> void Program::uniform<Eigen::Array<type, 3, 3>>\
+    (std::string_view s, Eigen::Array<type, 3, 3> v)\
     { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Array<type, 4, 4>>\
-    (std::string_view s, eig::Array<type, 4, 4> v)\
+    template <> void Program::uniform<Eigen::Array<type, 4, 4>>\
+    (std::string_view s, Eigen::Array<type, 4, 4> v)\
     { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Matrix<type, 2, 2>>\
-    (std::string_view s, eig::Matrix<type, 2, 2> v)\
+    template <> void Program::uniform<Eigen::Matrix<type, 2, 2>>\
+    (std::string_view s, Eigen::Matrix<type, 2, 2> v)\
     { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data());\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Matrix<type, 3, 3>>\
-    (std::string_view s, eig::Matrix<type, 3, 3> v)\
+    template <> void Program::uniform<Eigen::Matrix<type, 3, 3>>\
+    (std::string_view s, Eigen::Matrix<type, 3, 3> v)\
     { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
       detail::gl_check(); }\
-    template <> void Program::uniform<eig::Matrix<type, 4, 4>>\
-    (std::string_view s, eig::Matrix<type, 4, 4> v)\
+    template <> void Program::uniform<Eigen::Matrix<type, 4, 4>>\
+    (std::string_view s, Eigen::Matrix<type, 4, 4> v)\
     { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
       detail::gl_check(); }
 

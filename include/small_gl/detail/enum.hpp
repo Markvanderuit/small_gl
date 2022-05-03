@@ -1,9 +1,21 @@
 #pragma once
 
-#include <small_gl/detail/define.hpp>
 #include <glad/glad.h>
 
+// For enum class T, declare bitflag operators and has_flag(T, T) boolean operator
+#define gl_declare_bitflag(T)\
+  constexpr T operator~(T a) { return (T) (~ (uint) a); }\
+  constexpr T operator|(T a, T b) { return (T) ((uint) a | (uint) b); }\
+  constexpr T operator&(T a, T b) { return (T) ((uint) a & (uint) b); }\
+  constexpr T operator^(T a, T b) { return (T) ((uint) a ^ (uint) b); }\
+  constexpr T& operator|=(T &a, T b) { return a = a | b; }\
+  constexpr T& operator&=(T &a, T b) { return a = a & b; }\
+  constexpr T& operator^=(T &a, T b) { return a = a ^ b; }\
+  constexpr bool has_flag(T flags, T t) { return (uint) (flags & t) != 0u; }
+
 namespace gl {
+  using uint = unsigned int;
+
   /* Buffer enums */
 
   // Binding target for gl::Buffer::bind_to(...)
@@ -37,7 +49,7 @@ namespace gl {
 
   /* Draw and state enums */
 
-  //  Draw capabilities for gl::state::set(...)/get(...)
+  // Draw capabilities for gl::state::set(...)/get(...)
   enum class DrawCapability : uint {
     // Misc capabilities
     eCullFace           = GL_CULL_FACE,

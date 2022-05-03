@@ -1,5 +1,6 @@
 #include <small_gl/detail/exception.hpp>
 #include <small_gl/array.hpp>
+#include <small_gl/buffer.hpp>
 #include <small_gl/dispatch.hpp>
 #include <small_gl/program.hpp>
 #include <small_gl/utility.hpp>
