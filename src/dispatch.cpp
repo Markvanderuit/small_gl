@@ -30,6 +30,8 @@ namespace gl {
         glDrawArrays((uint) info.type, info.vertex_first, info.vertex_count);
       }
     }
+
+    detail::gl_check();
   }
 
   void dispatch(DrawIndirectInfo info) {
@@ -45,17 +47,26 @@ namespace gl {
     } else {
       glDrawArraysIndirect((uint) info.type, nullptr);
     }
+    
+    detail::gl_check();
   }
 
   void dispatch(ComputeInfo info) {
     if (info.program) info.program->bind();
+    
     glDispatchCompute(info.groups_x, info.groups_y, info.groups_z);
+    
+    detail::gl_check();
   }
 
   void dispatch(ComputeIndirectInfo info) {
     if (info.program) info.program->bind();
+
     glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, info.buffer->object());
     glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+
     glDispatchComputeIndirect(0);
+    
+    detail::gl_check();
   }
 } // namespace gl
