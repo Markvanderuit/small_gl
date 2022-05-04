@@ -1,6 +1,7 @@
 #pragma once
 
 #include <small_gl/detail/exception.hpp>
+#include <small_gl/utility.hpp>
 #include <source_location>
 
 // Simple guard statement syntactic sugar
@@ -51,4 +52,6 @@ namespace gl {
     throw e;
 #endif
   }
+
+  void enable_debug_callbacks();
 } // namespace gl

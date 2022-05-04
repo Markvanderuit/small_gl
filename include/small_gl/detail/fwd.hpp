@@ -3,8 +3,8 @@
 namespace gl {
   // Shorthand unsigned types
   using uint = unsigned int;
-  using uchar = unsigned char;
   using ushort = unsigned short;
+  using uchar = unsigned char;
   
   // OpenGL object wrappers
   struct Array;

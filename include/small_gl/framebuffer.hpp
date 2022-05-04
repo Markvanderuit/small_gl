@@ -33,7 +33,7 @@ namespace gl {
     /* state */
 
     template <typename T>
-    void clear(FramebufferType type, T t = { }, uint index = 0);
+    void clear(FramebufferType type, T t = zero_value<T>(), uint index = 0);
 
     void bind() const;
     void unbind() const;

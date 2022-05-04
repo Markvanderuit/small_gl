@@ -57,4 +57,29 @@ namespace gl {
   using Eigen::Matrix3f;
   using Eigen::Matrix4f;
   using Eigen::MatrixXf;
+
+  /* Default initializer values for some functions; avoid evaluating Eigen's UnaryOp */
+
+  template <typename T> inline T zero_value();
+
+#define gl_explicit_zero_value(array_type, short_type, value)\
+  template <> inline array_type ## 2 ## short_type zero_value<array_type ## 2 ## short_type>()\
+  { return array_type ## 2 ## short_type::Zero(); }\
+  template <> inline array_type ## 3 ## short_type zero_value<array_type ## 3 ## short_type>()\
+  { return array_type ## 3 ## short_type::Zero(); }\
+  template <> inline array_type ## 4 ## short_type zero_value<array_type ## 4 ## short_type>()\
+  { return array_type ## 4 ## short_type::Zero(); }
+
+  template <> inline float zero_value<float>() { return 0.f; }
+  template <> inline int zero_value<int>() { return 0; }
+  template <> inline uint zero_value<uint>() { return 0; }
+  template <> inline short zero_value<short>() { return 0; }
+  template <> inline ushort zero_value<ushort>() { return 0; }
+  template <> inline char zero_value<char>() { return 0; }
+  template <> inline uchar zero_value<uchar>() { return 0; }
+
+  gl_explicit_zero_value(Array, i, 0)
+  gl_explicit_zero_value(Vector, i, 0)
+  gl_explicit_zero_value(Array, f, 0.f)
+  gl_explicit_zero_value(Vector, f, 0.f)
 } // namespace gl

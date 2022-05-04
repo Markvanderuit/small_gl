@@ -47,4 +47,14 @@ namespace gl::detail {
       return _message.c_str();
     }
   };
+
+  // inline
+  // void APIENTRY debug_callback(GLenum src, GLenum type, GLuint err, GLenum severity, GLsizei length,
+  //                              const char *msg, const void *userParam) {
+  //   // Filter out insignificant codes
+  //   constexpr static auto ignored_err = { 131169u, 131185u, 131204u, 131218u };
+  //   if (std::ranges::binary_search(ignored_err, err)) {
+
+  //   }
+  // }
 } // namespace gl::detail
