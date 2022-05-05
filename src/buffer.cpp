@@ -1,5 +1,6 @@
 #include <small_gl/buffer.hpp>
 #include <small_gl/exception.hpp>
+#include <string>
 
 namespace gl {
   namespace detail {
@@ -16,9 +17,11 @@ namespace gl {
     _flags(info.flags),
     _size(info.size > 0 ? info.size : info.data.size_bytes()) {
     expr_check(_size >= info.data.size_bytes(), "buffer size is smaller than data size");
+    debug::scoped_local_callback debug_callback;
 
     glCreateBuffers(1, &_object);
-    glNamedBufferStorage(object(), _size,info.data.data(),(uint) info.flags);
+    // glNamedBufferStorage(object(), _size, info.data.data(), (uint) info.flags);
+    glNamedBufferStorage(object(), -1, info.data.data(), (uint) info.flags);
 
     gl_check();
   }

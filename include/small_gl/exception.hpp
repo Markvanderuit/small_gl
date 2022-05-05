@@ -1,6 +1,7 @@
 #pragma once
 
 #include <small_gl/detail/exception.hpp>
+#include <small_gl/detail/handle.hpp>
 #include <small_gl/utility.hpp>
 #include <source_location>
 
@@ -54,4 +55,31 @@ namespace gl {
   }
 
   void enable_debug_callbacks();
+
+  namespace debug {
+    void begin_local_callback(const source_location &sl);
+    void end_local_callback();
+
+    struct scoped_local_callback {
+      scoped_local_callback(const source_location &sl = source_location::current());
+      ~scoped_local_callback();
+
+    private:
+      const std::source_location &_sl;
+    };
+
+    void insert_message(std::string_view message);
+
+    void assign_name(std::string_view object_name, const detail::Handle<> &object);
+
+    void begin_group(std::string_view group_name, const detail::Handle<> &object);
+    void end_group();
+
+
+    struct scoped_group {
+      scoped_group(std::string_view group_name, const detail::Handle<> &object);
+      scoped_group();
+    };
+  } // namespace debug
+
 } // namespace gl
