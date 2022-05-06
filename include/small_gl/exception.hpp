@@ -25,10 +25,9 @@ namespace gl {
     guard(!expr);
 
     detail::Exception e;
-    e["reason"] = "gl::expr_check(...) failed, the checked expression evaluated to false";
-    e["message"] = msg;
-    e["file"] = fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column());
-    e["function"] = fmt::format("{}(...);", sl.function_name());
+    e.put("src", "gl::expr_check(...) failed, checked expression evaluated to false");
+    e.put("message", msg);
+    e.put("in file", fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
     throw e;
 #endif
   }
@@ -45,39 +44,24 @@ namespace gl {
     guard(err != GL_NO_ERROR);
 
     detail::Exception e;
-    e["reason"] = "gl::gl_check(...) failed, OpenGL returned an error code";
-    e["message"] = msg;
-    e["file"] = fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column());
-    e["function"] = fmt::format("{}(...);", sl.function_name());
-    e["code"] = detail::readable_gl_error(err);
+    e.put("src", "gl::gl_check(...) failed, OpenGL returned an error");
+    e.put("error", detail::readable_gl_error(err));
+    e.put("message", msg);
+    e.put("in file", fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
     throw e;
 #endif
   }
 
-  void enable_debug_callbacks();
-
   namespace debug {
-    void begin_local_callback(const source_location &sl);
-    void end_local_callback();
+    void enable_messages(DebugMessageSeverity minimum_severity = DebugMessageSeverity::eLow,
+                         DebugMessageTypeFlags type_flags = DebugMessageTypeFlags::eAll);
 
-    struct scoped_local_callback {
-      scoped_local_callback(const source_location &sl = source_location::current());
-      ~scoped_local_callback();
-
-    private:
-      const std::source_location &_sl;
-    };
-
-    void insert_message(std::string_view message);
-
-    void assign_name(std::string_view object_name, const detail::Handle<> &object);
-
-    void begin_group(std::string_view group_name, const detail::Handle<> &object);
-    void end_group();
-
+    void insert_message(std::string_view message, DebugMessageSeverity severity);
+    void begin_message_group(std::string_view group_name);
+    void end_message_group();
 
     struct scoped_group {
-      scoped_group(std::string_view group_name, const detail::Handle<> &object);
+      scoped_group(std::string_view group_name);
       scoped_group();
     };
   } // namespace debug

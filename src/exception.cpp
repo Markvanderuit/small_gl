@@ -1,6 +1,8 @@
 #include <small_gl/exception.hpp>
-#include <ranges>
 #include <fmt/core.h>
+#include <fmt/color.h>
+#include <array>
+#include <ranges>
 
 namespace gl {
   namespace detail {
@@ -22,7 +24,7 @@ namespace gl {
       switch (type) {
         case GL_DEBUG_TYPE_ERROR:               return "error";
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "deprecated behavior";
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  return "unefined behavior";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  return "undefined behavior";
         case GL_DEBUG_TYPE_PORTABILITY:         return "portability";
         case GL_DEBUG_TYPE_PERFORMANCE:         return "performance";
         case GL_DEBUG_TYPE_MARKER:              return "marker";
@@ -45,87 +47,150 @@ namespace gl {
     }
     
     inline
-    void APIENTRY debug_callback(GLenum src, GLenum type, GLuint err, GLenum severity, GLsizei length,
+    void APIENTRY debug_callback(GLenum src, GLenum type, GLuint code, GLenum severity, GLsizei length,
                                 const char *msg, const void *user_param) {
-      // Filter out insignificant oft-encountered codes
-      constexpr static auto ignored_err = { 131169u, 131185u, 131204u, 131218u };
-      guard(!std::ranges::binary_search(ignored_err, err));
+      constexpr static std::initializer_list<uint> guard_codes = { 
+        131169, 131185, 131204, 131218 };
+      constexpr static std::initializer_list<uint> guard_types = { 
+        GL_DEBUG_TYPE_ERROR, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR };
+                                                                   
+      // Output formatted message to stdout for now
+      detail::Message message;
+      message.put("info", fmt::format("type = {}, severity = {}, src = {}",
+                          readable_debug_type(type),
+                          readable_debug_severity(severity),
+                          readable_debug_src(src)));
+      message.put("message", msg);
+      fmt::print(stdout, "OpenGL debug message\n{}", message.get());
 
+      // Guard against insigificant codes and non-errorneous message types
+      guard(!std::ranges::binary_search(guard_codes, code));
+      guard(std::ranges::binary_search(guard_types, type));
+
+      // Unrecoverable (or unwanted) message; throw exception indicating this
       detail::Exception e;
-      e["reason"] = "gl::detail::debug_callback(...) triggered, OpenGL sent a debug message";
-      e["source"] = readable_debug_src(src);
-      e["type"] = readable_debug_type(type);
-      e["severity"] = readable_debug_severity(severity);
-      e["msg"] = std::string_view(msg);
-
-      if (user_param) {
-        source_location &sl = *(source_location *) user_param;
-        e["file"] = fmt::format("{}({}:{})", 
-                                sl.file_name(), 
-                                sl.line(), 
-                                sl.column());
-        e["function"] = fmt::format("gl::scoped_local_callback in {}(...);", 
-                                    sl.function_name());
-      }
-
+      e.put("src", "gl::detail::debug_callback(...)");
+      e.put("message", "OpenGL debug message indicates a potential error");
       throw e;
     }
   } // namespace detail
   
-  void enable_debug_callbacks() {
+  /* void enable_debug_callbacks(DebugMessageSeverity minimum_severity, DebugMessageTypeFlags type_flags) {
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(detail::debug_callback, nullptr);
 
-    // Enable all messages
-    // glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    constexpr static std::array<uint, 4> severity_types = { 
+      GL_DEBUG_SEVERITY_NOTIFICATION, GL_DEBUG_SEVERITY_LOW, 
+      GL_DEBUG_SEVERITY_MEDIUM, GL_DEBUG_SEVERITY_HIGH
+    };
 
-    // Enable all SEVERITY_HIGH messages
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0, nullptr, GL_TRUE);
+    // Disable messages below minimum severity 
+    for (uint i = 0; i < (uint) minimum_severity; i++) {
+      glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, severity_types[i], 0, nullptr, GL_FALSE);
+    }
 
-    // Enable select SEVERITY_MEDIUM messages
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr, GL_FALSE);
-    glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_ERROR, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr, GL_TRUE);
-    glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr, GL_TRUE);
-
-    // Disable others
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0, nullptr, GL_FALSE);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
-  }
+    // Enable flagged messages for and above minimum severity
+    for (uint i = (uint) minimum_severity; i <= (uint) DebugMessageSeverity::eHigh; i++) {
+      glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_ERROR, 
+        severity_types[i], 0, nullptr, 
+        has_flag(type_flags, DebugMessageTypeFlags::eError));
+      glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR,
+        severity_types[i], 0, nullptr, 
+        has_flag(type_flags, DebugMessageTypeFlags::eDeprecated));
+      glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR,
+        severity_types[i], 0, nullptr, 
+        has_flag(type_flags, DebugMessageTypeFlags::eUndefinedBehavior));
+      glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_PORTABILITY,
+        severity_types[i], 0, nullptr, 
+        has_flag(type_flags, DebugMessageTypeFlags::ePortability));
+      glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_PERFORMANCE,
+        severity_types[i], 0, nullptr, 
+        has_flag(type_flags, DebugMessageTypeFlags::ePerformance));
+      glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_MARKER,
+        severity_types[i], 0, nullptr, 
+        has_flag(type_flags, DebugMessageTypeFlags::eMarker));
+      glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_PUSH_GROUP,
+        severity_types[i], 0, nullptr, 
+        has_flag(type_flags, DebugMessageTypeFlags::ePushGroup));
+      glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_POP_GROUP,
+        severity_types[i], 0, nullptr, 
+        has_flag(type_flags, DebugMessageTypeFlags::ePopGroup));
+      glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_OTHER,
+        severity_types[i], 0, nullptr, 
+        has_flag(type_flags, DebugMessageTypeFlags::eOther));
+    }
+  } */
 
   namespace debug {
-    void begin_local_callback(const source_location &sl) {
-      glDebugMessageCallback(detail::debug_callback, &sl);
-    }
-
-    void end_local_callback() {
+    void enable_messages(DebugMessageSeverity minimum_severity, DebugMessageTypeFlags type_flags) {
+      glEnable(GL_DEBUG_OUTPUT);
+      glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
       glDebugMessageCallback(detail::debug_callback, nullptr);
-    }
-    
-    scoped_local_callback::scoped_local_callback(const source_location &sl)
-    : _sl(sl) {
-      begin_local_callback(_sl);
+
+      constexpr static std::array<uint, 4> severity_types = { 
+        GL_DEBUG_SEVERITY_NOTIFICATION, GL_DEBUG_SEVERITY_LOW, 
+        GL_DEBUG_SEVERITY_MEDIUM, GL_DEBUG_SEVERITY_HIGH
+      };
+
+      // Disable messages below minimum severity 
+      for (uint i = 0; i < (uint) minimum_severity; i++) {
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, severity_types[i], 0, nullptr, GL_FALSE);
+      }
+
+      // Enable flagged messages for and above minimum severity
+      for (uint i = (uint) minimum_severity; i <= (uint) DebugMessageSeverity::eHigh; i++) {
+        glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_ERROR, 
+          severity_types[i], 0, nullptr, 
+          has_flag(type_flags, DebugMessageTypeFlags::eError));
+        glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR,
+          severity_types[i], 0, nullptr, 
+          has_flag(type_flags, DebugMessageTypeFlags::eDeprecated));
+        glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR,
+          severity_types[i], 0, nullptr, 
+          has_flag(type_flags, DebugMessageTypeFlags::eUndefinedBehavior));
+        glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_PORTABILITY,
+          severity_types[i], 0, nullptr, 
+          has_flag(type_flags, DebugMessageTypeFlags::ePortability));
+        glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_PERFORMANCE,
+          severity_types[i], 0, nullptr, 
+          has_flag(type_flags, DebugMessageTypeFlags::ePerformance));
+        glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_MARKER,
+          severity_types[i], 0, nullptr, 
+          has_flag(type_flags, DebugMessageTypeFlags::eMarker));
+        glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_PUSH_GROUP,
+          severity_types[i], 0, nullptr, 
+          has_flag(type_flags, DebugMessageTypeFlags::ePushGroup));
+        glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_POP_GROUP,
+          severity_types[i], 0, nullptr, 
+          has_flag(type_flags, DebugMessageTypeFlags::ePopGroup));
+        glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_OTHER,
+          severity_types[i], 0, nullptr, 
+          has_flag(type_flags, DebugMessageTypeFlags::eOther));
+      }
     }
 
-    scoped_local_callback::~scoped_local_callback() {
-      end_local_callback();
-    }
-
-    void insert_message(std::string_view message) {
+    void insert_message(std::string_view message, DebugMessageSeverity severity) {
+      constexpr static std::array<uint, 4> severity_types = { 
+        GL_DEBUG_SEVERITY_NOTIFICATION, GL_DEBUG_SEVERITY_LOW, 
+        GL_DEBUG_SEVERITY_MEDIUM, GL_DEBUG_SEVERITY_HIGH
+      };
       glDebugMessageInsert(GL_DEBUG_SOURCE_THIRD_PARTY,
-                           GL_DEBUG_TYPE_ERROR,
+                           GL_DEBUG_TYPE_OTHER,
                            0,
-                           GL_DEBUG_SEVERITY_HIGH,
+                           severity_types[(uint) severity],
                            message.size(),
                            message.data());
     }
 
-    void begin_group(std::string_view group_name, const detail::Handle<> &object) {
+    void begin_message_group(std::string_view group_name) {
       glPushDebugGroup(GL_DEBUG_SOURCE_THIRD_PARTY,
-                       object.object(), group_name.length(), group_name.data());
+                       0, 
+                       group_name.length(), 
+                       group_name.data());
     }
 
-    void end_group() {
+    void end_message_group() {
       glPopDebugGroup();
     }
   } // namespace debug

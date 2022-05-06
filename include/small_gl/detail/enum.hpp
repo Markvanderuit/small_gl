@@ -55,8 +55,6 @@ namespace gl {
     eCullFace           = GL_CULL_FACE,
     eFramebufferSRGB    = GL_FRAMEBUFFER_SRGB,
     eMSAA               = GL_MULTISAMPLE,
-    eDebugOutput        = GL_DEBUG_OUTPUT,
-    eDebugOutputSync    = GL_DEBUG_OUTPUT_SYNCHRONOUS,
 
     // Blending capabilities
     eBlendOp            = GL_BLEND,
@@ -132,6 +130,52 @@ namespace gl {
     eTriangleFan        = GL_TRIANGLE_FAN,
     eTrianglesAdj       = GL_TRIANGLES_ADJACENCY,
     eTriangleStripAdj   = GL_TRIANGLE_STRIP_ADJACENCY,
+  };
+
+  /* Debug enums */
+
+  enum class DebugMessageSrc {
+    eApi                = GL_DEBUG_SOURCE_API,
+    eWindowSystem       = GL_DEBUG_SOURCE_WINDOW_SYSTEM,
+    eShaderCompiler     = GL_DEBUG_SOURCE_SHADER_COMPILER,
+    eThirdParty         = GL_DEBUG_SOURCE_THIRD_PARTY,
+    eApplication        = GL_DEBUG_SOURCE_APPLICATION,
+    eOther              = GL_DEBUG_SOURCE_OTHER
+  };
+
+  enum class DebugMessageTypeFlags : uint {
+    // Base OpenGL debug message types
+    eError              = 0x001u,
+    eDeprecated         = 0x002u,
+    eUndefinedBehavior  = 0x004u,
+    ePortability        = 0x008u,
+    ePerformance        = 0x010u,
+    eMarker             = 0x020u,
+    ePushGroup          = 0x040u,
+    ePopGroup           = 0x080u,
+    eOther              = 0x100u,
+
+    // Special types
+    eThrowType          = (uint) DebugMessageTypeFlags::eError
+                        | (uint) DebugMessageTypeFlags::eUndefinedBehavior,
+    eWarnType           = (uint) DebugMessageTypeFlags::eDeprecated
+                        | (uint) DebugMessageTypeFlags::ePortability
+                        | (uint) DebugMessageTypeFlags::ePerformance
+                        | (uint) DebugMessageTypeFlags::eMarker,
+    eGroupType          = (uint) DebugMessageTypeFlags::ePushGroup
+                        | (uint) DebugMessageTypeFlags::ePopGroup,
+    eAll                = (uint) DebugMessageTypeFlags::eThrowType 
+                        | (uint) DebugMessageTypeFlags::eWarnType 
+                        | (uint) DebugMessageTypeFlags::eGroupType
+                        | (uint) DebugMessageTypeFlags::eOther
+  };
+  gl_declare_bitflag(DebugMessageTypeFlags)
+
+  enum class DebugMessageSeverity : uint {
+    eNotification       = 0u,
+    eLow                = 1u,
+    eMedium             = 2u,
+    eHigh               = 3u
   };
 
   /* Framebuffer enums */

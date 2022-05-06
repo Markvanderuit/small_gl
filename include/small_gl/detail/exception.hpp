@@ -2,11 +2,14 @@
 
 #include <glad/glad.h>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <fmt/compile.h>
 #include <exception>
 #include <iterator>
 #include <map>
 #include <string>
+#include <vector>
+#include <utility>
 
 namespace gl::detail {
   // Provide a readable translation of error values returned by glGetError();
@@ -25,30 +28,42 @@ namespace gl::detail {
       default:                                return "readable_gl_error(...) failed to map code";
     }
   }
-  
+
   /**
-   * Exception class wrapper which can store a map of strings,
-   * which are output line-by-line in a nicely formatted manner.
+   * Message class which stores a keyed list of strings, which
+   * are output line-by-line in a formatted manner, in the order
+   * in which they were provided.
    */
-  class Exception : public std::exception {
-    mutable std::string _message = "gl::detail::Exception\n";
-    std::map<std::string, std::string> _messages;
+  class Message {
+    std::vector<std::pair<std::string, std::string>> _messages;
+    std::string _buffer;
 
   public:
-    std::string& operator[](const std::string &key) {
-      return _messages[key];
+    void put(std::string_view key, std::string_view message) {
+      fmt::format_to(std::back_inserter(_buffer),
+                     FMT_COMPILE("  {:<8} : {}\n"), 
+                     key, 
+                     message);
     }
 
+    std::string get() const {
+      return _buffer;
+    }
+  };
+
+  /**
+   * Exception class which stores a keyed list of strings, which
+   * are output line-by-line in a formatted manner, in the order
+   * in which they were provided..
+   */
+  class Exception : public std::exception, 
+                             public Message {
+    mutable std::string _what;
+
+  public:
     const char * what() const noexcept override {
-      for (const auto &[key, msg] : _messages) {
-        if (!msg.empty()) {
-          fmt::format_to(std::back_inserter(_message), 
-                         FMT_COMPILE("- {:<8} : {}\n"), 
-                         key, 
-                         msg);
-        }
-      }
-      return _message.c_str();
+      _what = fmt::format("gl::detail::Exception thrown\n{}", get());
+      return _what.c_str();
     }
   };
 } // namespace gl::detail

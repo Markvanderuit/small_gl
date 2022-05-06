@@ -36,9 +36,9 @@ namespace gl {
       glGetShaderInfoLog(object, GLint(info.size()), nullptr, info.data());
 
       Exception e;
-      e["reason"] = "gl::detail::check_shader_compile(...), from the small_gl library";
-      e["message"] = "shader compilation/specialization failed, see log";
-      e["log"] = fmt_info_log(info);
+      e.put("src", "gl::detail::check_shader_compile(...)");
+      e.put("message", "shader compilation/specialization failed, see log");
+      e.put("log", fmt_info_log(info));
       throw e;
     }
 
@@ -50,9 +50,9 @@ namespace gl {
       glGetProgramInfoLog(object, GLint(info.size()), nullptr, info.data());
 
       Exception e;
-      e["reason"] = "gl::detail::check_program_link(...), from the small_gl library";
-      e["message"] = "program linking failed, see log";
-      e["log"] = fmt_info_log(info);
+      e.put("src", "gl::detail::check_program_link(...)");
+      e.put("message", "program linking failed, see log");
+      e.put("log", fmt_info_log(info));
       throw e;
     }
 
