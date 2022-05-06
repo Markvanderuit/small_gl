@@ -134,15 +134,6 @@ namespace gl {
 
   /* Debug enums */
 
-  enum class DebugMessageSrc {
-    eApi                = GL_DEBUG_SOURCE_API,
-    eWindowSystem       = GL_DEBUG_SOURCE_WINDOW_SYSTEM,
-    eShaderCompiler     = GL_DEBUG_SOURCE_SHADER_COMPILER,
-    eThirdParty         = GL_DEBUG_SOURCE_THIRD_PARTY,
-    eApplication        = GL_DEBUG_SOURCE_APPLICATION,
-    eOther              = GL_DEBUG_SOURCE_OTHER
-  };
-
   enum class DebugMessageTypeFlags : uint {
     // Base OpenGL debug message types
     eError              = 0x001u,
@@ -155,7 +146,7 @@ namespace gl {
     ePopGroup           = 0x080u,
     eOther              = 0x100u,
 
-    // Special types
+    // Special assembled types
     eThrowType          = (uint) DebugMessageTypeFlags::eError
                         | (uint) DebugMessageTypeFlags::eUndefinedBehavior,
     eWarnType           = (uint) DebugMessageTypeFlags::eDeprecated

@@ -3,6 +3,7 @@
 #include <small_gl/detail/fwd.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/enum.hpp>
+#include <small_gl/dispatch.hpp>
 #include <span>
 
 namespace gl {
@@ -65,6 +66,12 @@ namespace gl {
 
     // Assume lifetime ownership over a provided buffer
     static Buffer make_from(uint object);
+
+    // Create a indirect buffer object from a gl::DrawInfo object
+    static Buffer make_indirect(DrawInfo info, BufferStorageFlags flags = { });
+
+    // Create a indirect buffer object from a gl::ComputeInfo object
+    static Buffer make_indirect(ComputeInfo info, BufferStorageFlags flags = { });
 
   private:
     using Base = detail::Handle<>;

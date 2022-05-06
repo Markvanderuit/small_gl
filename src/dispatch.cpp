@@ -1,4 +1,3 @@
-#include <small_gl/exception.hpp>
 #include <small_gl/array.hpp>
 #include <small_gl/buffer.hpp>
 #include <small_gl/dispatch.hpp>
@@ -6,8 +5,8 @@
 #include <small_gl/utility.hpp>
 
 namespace gl {
-  void dispatch(DrawInfo info) {
-    expr_check(info.array, "DrawInfo submitted without array object");
+  void dispatch_draw(DrawInfo info) {
+    debug::check_expr(info.array, "DrawInfo submitted without array object");
     info.array->bind();
     if (info.program) info.program->bind();
 
@@ -31,12 +30,10 @@ namespace gl {
         glDrawArrays((uint) info.type, info.vertex_first, info.vertex_count);
       }
     }
-
-    gl_check();
   }
 
-  void dispatch(DrawIndirectInfo info) {
-    expr_check(info.array, "DrawIndirectInfo submitted without array object");
+  void dispatch_draw(DrawIndirectInfo info) {
+    debug::check_expr(info.array, "DrawIndirectInfo submitted without array object");
     info.array->bind();
     if (info.program) info.program->bind();
 
@@ -48,26 +45,17 @@ namespace gl {
     } else {
       glDrawArraysIndirect((uint) info.type, nullptr);
     }
-    
-    gl_check();
   }
 
-  void dispatch(ComputeInfo info) {
+  void dispatch_compute(ComputeInfo info) {
     if (info.program) info.program->bind();
-    
     glDispatchCompute(info.groups_x, info.groups_y, info.groups_z);
-    
-    gl_check();
   }
 
-  void dispatch(ComputeIndirectInfo info) {
+  void dispatch_compute(ComputeIndirectInfo info) {
     if (info.program) info.program->bind();
-
     glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, info.buffer->object());
     sync::set_barrier(BarrierFlags::eIndirectBuffer);
-
     glDispatchComputeIndirect(0);
-    
-    gl_check();
   }
 } // namespace gl

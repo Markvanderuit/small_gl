@@ -1,13 +1,13 @@
 #include <small_gl/array.hpp>
 #include <small_gl/buffer.hpp>
-#include <small_gl/exception.hpp>
+#include <small_gl/utility.hpp>
 
 namespace gl {
   Array::Array(ArrayCreateInfo info)
   : Base(true), 
     _has_elements(info.elements) {
-    expr_check(info.buffers.size() > 0, "no vertex buffer info was provided");
-    expr_check(info.attributes.size() > 0, "no vertex attribute info was provided");
+    debug::check_expr(info.buffers.size() > 0, "no vertex buffer info was provided");
+    debug::check_expr(info.attributes.size() > 0, "no vertex attribute info was provided");
 
     glCreateVertexArrays(1, &_object);
 
@@ -36,8 +36,6 @@ namespace gl {
                                 info.relative_offset);
       glVertexArrayAttribBinding(_object, info.attribute_binding, info.buffer_binding);
     }
-
-    gl_check();
   }
 
 
@@ -47,12 +45,12 @@ namespace gl {
   }
 
   void Array::bind() const {
-    expr_check(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(_object);
   }
 
   void Array::unbind() const {
-    expr_check(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(0);
   }
 } // namespace gl

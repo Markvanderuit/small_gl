@@ -63,11 +63,10 @@ namespace gl {
     // Optional bindable program
     const Program *program = nullptr;
   };
-
   
   // Dispatch a draw/compute operation
-  void dispatch(DrawInfo info);
-  void dispatch(DrawIndirectInfo info);
-  void dispatch(ComputeInfo info);
-  void dispatch(ComputeIndirectInfo info); 
+  void dispatch_draw(DrawInfo info);
+  void dispatch_draw(DrawIndirectInfo info);
+  void dispatch_compute(ComputeInfo info);
+  void dispatch_compute(ComputeIndirectInfo info); 
 } // namespace gl

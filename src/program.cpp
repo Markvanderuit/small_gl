@@ -1,6 +1,5 @@
 #include <small_gl/program.hpp>
 #include <small_gl/utility.hpp>
-#include <small_gl/exception.hpp>
 #include <fmt/format.h>
 #include <ranges>
 #include <sstream>
@@ -74,7 +73,6 @@ namespace gl {
       check_shader_compile(object);
       glAttachShader(program, object);
 
-      gl_check();
       return object;
     }
 
@@ -100,7 +98,6 @@ namespace gl {
       std::ranges::for_each(shader_objects, 
         [object] (const auto &i) { detach_shader_object(object, i); });
 
-      gl_check();
       return object;
     }
 
@@ -114,14 +111,14 @@ namespace gl {
 
   Program::Program(std::initializer_list<ShaderLoadInfo> load_info) 
   : Base(true) {
-    expr_check(load_info.size() > 0, "no shader info was provided");
+    debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     std::vector<std::vector<std::byte>> shader_bins;
     shader_bins.reserve(load_info.size());
 
     // Load binary shader data into shader_bins using info's paths
     std::ranges::transform(load_info, std::back_inserter(shader_bins),
-      [](const auto &i) { return load_shader_binary(i.path); });
+      [](const auto &i) { return io::load_shader_binary(i.path); });
 
     std::vector<ShaderCreateInfo> create_info;
     create_info.reserve(load_info.size());
@@ -132,14 +129,12 @@ namespace gl {
                    detail::zip_loaded_info);
 
     _object = detail::create_program_object(create_info);
-    gl_check();
   }
 
   Program::Program(std::initializer_list<ShaderCreateInfo> create_info)
   : Base(true) {
-    expr_check(create_info.size() > 0, "no shader info was provided");
+    debug::check_expr(create_info.size() > 0, "no shader info was provided");
     _object = detail::create_program_object(create_info);
-    gl_check();
   }
 
   Program::Program(ShaderLoadInfo load_info)
@@ -151,19 +146,16 @@ namespace gl {
   Program::~Program() {
     guard(_is_init);
     glDeleteProgram(_object);
-    gl_check();
   }
 
   void Program::bind() const {
-    expr_check(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(_is_init, "attempt to use an uninitialized object");
     glUseProgram(_object);
-    gl_check();
   }
 
   void Program::unbind() const {
-    expr_check(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(_is_init, "attempt to use an uninitialized object");
     glUseProgram(0);
-    gl_check();
   }
 
   int Program::loc(std::string_view s) {
@@ -172,8 +164,7 @@ namespace gl {
     if (f == _loc.end()) {
       // Obtain handle and check if it is actually valid
       GLint handle = glGetUniformLocation(_object, s.data());
-      expr_check(handle >= 0, fmt::format("failed for uniform name \"{}\"", s));
-      gl_check();
+      debug::check_expr(handle >= 0, fmt::format("failed for uniform name \"{}\"", s));
 
       // Insert value into map
       f = _loc.insert({s.data(), handle}).first;
@@ -186,58 +177,45 @@ namespace gl {
   #define gl_explicit_uniform_template(type, type_short)\
     template <> void Program::uniform<type>\
     (std::string_view s, type v)\
-    { glProgramUniform1 ## type_short (_object, loc(s), v);\
-      gl_check(); }\
+    { glProgramUniform1 ## type_short (_object, loc(s), v); }\
     template <> void Program::uniform<Eigen::Array<type, 2, 1>>\
     (std::string_view s, Eigen::Array<type, 2, 1> v)\
-    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]);\
-      gl_check(); }\
+    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]); }\
     template <> void Program::uniform<Eigen::Array<type, 3, 1>>\
     (std::string_view s, Eigen::Array<type, 3, 1> v)\
-    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]);\
-      gl_check(); }\
+    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]); }\
     template <> void Program::uniform<Eigen::Array<type, 4, 1>>\
     (std::string_view s, Eigen::Array<type, 4, 1> v)\
-    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]);\
-      gl_check(); }\
+    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]); }\
     template <> void Program::uniform<Eigen::Vector<type, 2>>\
     (std::string_view s, Eigen::Vector<type, 2> v)\
-    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]);\
-      gl_check(); }\
+    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]); }\
     template <> void Program::uniform<Eigen::Vector<type, 3>>\
     (std::string_view s, Eigen::Vector<type, 3> v)\
-    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]);\
-      gl_check(); }\
+    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]); }\
     template <> void Program::uniform<Eigen::Vector<type, 4>>\
     (std::string_view s, Eigen::Vector<type, 4> v)\
-    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]);\
-      gl_check(); }
+    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]); }
 
   #define gl_explicit_uniform_template_mat(type, type_short)\
     template <> void Program::uniform<Eigen::Array<type, 2, 2>>\
     (std::string_view s, Eigen::Array<type, 2, 2> v)\
-    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data());\
-      gl_check(); }\
+    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
     template <> void Program::uniform<Eigen::Array<type, 3, 3>>\
     (std::string_view s, Eigen::Array<type, 3, 3> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
-      gl_check(); }\
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
     template <> void Program::uniform<Eigen::Array<type, 4, 4>>\
     (std::string_view s, Eigen::Array<type, 4, 4> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
-      gl_check(); }\
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
     template <> void Program::uniform<Eigen::Matrix<type, 2, 2>>\
     (std::string_view s, Eigen::Matrix<type, 2, 2> v)\
-    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data());\
-      gl_check(); }\
+    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
     template <> void Program::uniform<Eigen::Matrix<type, 3, 3>>\
     (std::string_view s, Eigen::Matrix<type, 3, 3> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
-      gl_check(); }\
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
     template <> void Program::uniform<Eigen::Matrix<type, 4, 4>>\
     (std::string_view s, Eigen::Matrix<type, 4, 4> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data());\
-      gl_check(); }
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }
 
   gl_explicit_uniform_template(bool, ui)
   gl_explicit_uniform_template(uint, ui)
