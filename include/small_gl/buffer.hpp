@@ -11,15 +11,27 @@ namespace gl {
    * Helper object to create buffer object.
    */
   struct BufferCreateInfo {
+    // Size of the buffer, in bytes
     size_t size = 0;
+
+    // Non-owning span to data passed into buffer
     std::span<const std::byte> data = { };
-    BufferStorageFlags flags = { };
+
+    // Remainder of settings
+    BufferCreateFlags flags = { };
   };
 
   /**
    * Buffer object wrapping OpenGL buffer object.
    */
-  struct Buffer : public detail::Handle<> {
+  class Buffer : public detail::Handle<> {
+    using Base = detail::Handle<>;
+
+    bool m_is_mapped;
+    size_t m_size;
+    BufferCreateFlags m_flags;
+
+  public:
     /* constr/destr */
 
     Buffer() = default;
@@ -28,12 +40,12 @@ namespace gl {
 
     /* getters/setters */
 
-    inline size_t size() const { return _size; }
-    inline bool is_mapped() const { return _is_mapped; }
-    inline BufferStorageFlags flags() const { return _flags; }
+    inline size_t size() const { return m_size; }
+    inline bool is_mapped() const { return m_is_mapped; }
+    inline BufferCreateFlags flags() const { return m_flags; }
 
     /* data operands */
-
+    
     void get(std::span<std::byte> data, 
              size_t size = 0,
              size_t offset = 0) const;
@@ -56,44 +68,39 @@ namespace gl {
 
     /* mapping */
 
-    std::span<std::byte> map(size_t size = 0, 
-                             size_t offset = 0,
-                             BufferAccessFlags flags = { });
-    void flush(size_t size = 0, size_t offset = 0);
+    // Map a region of the buffer; returns a non-owning span over the mapped region
+    std::span<std::byte> map(size_t size = 0, size_t offset = 0, BufferAccessFlags flags = { });
+
+    // Unmap (all mapped regions of) the buffer
     void unmap();
+
+    // Flush a mapped region of the buffer
+    void flush(size_t size = 0, size_t offset = 0);
     
     /* miscellaneous */
 
-    // Assume lifetime ownership over a provided buffer
+    // Assume lifetime ownership over a provided buffer handle
     static Buffer make_from(uint object);
 
     // Create a indirect buffer object from a gl::DrawInfo object
-    static Buffer make_indirect(DrawInfo info, BufferStorageFlags flags = { });
+    static Buffer make_indirect(DrawInfo info, BufferCreateFlags flags = { });
 
     // Create a indirect buffer object from a gl::ComputeInfo object
-    static Buffer make_indirect(ComputeInfo info, BufferStorageFlags flags = { });
-
-  private:
-    using Base = detail::Handle<>;
-
-    bool _is_mapped;
-    size_t _size;
-    BufferStorageFlags _flags;
+    static Buffer make_indirect(ComputeInfo info, BufferCreateFlags flags = { });
   
-  public:
     inline constexpr void swap(Buffer &o) {
       using std::swap;
       Base::swap(o);
-      swap(_size, o._size);
-      swap(_is_mapped, o._is_mapped);
-      swap(_flags, o._flags);
+      swap(m_size, o.m_size);
+      swap(m_is_mapped, o.m_is_mapped);
+      swap(m_flags, o.m_flags);
     }
 
     inline constexpr bool operator==(const Buffer &o) const {
       using std::tie;
       return Base::operator==(o)
-        && tie(_size, _is_mapped, _flags)
-        == tie(o._size, o._is_mapped, o._flags);
+        && tie(m_size, m_is_mapped, m_flags)
+        == tie(o.m_size, o.m_is_mapped, o.m_flags);
     }
 
     gl_declare_noncopyable(Buffer)

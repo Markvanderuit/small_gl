@@ -15,13 +15,13 @@ namespace gl {
 
   Buffer::Buffer(BufferCreateInfo info)
   : Base(true), 
-    _is_mapped(false),
-    _flags(info.flags),
-    _size(info.size > 0 ? info.size : info.data.size_bytes()) {
-    debug::check_expr(_size >= info.data.size_bytes(), "buffer size is smaller than data size");
+    m_is_mapped(false),
+    m_flags(info.flags),
+    m_size(info.size > 0 ? info.size : info.data.size_bytes()) {
+    debug::check_expr(m_size >= info.data.size_bytes(), "buffer size is smaller than data size");
     
     glCreateBuffers(1, &_object);
-    glNamedBufferStorage(object(), _size, info.data.data(), (uint) info.flags);
+    glNamedBufferStorage(object(), m_size, info.data.data(), (uint) info.flags);
   }
 
   Buffer::~Buffer() {  
@@ -32,14 +32,14 @@ namespace gl {
   void Buffer::get(std::span<std::byte> data, size_t size, size_t offset) const {
     debug::check_expr(_is_init, "attempt to use an uninitialized object");
 
-    size_t safe_size = (size == 0) ? _size : size;
+    size_t safe_size = (size == 0) ? m_size : size;
     glGetNamedBufferSubData(_object, offset, safe_size, data.data());
   }
 
   void Buffer::set(std::span<const std::byte> data, size_t size, size_t offset) {
     debug::check_expr(_is_init, "attempt to use an uninitialized object");
 
-    size_t safe_size = (size == 0) ? _size : size;
+    size_t safe_size = (size == 0) ? m_size : size;
     glNamedBufferSubData(_object, offset, safe_size, data.data());
   }
   
@@ -54,23 +54,41 @@ namespace gl {
       case 4: intr_fmt = GL_RGBA32UI; fmt = GL_RGBA_INTEGER; break;
     }
     
-    size_t safe_size = (size == 0) ? _size : size;
+    size_t safe_size = (size == 0) ? m_size : size;
     glClearNamedBufferSubData(_object, intr_fmt, offset, safe_size, fmt, GL_UNSIGNED_INT, data.data());
   }
 
   void Buffer::bind_to(BufferTargetType target, uint index, size_t size, size_t offset) const {
     debug::check_expr(_is_init, "attempt to use an uninitialized object");
 
-    size_t safe_size = (size == 0) ? _size : size;
+    size_t safe_size = (size == 0) ? m_size : size;
     glBindBufferRange((uint) target, index, _object, offset, safe_size);
   }
   
   std::span<std::byte> Buffer::map(size_t size, size_t offset, BufferAccessFlags flags) {
     debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    debug::check_expr(!_is_mapped, "attempt to map a previously mapped buffer");
+    debug::check_expr(!m_is_mapped, "attempt to map a previously mapped buffer");
 
-    _is_mapped  = true;
-    size_t safe_size = (size == 0) ? _size : size;
+    // Check if buffer create flags at least superseed buffer access flags
+    debug::check_expr(!has_flag(flags, BufferAccessFlags::eMapRead)
+                    || has_flag(m_flags, BufferCreateFlags::eMapRead)
+                    == has_flag(flags, BufferAccessFlags::eMapRead),
+      "Buffer::map() requested read access; this was not specified during buffer creation");
+    debug::check_expr(!has_flag(flags, BufferAccessFlags::eMapWrite)
+                    || has_flag(m_flags, BufferCreateFlags::eMapWrite)
+                    == has_flag(flags, BufferAccessFlags::eMapWrite),
+      "Buffer::map() requested write access; this was not specified during buffer creation");
+    debug::check_expr(!has_flag(flags, BufferAccessFlags::eMapCoherent)
+                    || has_flag(m_flags, BufferCreateFlags::eMapCoherent)
+                    == has_flag(flags, BufferAccessFlags::eMapCoherent),
+      "Buffer::map() requested coherent access; this was not specified during buffer creation");
+    debug::check_expr(!has_flag(flags, BufferAccessFlags::eMapPersistent)
+                    || has_flag(m_flags, BufferCreateFlags::eMapPersistent)
+                    == has_flag(flags, BufferAccessFlags::eMapPersistent),
+      "Buffer::map() requested persistent access; this was not specified during buffer creation");
+
+    m_is_mapped  = true;
+    size_t safe_size = (size == 0) ? m_size : size;
 
     // Obtain a pointer to a mapped ranger, and return this as a std::span object 
     void *data = glMapNamedBufferRange(_object, offset, safe_size, (uint) flags);
@@ -79,17 +97,17 @@ namespace gl {
 
   void Buffer::flush(size_t size, size_t offset) {
     debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    debug::check_expr(_is_mapped, "attempt to flush a unmapped buffer");
+    debug::check_expr(m_is_mapped, "attempt to flush a unmapped buffer");
 
-    size_t safe_size = (size == 0) ? _size : size;
+    size_t safe_size = (size == 0) ? m_size : size;
     glFlushMappedNamedBufferRange(_object, offset, safe_size);
   }
 
   void Buffer::unmap() {
     debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    debug::check_expr(_is_mapped, "attempt to unmap a unmapped buffer");
+    debug::check_expr(m_is_mapped, "attempt to unmap a unmapped buffer");
 
-    _is_mapped  = false;
+    m_is_mapped  = false;
     glUnmapNamedBuffer(_object);
   }
 
@@ -100,36 +118,33 @@ namespace gl {
     Buffer buffer;
     buffer._is_init = true;
     buffer._object = object;
-    buffer._is_mapped = detail::get_buffer_param_iv(object, GL_BUFFER_MAPPED) != GL_FALSE;
-    buffer._size = detail::get_buffer_param_iv(object, GL_BUFFER_SIZE);
-    buffer._flags = (BufferStorageFlags) detail::get_buffer_param_iv(object, GL_BUFFER_STORAGE_FLAGS);
+    buffer.m_is_mapped = detail::get_buffer_param_iv(object, GL_BUFFER_MAPPED) != GL_FALSE;
+    buffer.m_size = detail::get_buffer_param_iv(object, GL_BUFFER_SIZE);
+    buffer.m_flags = (BufferCreateFlags) detail::get_buffer_param_iv(object, GL_BUFFER_STORAGE_FLAGS);
     
     return buffer;
   }
 
-  Buffer Buffer::make_indirect(DrawInfo info, BufferStorageFlags flags) {
+  Buffer Buffer::make_indirect(DrawInfo info, BufferCreateFlags flags) {
     debug::check_expr(info.array, "DrawInfo submitted without array object");
-    
-    Buffer buffer;
+
     if (info.array->has_elements()) {
       std::array<uint, 5> data = { info.vertex_count, info.instance_count, 
                                    info.vertex_first, info.vertex_base,
                                    info.instance_base };
-      buffer = Buffer({ .size = data.size() * sizeof(uint),
-                        .data = std::as_bytes(std::span(data)),
-                        .flags = flags });
+      return Buffer({ .size = data.size() * sizeof(uint),
+                      .data = std::as_bytes(std::span(data)),
+                      .flags = flags });
     } else {
       std::array<uint, 4> data = { info.vertex_count, info.instance_count, 
                                    info.vertex_first, info.instance_base };
-      buffer = Buffer({ .size = data.size() * sizeof(uint),
-                        .data = std::as_bytes(std::span(data)),
-                        .flags = flags });
+      return Buffer({ .size = data.size() * sizeof(uint),
+                      .data = std::as_bytes(std::span(data)),
+                      .flags = flags });
     }
-
-    return buffer;
   }
 
-  Buffer Buffer::make_indirect(ComputeInfo info, BufferStorageFlags flags) {
+  Buffer Buffer::make_indirect(ComputeInfo info, BufferCreateFlags flags) {
     std::array<uint, 3> data = { info.groups_x, info.groups_y, info.groups_z };
     return Buffer({ .size = data.size() * sizeof(uint),
                     .data = std::as_bytes(std::span(data)),
