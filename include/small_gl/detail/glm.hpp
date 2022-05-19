@@ -94,14 +94,14 @@ namespace glm {
     };
   } // namespace detail
 
-  // Reduce sum
+  // Reduce sum of vector
   template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER T sum(vec<L, T, Q> const& v)
 	{
 		return detail::compute_sum<vec<L, T, Q>, T, detail::is_aligned<Q>::value>::call(v);
 	}
 
-  // Reduce prod
+  // Reduce prod of vector
   template<length_t L, typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER T prod(vec<L, T, Q> const& v)
 	{

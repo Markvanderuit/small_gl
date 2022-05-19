@@ -1,3 +1,4 @@
+#include <small_gl/detail/glm.hpp>
 #include <small_gl/program.hpp>
 #include <small_gl/utility.hpp>
 #include <fmt/format.h>
@@ -178,44 +179,26 @@ namespace gl {
     template <> void Program::uniform<type>\
     (std::string_view s, type v)\
     { glProgramUniform1 ## type_short (_object, loc(s), v); }\
-    template <> void Program::uniform<Eigen::Array<type, 2, 1>>\
-    (std::string_view s, Eigen::Array<type, 2, 1> v)\
+    template <> void Program::uniform<glm::vec<2, type, glm::defaultp>>\
+    (std::string_view s, glm::vec<2, type, glm::defaultp> v)\
     { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]); }\
-    template <> void Program::uniform<Eigen::Array<type, 3, 1>>\
-    (std::string_view s, Eigen::Array<type, 3, 1> v)\
+    template <> void Program::uniform<glm::vec<3, type, glm::defaultp>>\
+    (std::string_view s, glm::vec<3, type, glm::defaultp> v)\
     { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]); }\
-    template <> void Program::uniform<Eigen::Array<type, 4, 1>>\
-    (std::string_view s, Eigen::Array<type, 4, 1> v)\
-    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]); }\
-    template <> void Program::uniform<Eigen::Vector<type, 2>>\
-    (std::string_view s, Eigen::Vector<type, 2> v)\
-    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]); }\
-    template <> void Program::uniform<Eigen::Vector<type, 3>>\
-    (std::string_view s, Eigen::Vector<type, 3> v)\
-    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]); }\
-    template <> void Program::uniform<Eigen::Vector<type, 4>>\
-    (std::string_view s, Eigen::Vector<type, 4> v)\
+    template <> void Program::uniform<glm::vec<4, type, glm::defaultp>>\
+    (std::string_view s, glm::vec<4, type, glm::defaultp> v)\
     { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]); }
 
   #define gl_explicit_uniform_template_mat(type, type_short)\
-    template <> void Program::uniform<Eigen::Array<type, 2, 2>>\
-    (std::string_view s, Eigen::Array<type, 2, 2> v)\
-    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
-    template <> void Program::uniform<Eigen::Array<type, 3, 3>>\
-    (std::string_view s, Eigen::Array<type, 3, 3> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
-    template <> void Program::uniform<Eigen::Array<type, 4, 4>>\
-    (std::string_view s, Eigen::Array<type, 4, 4> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
-    template <> void Program::uniform<Eigen::Matrix<type, 2, 2>>\
-    (std::string_view s, Eigen::Matrix<type, 2, 2> v)\
-    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
-    template <> void Program::uniform<Eigen::Matrix<type, 3, 3>>\
-    (std::string_view s, Eigen::Matrix<type, 3, 3> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }\
-    template <> void Program::uniform<Eigen::Matrix<type, 4, 4>>\
-    (std::string_view s, Eigen::Matrix<type, 4, 4> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, v.data()); }
+    template <> void Program::uniform<glm::mat<2, 2, type, glm::defaultp>>\
+    (std::string_view s, glm::mat<2, 2, type, glm::defaultp> v)\
+    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, glm::value_ptr(v)); }\
+    template <> void Program::uniform<glm::mat<3, 3, type, glm::defaultp>>\
+    (std::string_view s, glm::mat<3, 3, type, glm::defaultp> v)\
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, glm::value_ptr(v)); }\
+    template <> void Program::uniform<glm::mat<4, 4, type, glm::defaultp>>\
+    (std::string_view s, glm::mat<4, 4, type, glm::defaultp> v)\
+    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, glm::value_ptr(v)); }
 
   gl_explicit_uniform_template(bool, ui)
   gl_explicit_uniform_template(uint, ui)

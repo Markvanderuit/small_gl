@@ -13,7 +13,6 @@ namespace gl {
    */
   template <typename T, uint D, TextureType Ty = TextureType::eImage>
   class TextureCreateInfo {
-    // using Array = Eigen::Array<int, detail::texture_dims<D, Ty>(), 1>;
     using SizeType = glm::vec<detail::texture_dims<D, Ty>(), int, glm::defaultp>;
 
   public:
