@@ -14,11 +14,11 @@ namespace gl::detail {
   consteval uint texture_dims();
   
   // Consteval function determining a texture format
-  template <uint Components, typename T>
+  template <uint C, typename T>
   consteval uint texture_format();
 
   // Consteval function determining a texture's internal_format
-  template <uint Components, typename T>
+  template <uint C, typename T>
   consteval uint texture_internal_format();
 
   // Consteval function determinig a texture's correct binding target
