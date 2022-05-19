@@ -4,7 +4,7 @@
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/texture.hpp>
-#include <small_gl/detail/eigen.hpp>
+#include <glm/glm.hpp>
 #include <span>
 
 namespace gl {
@@ -13,10 +13,11 @@ namespace gl {
    */
   template <typename T, uint D, TextureType Ty = TextureType::eImage>
   class TextureCreateInfo {
-    using Array = Eigen::Array<int, detail::texture_dims<D, Ty>(), 1>;
+    // using Array = Eigen::Array<int, detail::texture_dims<D, Ty>(), 1>;
+    using SizeType = glm::vec<detail::texture_dims<D, Ty>(), int, glm::defaultp>;
 
   public:
-    Array size;
+    SizeType size;
     uint levels = 1;
     std::span<T> data = { };
   };
@@ -46,7 +47,8 @@ namespace gl {
             TextureType Ty    // Special texture type (array, cubemap, multisampled)
             = TextureType::eImage>   
   class Texture : public AbstractTexture {
-    using Array = Eigen::Array<int, detail::texture_dims<D, Ty>(), 1>;
+    // using Array = Eigen::Array<int, detail::texture_dims<D, Ty>(), 1>;
+    using SizeType = glm::vec<detail::texture_dims<D, Ty>(), int, glm::defaultp>;
     using TextureCreateInfo = TextureCreateInfo<T, D, Ty>;
 
   public:
@@ -59,7 +61,7 @@ namespace gl {
     /* getters/setters */
 
     inline uint levels() const { return _levels; }
-    inline Array size() const { return _size; }
+    inline SizeType size() const { return _size; }
 
     /* state */
 
@@ -69,20 +71,20 @@ namespace gl {
 
     void get(std::span<T> data,
              uint level = 0,
-             Array size = Array::Zero(),
-             Array offset = Array::Zero()) const
+             SizeType size = SizeType(0),
+             SizeType offset = SizeType(0)) const
              requires(!detail::is_cubemap_type<Ty>);
 
     void set(std::span<const T> data,
              uint level = 0,
-             Array size = Array::Zero(),
-             Array offset = Array::Zero()) 
+             SizeType size = SizeType(0),
+             SizeType offset = SizeType(0)) 
              requires(!detail::is_cubemap_type<Ty>);
 
     void clear(std::span<const T> data = { }, 
                uint level = 0,
-               Array size = Array::Zero(),
-               Array offset = Array::Zero()) 
+               SizeType size = SizeType(0),
+               SizeType offset = SizeType(0)) 
                requires(!detail::is_cubemap_type<Ty>);
 
     /* operands for cubemap texture types */
@@ -90,22 +92,22 @@ namespace gl {
     void get(std::span<T> data,
              uint face = 0,
              uint level = 0,
-             Array size = Array::Zero(),
-             Array offset = Array::Zero()) const
+             SizeType size = SizeType(0),
+             SizeType offset = SizeType(0)) const
              requires(detail::is_cubemap_type<Ty>);
     
     void set(std::span<const T> data,
              uint face = 0,
              uint level = 0,
-             Array size = Array::Zero(),
-             Array offset = Array::Zero()) 
+             SizeType size = SizeType(0),
+             SizeType offset = SizeType(0)) 
              requires(detail::is_cubemap_type<Ty>);
 
     void clear(std::span<const T> data = { }, 
                uint face = 0,
                uint level = 0,
-               Array size = Array::Zero(),
-               Array offset = Array::Zero()) 
+               SizeType size = SizeType(0),
+               SizeType offset = SizeType(0)) 
                requires(detail::is_cubemap_type<Ty>);
 
     /* miscellaneous */
@@ -116,7 +118,7 @@ namespace gl {
     using Base = AbstractTexture;
 
     uint _levels;
-    Array _size;
+    SizeType _size;
 
   public:
     inline void swap(Texture &o) {
@@ -127,7 +129,7 @@ namespace gl {
     }
 
     inline bool operator==(const Texture &o) const {
-      return Base::operator==(o) && _levels == o._levels && _size.isApprox(o._size);
+      return Base::operator==(o) && _levels == o._levels && _size == o._size;
     }
 
     gl_declare_noncopyable(Texture)

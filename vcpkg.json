@@ -4,8 +4,9 @@
   "dependencies" : [
     "eigen3",
     "fmt",
-    "glfw3",
     { "name": "glad", 
-      "features": [ "gl-api-latest" ] }
+      "features": [ "gl-api-latest" ] },
+    "glfw3",
+    "glm"
   ]
 }

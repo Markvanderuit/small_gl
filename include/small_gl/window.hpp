@@ -3,7 +3,8 @@
 #include <small_gl/detail/fwd.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
-#include <small_gl/detail/eigen.hpp>
+#include <glm/vec2.hpp>
+#include <string>
 
 namespace gl {
   /**
@@ -11,7 +12,7 @@ namespace gl {
    */
   struct WindowCreateInfo {
     // Window settings
-    Array2i size = { 1, 1 };
+    glm::ivec2 size = { 1, 1 };
     std::string title = "";
     uint swap_interval = 1;
     uint msaa_samples = 0;
@@ -49,11 +50,11 @@ namespace gl {
     /* getters/setters */
 
     // window/framebuffer setters/getters/change flags
-    inline Array2i window_pos() const { return _window_pos; }
-    inline Array2i window_size() const { return _window_size; }
-    inline Array2i framebuffer_size() const { return _framebuffer_size; }
-    void set_window_pos(Array2i window_pos);
-    void set_window_size(Array2i window_size);
+    inline glm::ivec2 window_pos() const { return _window_pos; }
+    inline glm::ivec2 window_size() const { return _window_size; }
+    inline glm::ivec2 framebuffer_size() const { return _framebuffer_size; }
+    void set_window_pos(glm::ivec2 window_pos);
+    void set_window_size(glm::ivec2 window_size);
     bool did_window_resize() const { return _did_window_resize; }
     bool did_framebuffer_resize() const { return _did_framebuffer_resize; }
 
@@ -80,9 +81,9 @@ namespace gl {
   private:
     using Base = Handle<void *>;
 
-    Array2i _window_pos;
-    Array2i _window_size;
-    Array2i _framebuffer_size;
+    glm::ivec2 _window_pos;
+    glm::ivec2 _window_size;
+    glm::ivec2 _framebuffer_size;
 
     std::string _title;
     uint _swap_interval;

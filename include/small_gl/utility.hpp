@@ -6,6 +6,7 @@
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/utility.hpp>
 #include <small_gl/dispatch.hpp>
+#include <glm/glm.hpp>
 #include <chrono>
 #include <filesystem>
 #include <source_location>
@@ -60,7 +61,7 @@ namespace gl {
     void set_op(LogicOp operand);
     
     // Configure framebuffer viewport transformation
-    void set_viewport(Array2i size, Array2i offset = Array2i::Zero());
+    void set_viewport(glm::ivec2 size, glm::ivec2 offset = glm::ivec2(0));
 
     // Helper object to set/unset capabilities in a local scope using RAII
     struct ScopedSet {

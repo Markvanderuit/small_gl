@@ -115,7 +115,7 @@ namespace gl {
                                              : nullptr;
 
     // Initialize a GLFW window 
-    _object = (void *) glfwCreateWindow(_window_size.x(), _window_size.y(), _title.c_str(), mon, shared);
+    _object = (void *) glfwCreateWindow(_window_size.x, _window_size.y, _title.c_str(), mon, shared);
     debug::check_expr(_object, "glfwCreateWindow(...) failed");
     
     // Finally, load GLAD bindings
@@ -172,12 +172,12 @@ namespace gl {
     return glfwGetCurrentContext() == (GLFWwindow *) _object;
   }
 
-  void Window::set_window_pos(Array2i window_pos) {
+  void Window::set_window_pos(glm::ivec2 window_pos) {
     debug::check_expr(_is_init, "attempt to use an uninitialized object");
     glfwSetWindowPos((GLFWwindow *) _object, window_pos[0], window_pos[1]);
   }
 
-  void Window::set_window_size(Array2i window_size) {
+  void Window::set_window_size(glm::ivec2 window_size) {
     debug::check_expr(_is_init, "attempt to use an uninitialized object");
     glfwSetWindowSize((GLFWwindow *) _object, window_size[0], window_size[1]);
   }
@@ -252,13 +252,12 @@ namespace gl {
   bool Window::operator==(const Window &o) const {
     using std::tie;
     return Base::operator==(o)
-      && _window_pos.isApprox(o._window_pos) 
-      && _window_size.isApprox(o._window_size)
-      && _framebuffer_size.isApprox(o._framebuffer_size)
-      && std::tie(_title, _swap_interval, _is_visible, 
+      && std::tie(_window_pos, _window_size, _framebuffer_size,
+                _title, _swap_interval, _is_visible, 
                   _is_maximized, _is_focused, _should_close,
                   _is_main_context, _did_window_resize, _did_framebuffer_resize)
-      == std::tie(o._title, o._swap_interval, o._is_visible, 
+      == std::tie(o._window_pos, o._window_size, o._framebuffer_size,
+                  o._title, o._swap_interval, o._is_visible, 
                   o._is_maximized, o._is_focused, o._should_close,
                   o._is_main_context, o._did_window_resize, o._did_framebuffer_resize);
   }

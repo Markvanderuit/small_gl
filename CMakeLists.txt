@@ -8,8 +8,9 @@ set(CMAKE_TOOLCHAIN_FILE
 project(small_gl LANGUAGES CXX)
 
 # Include third party libraries provided through vcpkg
-find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 
@@ -24,6 +25,7 @@ add_library(small_gl ${srcs})
 target_link_libraries(small_gl PRIVATE
   glad::glad
   Eigen3::Eigen
+  glm::glm
   glfw
   fmt::fmt-header-only
 )

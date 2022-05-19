@@ -1,6 +1,7 @@
 #include <small_gl/array.hpp>
 #include <small_gl/buffer.hpp>
 #include <small_gl/utility.hpp>
+#include <small_gl/detail/glm.hpp>
 #include <fmt/format.h>
 #include <fmt/core.h>
 #include <array>
@@ -143,7 +144,7 @@ namespace gl {
       glLogicOp((uint) operand);
     }
 
-    void set_viewport(Array2i size, Array2i offset) {
+    void set_viewport(glm::ivec2 size, glm::ivec2 offset) {
       glViewport(offset[0], offset[1], size[0], size[1]);
     }
 
