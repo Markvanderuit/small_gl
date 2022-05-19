@@ -19,7 +19,16 @@ namespace gl {
   /**
    * Sampler object wrapping OpenGL sampler object.
    */
-  struct Sampler : public detail::Handle<> {
+  class Sampler : public detail::Handle<> {
+    using Base = detail::Handle<>;
+
+    SamplerMinFilter m_min_filter;
+    SamplerMagFilter m_mag_filter;
+    SamplerWrap m_wrap;
+    SamplerCompareFunc m_compare_func;
+    SamplerCompareMode m_compare_mode;
+
+  public:
     /* constr/destr */
 
     Sampler() = default;
@@ -28,11 +37,11 @@ namespace gl {
 
     /* getters/setters */
 
-    inline SamplerMinFilter min_filter() const { return _min_filter; }
-    inline SamplerMagFilter mag_filter() const { return _mag_filter; }
-    inline SamplerWrap wrap() const { return _wrap; }
-    inline SamplerCompareFunc compare_func() const { return _compare_func; }
-    inline SamplerCompareMode compare_mode() const { return _compare_mode; }
+    inline SamplerMinFilter min_filter() const { return m_min_filter; }
+    inline SamplerMagFilter mag_filter() const { return m_mag_filter; }
+    inline SamplerWrap wrap() const { return m_wrap; }
+    inline SamplerCompareFunc compare_func() const { return m_compare_func; }
+    inline SamplerCompareMode compare_mode() const { return m_compare_mode; }
 
     void set_min_filter(SamplerMinFilter min_filter);
     void set_mag_filter(SamplerMagFilter mag_filter);
@@ -44,31 +53,23 @@ namespace gl {
 
     void bind_to(uint index) const;
     
-  private:
-    using Base = detail::Handle<>;
+    /* miscellaneous */
 
-    SamplerMinFilter _min_filter;
-    SamplerMagFilter _mag_filter;
-    SamplerWrap _wrap;
-    SamplerCompareFunc _compare_func;
-    SamplerCompareMode _compare_mode;
-
-  public:
     inline void swap(Sampler &o) {
       using std::swap;
       Base::swap(o);
-      swap(_min_filter, o._min_filter);
-      swap(_mag_filter, o._mag_filter);
-      swap(_wrap, o._wrap);
-      swap(_compare_func, o._compare_func);
-      swap(_compare_mode, o._compare_mode);
+      swap(m_min_filter, o.m_min_filter);
+      swap(m_mag_filter, o.m_mag_filter);
+      swap(m_wrap, o.m_wrap);
+      swap(m_compare_func, o.m_compare_func);
+      swap(m_compare_mode, o.m_compare_mode);
     }
 
     inline bool operator==(const Sampler &o) const {
       using std::tie;
       return Base::operator==(o)
-          && std::tie(_min_filter, _mag_filter, _wrap, _compare_func, _compare_mode)
-          == std::tie(o._min_filter, o._mag_filter, o._wrap, o._compare_func, o._compare_mode);
+          && std::tie(m_min_filter, m_mag_filter, m_wrap, m_compare_func, m_compare_mode)
+          == std::tie(o.m_min_filter, o.m_mag_filter, o.m_wrap, o.m_compare_func, o.m_compare_mode);
     }
 
     gl_declare_noncopyable(Sampler)

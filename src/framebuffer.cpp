@@ -56,6 +56,8 @@ namespace gl {
                             glm::ivec2 dst_offset,
                             FramebufferMaskFlags flags,
                             SamplerMagFilter filter) const {
+    debug::check_expr(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(dst._is_init, "attempt to use an uninitialized object");
     
     glBlitNamedFramebuffer(_object, dst.object(),
       src_offset[0], src_offset[1],

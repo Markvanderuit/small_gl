@@ -53,7 +53,7 @@ namespace gl {
     using Base = detail::Handle<>;
     
     // Unordered map caches uniform locations for uniform string names
-    std::unordered_map<std::string, int> _loc;
+    std::unordered_map<std::string, int> m_loc;
 
     // Look up uniform location for uniform string name
     int loc(std::string_view s);
@@ -81,11 +81,11 @@ namespace gl {
     inline void swap(Program &o) {
       using std::swap;
       Base::swap(o);
-      swap(_loc, o._loc);
+      swap(m_loc, o.m_loc);
     }
 
     inline bool operator==(const Program &o) const {
-      return Base::operator==(o) && _loc == o._loc;
+      return Base::operator==(o) && m_loc == o.m_loc;
     }
 
     gl_declare_noncopyable(Program);

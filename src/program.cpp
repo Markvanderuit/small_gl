@@ -161,14 +161,14 @@ namespace gl {
 
   int Program::loc(std::string_view s) {
     // Search map for the provided value
-    auto f = _loc.find(s.data());
-    if (f == _loc.end()) {
+    auto f = m_loc.find(s.data());
+    if (f == m_loc.end()) {
       // Obtain handle and check if it is actually valid
       GLint handle = glGetUniformLocation(_object, s.data());
       debug::check_expr(handle >= 0, fmt::format("failed for uniform name \"{}\"", s));
 
       // Insert value into map
-      f = _loc.insert({s.data(), handle}).first;
+      f = m_loc.insert({s.data(), handle}).first;
     }
     return f->second;
   }
