@@ -27,7 +27,7 @@ namespace gl {
   };
 
   // Storage flags for gl::Buffer(...) construction
-  enum class BufferStorageFlags : uint {
+  enum class BufferCreateFlags : uint {
     eStorageDynamic     = GL_DYNAMIC_STORAGE_BIT,
     eStorageClient      = GL_CLIENT_STORAGE_BIT,
     eMapRead            = GL_MAP_READ_BIT,
@@ -35,7 +35,7 @@ namespace gl {
     eMapPersistent      = GL_MAP_PERSISTENT_BIT,  
     eMapCoherent        = GL_MAP_COHERENT_BIT
   };
-  gl_declare_bitflag(BufferStorageFlags);
+  gl_declare_bitflag(BufferCreateFlags);
 
   // Access flags for gl::Buffer::map(...)
   enum class BufferAccessFlags : uint {
@@ -297,16 +297,20 @@ namespace gl {
   /* Vertexarray enums */
 
   // Format used for gl::VertexArray(...) in gl::VertexAttribInfo(...) object
-  enum class VertexFormatType : uint {
+  enum class VertexAttribType : uint {
     eByte                   = GL_BYTE,
     eUByte                  = GL_UNSIGNED_BYTE,
+    eShort                  = GL_SHORT,
+    eUShort                 = GL_UNSIGNED_SHORT,
     eInt                    = GL_INT,
     eUInt                   = GL_UNSIGNED_INT,
-    eFloat                  = GL_FLOAT
+    eHalf                   = GL_HALF_FLOAT,
+    eFloat                  = GL_FLOAT,
+    eDouble                 = GL_DOUBLE,
   };
 
   // Size used for gl::VertexArray(...) in gl::VertexAttribInfo(...) object
-  enum class VertexFormatSize : uint {
+  enum class VertexAttribSize : uint {
     e1                      = 1,
     e2                      = 2,
     e3                      = 3,
@@ -316,7 +320,7 @@ namespace gl {
   /* Window/context enums */
 
   // Window hint flags to pass to GLFW
-  enum class WindowFlags : uint {
+  enum class WindowCreateFlags : uint {
     eDebug                  = 0x001u,
     eDecorated              = 0x002u,
     eFloating               = 0x004u,
@@ -328,7 +332,7 @@ namespace gl {
     eSRGB                   = 0x100u,
     eMSAA                   = 0x200u
   };  
-  gl_declare_bitflag(WindowFlags);
+  gl_declare_bitflag(WindowCreateFlags);
 
   // Preferred OpenGL profile for GLFW to support
   enum class ProfileType {

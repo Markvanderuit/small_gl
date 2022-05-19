@@ -106,19 +106,6 @@ namespace gl {
     { debug::check_expr(_is_init, "attempt to use an uninitialized object");\
       glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, glm::value_ptr(v)); }
 
-   /*  template <> void Framebuffer::clear<Eigen::Vector<type, 2>>\
-    (FramebufferType t, Eigen::Vector<type, 2> v, uint i)\
-    { debug::check_expr(_is_init, "attempt to use an uninitialized object");\
-      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, v.data()); }\
-    template <> void Framebuffer::clear<Eigen::Vector<type, 3>>\
-    (FramebufferType t, Eigen::Vector<type, 3> v, uint i)\
-    { debug::check_expr(_is_init, "attempt to use an uninitialized object");\
-      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, v.data()); }\
-    template <> void Framebuffer::clear<Eigen::Vector<type, 4>>\
-    (FramebufferType t, Eigen::Vector<type, 4> v, uint i)\
-    { debug::check_expr(_is_init, "attempt to use an uninitialized object");\
-      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, v.data()); } */
-
   // Explicit template specializations
   gl_explicit_clear_template(float, f)
   gl_explicit_clear_template(uint, ui)

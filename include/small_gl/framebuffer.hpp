@@ -13,16 +13,26 @@ namespace gl {
    * framebuffer attachment.
    */
   struct FramebufferCreateInfo {
+    // Framebuffer attachment type (color, depth, stencil)
     FramebufferType type;
-    const AbstractTexture *texture;
+
+    // Binding index to attach to (only applies for color)
     uint index = 0;
+
+    // Texture handle to attach to framebuffer
+    const AbstractTexture *texture;
+
+    // Mipmap level of texture to attach
     uint level = 0;
   };
   
   /**
    * Framebuffer object wrapping OpenGL framebuffer object.
    */
-  struct Framebuffer : public detail::Handle<> {
+  class Framebuffer : public detail::Handle<> {
+    using Base = detail::Handle<>;
+
+  public:
     /* constr/destr */
 
     Framebuffer() = default;
@@ -32,33 +42,29 @@ namespace gl {
 
     /* state */
 
+    // Clear one of the framebuffer attachments (color + index, depth, stencil)
     template <typename T>
     void clear(FramebufferType type, T t = T(0), uint index = 0);
 
     void bind() const;
     void unbind() const;
 
-  /* miscellaneous */  
+    /* miscellaneous */  
 
-  void blit_to(gl::Framebuffer &dst,
-               glm::ivec2 src_size,
-               glm::ivec2 src_offset,
-               glm::ivec2 dst_size,
-               glm::ivec2 dst_offset,
-               FramebufferMaskFlags flags,
-               SamplerMagFilter filter = SamplerMagFilter::eNearest) const;
+    void blit_to(gl::Framebuffer &dst,
+                 glm::ivec2 src_size,
+                 glm::ivec2 src_offset,
+                 glm::ivec2 dst_size,
+                 glm::ivec2 dst_offset,
+                 FramebufferMaskFlags flags,
+                 SamplerMagFilter filter = SamplerMagFilter::eNearest) const;
 
-    // Return an uninitialized object masking as a "placeholder" 
-    // for a default framebuffer
+    // Return a special object acting as a placeholder for the default framebuffer
     static Framebuffer make_default();
 
-    // Assume lifetime ownership over a provided buffer
+    // Assume lifetime ownership over a provided framebuffer handle
     static Framebuffer make_from(uint object);
 
-  private:
-    using Base = detail::Handle<>;
-  
-  public:
     inline void swap(Framebuffer &o) {
       using std::swap;
       Base::swap(o);
