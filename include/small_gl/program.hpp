@@ -15,10 +15,16 @@ namespace gl {
    * object's file data.
    */
   struct ShaderLoadInfo {
+    // Shader type (vertex, fragment, compute, geometry, tessel...)
     ShaderType type;
+
+    // Path towards shader file, which will be loaded as the
     std::filesystem::path path;
 
+    // Is the attached shader data a spirv binary?
     bool is_spirv_binary = true;
+
+    // Override spirv shader entry point, if necessary
     std::string spirv_entry_point = "main";
   };
 
@@ -27,41 +33,51 @@ namespace gl {
    * shader object file data.
    */
   struct ShaderCreateInfo {
+    // Shader type (vertex, fragment, compute, geometry, tessel...)
     ShaderType type;
+
+    // Shader data in binary format
     std::span<const std::byte> data;
 
+    // Is the attached shader data a spirv binary?
     bool is_spirv_binary = true;
+
+    // Override spirv shader entry point, if necessary
     std::string spirv_entry_point = "main";
   };
 
   /**
    * Program object wrapping OpenGL shader program object.
    */
-  struct Program : public detail::Handle<> {
+  class Program : public detail::Handle<> {
+    using Base = detail::Handle<>;
+    
+    // Unordered map caches uniform locations for uniform string names
+    std::unordered_map<std::string, int> _loc;
+
+    // Look up uniform location for uniform string name
+    int loc(std::string_view s);
+    
+  public:
     /* constr/destr */
 
     Program() = default;
-    Program(std::initializer_list<ShaderLoadInfo>);
-    Program(std::initializer_list<ShaderCreateInfo>);
     Program(ShaderLoadInfo);
+    Program(std::initializer_list<ShaderLoadInfo>);
     Program(ShaderCreateInfo);
+    Program(std::initializer_list<ShaderCreateInfo>);
     ~Program();
 
     /* state */  
 
     template <typename T>
     void uniform(std::string_view s, T t);
+
     void bind() const;
     void unbind() const;
 
-  private:
-    using Base = detail::Handle<>;
+    /* miscellaneous */
     
-    // Unordered map caches uniform locations matching string values
-    int loc(std::string_view s);
-    std::unordered_map<std::string, int> _loc;
-
-  public:
     inline void swap(Program &o) {
       using std::swap;
       Base::swap(o);
