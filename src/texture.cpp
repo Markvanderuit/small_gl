@@ -1,6 +1,6 @@
+#include <small_gl/detail/glm.hpp>
 #include <small_gl/texture.hpp>
 #include <small_gl/utility.hpp>
-#include <small_gl/detail/glm.hpp>
 
 namespace gl {
   template <typename T, uint D, uint C, TextureType Ty>
