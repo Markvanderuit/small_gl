@@ -5,7 +5,7 @@
 
 namespace gl {
   void attach_callbacks(Window &window) {
-    guard( window._is_init);
+    guard( window.m_is_init);
     GLFWwindow *object = (GLFWwindow *) window.object();
 
     glfwSetWindowUserPointer(object, &window);
@@ -22,7 +22,7 @@ namespace gl {
       window.m_is_maximized = maximized != 0;
     });
     glfwSetWindowPosCallback(object, [](GLFWwindow *object, int x, int y) {
-    gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
+      gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
       window.m_window_pos = { x, y };
     });
     glfwSetWindowSizeCallback(object, [](GLFWwindow *object, int x, int y) {
@@ -35,10 +35,37 @@ namespace gl {
       window.m_framebuffer_size = { x, y };
       window.m_did_framebuffer_resize = true;
     });
+
+    glfwSetKeyCallback(object, [](GLFWwindow *object, int key, int scan, int action, int mods) {
+      gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
+      window.m_input_info.keybd_button_actions.push_back({key, action});
+    });
+
+    glfwSetMouseButtonCallback(object, [](GLFWwindow *object, int button, int action, int mods) {
+      gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
+      window.m_input_info.mouse_button_actions.push_back({button, action});
+    });
+
+    glfwSetCursorPosCallback(object, [](GLFWwindow *object, double x_pos, double y_pos) {
+      gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
+      window.m_input_info.mouse_position = { static_cast<float>(x_pos), static_cast<float>(y_pos) };
+    });
+
+    glfwSetScrollCallback(object, [](GLFWwindow *object, double x_pos, double y_pos) {
+      gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
+      window.m_input_info.mouse_scroll = { static_cast<float>(x_pos), static_cast<float>(y_pos) };
+    });
+
+    glfwSetDropCallback(object, [](GLFWwindow *object, int count, const char **paths) {
+      gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
+      for (int i = 0; i < count; ++i) {
+        window.m_input_info.dropped_paths.push_back(paths[i]);
+      } 
+    });
   }
 
   void detach_callbacks(Window &window) {
-    guard(window._is_init);
+    guard(window.m_is_init);
     GLFWwindow *object = (GLFWwindow *) window.object();
 
     glfwSetWindowUserPointer(object, nullptr);
@@ -48,6 +75,11 @@ namespace gl {
     glfwSetWindowPosCallback(object, nullptr);
     glfwSetWindowSizeCallback(object, nullptr);
     glfwSetFramebufferSizeCallback(object, nullptr);
+    glfwSetKeyCallback(object, nullptr);
+    glfwSetMouseButtonCallback(object, nullptr);
+    glfwSetCursorPosCallback(object, nullptr);
+    glfwSetScrollCallback(object, nullptr);
+    glfwSetDropCallback(object, nullptr);
   }
   
   Window::Window(WindowCreateInfo info)
@@ -115,8 +147,8 @@ namespace gl {
                                              : nullptr;
 
     // Initialize a GLFW window 
-    _object = (void *) glfwCreateWindow(m_window_size.x, m_window_size.y, m_title.c_str(), mon, shared);
-    debug::check_expr(_object, "glfwCreateWindow(...) failed");
+    m_object = (void *) glfwCreateWindow(m_window_size.x, m_window_size.y, m_title.c_str(), mon, shared);
+    debug::check_expr(m_object, "glfwCreateWindow(...) failed");
     
     // Finally, load GLAD bindings
     if (m_is_main_context) {
@@ -127,102 +159,105 @@ namespace gl {
     // Instantiate miscellaneous window properties
     glfwSwapInterval(m_swap_interval);
     attach_callbacks(*this);
-    glfwGetFramebufferSize((GLFWwindow *) _object, &m_framebuffer_size[0], &m_framebuffer_size[1]);
+    glfwGetFramebufferSize((GLFWwindow *) m_object, &m_framebuffer_size[0], &m_framebuffer_size[1]);
   }
 
   Window::~Window() {
-    guard(_is_init);
+    guard(m_is_init);
     detach_callbacks(*this);
-    glfwDestroyWindow((GLFWwindow *) _object);
+    glfwDestroyWindow((GLFWwindow *) m_object);
     if (m_is_main_context) {
       glfwTerminate();
     }
   }
 
   void Window::swap_buffers() {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glfwSwapBuffers((GLFWwindow *) _object);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glfwSwapBuffers((GLFWwindow *) m_object);
   }
 
   void Window::poll_events() {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
 
     m_did_window_resize = false;
     m_did_framebuffer_resize = false;
-
+    m_input_info.keybd_button_actions.clear();
+    m_input_info.mouse_button_actions.clear();
+    m_input_info.dropped_paths.clear();
+    
     if (m_is_main_context) {
       glfwPollEvents();
     }
   }
 
   void Window::attach_context() {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     guard(!is_current_context());
-    glfwMakeContextCurrent((GLFWwindow *) _object);
+    glfwMakeContextCurrent((GLFWwindow *) m_object);
   }
 
   void Window::detach_context() {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     guard(is_current_context());
     glfwMakeContextCurrent( nullptr);
   }
 
   bool Window::is_current_context() const {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    return glfwGetCurrentContext() == (GLFWwindow *) _object;
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    return glfwGetCurrentContext() == (GLFWwindow *) m_object;
   }
 
   void Window::set_window_pos(glm::ivec2 window_pos) {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glfwSetWindowPos((GLFWwindow *) _object, window_pos[0], window_pos[1]);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glfwSetWindowPos((GLFWwindow *) m_object, window_pos[0], window_pos[1]);
   }
 
   void Window::set_window_size(glm::ivec2 window_size) {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glfwSetWindowSize((GLFWwindow *) _object, window_size[0], window_size[1]);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glfwSetWindowSize((GLFWwindow *) m_object, window_size[0], window_size[1]);
   }
   
   void Window::set_swap_interval(uint swap_interval) {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     attach_context();
     m_swap_interval = swap_interval;
     glfwSwapInterval(m_swap_interval);
   }
 
   void Window::set_visible(bool visible) {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     m_is_visible = visible;
     if (m_is_visible) {
-      glfwShowWindow((GLFWwindow *) _object);
+      glfwShowWindow((GLFWwindow *) m_object);
     } else {
-      glfwHideWindow((GLFWwindow *) _object);
+      glfwHideWindow((GLFWwindow *) m_object);
     }
   }
 
   void Window::set_maximized() {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glfwMaximizeWindow((GLFWwindow *) _object);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glfwMaximizeWindow((GLFWwindow *) m_object);
   }
 
   void Window::set_focused() {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glfwFocusWindow((GLFWwindow *) _object);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glfwFocusWindow((GLFWwindow *) m_object);
   }
 
   void Window::set_should_close() {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glfwSetWindowShouldClose((GLFWwindow *) _object, GLFW_TRUE);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glfwSetWindowShouldClose((GLFWwindow *) m_object, GLFW_TRUE);
   }
 
   void Window::set_title(const std::string &title) {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     m_title = title;
-    glfwSetWindowTitle((GLFWwindow *) _object, m_title.c_str());
+    glfwSetWindowTitle((GLFWwindow *) m_object, m_title.c_str());
   }
 
   void Window::request_attention() const {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glfwRequestWindowAttention((GLFWwindow *) _object);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glfwRequestWindowAttention((GLFWwindow *) m_object);
   }
 
   void Window::swap(Window &o) {

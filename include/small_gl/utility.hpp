@@ -1,6 +1,6 @@
 #pragma once
 
-#include <small_gl/detail/fwd.hpp>
+#include <small_gl/fwd.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/utility.hpp>
@@ -23,7 +23,8 @@ namespace gl {
 
   namespace sync {
     // Insert one or more memory barriers for shader-memory operations
-    void set_barrier(BarrierFlags flags);
+    void memory_barrier(BarrierFlags flags);
+    void texture_barrier();
 
     // Shorthands for std::chrono::duration types
     using time_ns = std::chrono::nanoseconds;
@@ -34,7 +35,10 @@ namespace gl {
     /**
      * Fence object wrapping OpenGL buffer object.
      */
-    struct Fence : public detail::Handle<void *> {
+    class Fence : public detail::Handle<void *> {
+      using Base = Handle<void *>;
+
+    public:
       /* constr/destr */
 
       Fence();
@@ -44,9 +48,6 @@ namespace gl {
 
       void cpu_wait(time_ns max_time = time_s(1)); // blocking
       void gpu_wait();
-
-    private:
-      using Base = Handle<void *>;
     };
   }; // namespace sync
 
@@ -63,13 +64,13 @@ namespace gl {
     void set_viewport(glm::ivec2 size, glm::ivec2 offset = glm::ivec2(0));
 
     // Helper object to set/unset capabilities in a local scope using RAII
-    struct ScopedSet {
+    class ScopedSet {
+      DrawCapability m_capability;
+      bool m_prev, m_curr;
+    
+    public:
       ScopedSet(DrawCapability capability, bool enabled);
       ~ScopedSet();
-    
-    private:
-      DrawCapability _capability;
-      bool _prev, _curr;
     };
   } // namespace state
 

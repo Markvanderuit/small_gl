@@ -100,25 +100,29 @@ namespace gl {
   } // namespace io
 
   namespace sync {
-    void set_barrier(BarrierFlags flags) {
+    void memory_barrier(BarrierFlags flags) {
       glMemoryBarrier((uint) flags);
     }
 
+    void texture_barrier() {
+      glTextureBarrier();
+    }
+
     Fence::Fence() : Base(true) {
-      _object = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+      m_object = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     }
 
     Fence::~Fence() {
-      guard(_is_init);
-      glDeleteSync((GLsync) _object);
+      guard(m_is_init);
+      glDeleteSync((GLsync) m_object);
     }
 
     void Fence::cpu_wait(time_ns max_time) {
-      glClientWaitSync((GLsync) _object, 0, max_time.count());
+      glClientWaitSync((GLsync) m_object, 0, max_time.count());
     }
 
     void Fence::gpu_wait() {
-      glWaitSync((GLsync) _object, 0, GL_TIMEOUT_IGNORED);
+      glWaitSync((GLsync) m_object, 0, GL_TIMEOUT_IGNORED);
     }
   } // namespace sync
 
@@ -148,15 +152,24 @@ namespace gl {
     }
 
     ScopedSet::ScopedSet(DrawCapability capability, bool enabled)
-    : _capability(capability), _prev(get(capability)), _curr(enabled) {
-      guard(_curr != _prev);
-      set(_capability, _curr);
+    : m_capability(capability), m_prev(get(capability)), m_curr(enabled) {
+      guard(m_curr != m_prev);
+      set(m_capability, m_curr);
     }
 
     ScopedSet::~ScopedSet() {
-      guard(_curr != _prev);
-      set(_capability, _prev);
+      guard(m_curr != m_prev);
+      set(m_capability, m_prev);
     }
+
+    // set_point_size
+    // set_line_width
+    // set_polygon_mode
+    // set_depth_range
+    // set_color_mask
+    // set_op(stencilfunc?)
+    // set_op(depthfunc?)
+    
   } // namespace state
 
   namespace debug {

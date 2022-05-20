@@ -12,7 +12,6 @@ find_package(glad CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(Eigen3 CONFIG REQUIRED)
 
 # Recursively gather files
 file(GLOB_RECURSE srcs 
@@ -24,7 +23,6 @@ file(GLOB_RECURSE srcs
 add_library(small_gl ${srcs})
 target_link_libraries(small_gl PRIVATE
   glad::glad
-  Eigen3::Eigen
   glm::glm
   glfw
   fmt::fmt-header-only

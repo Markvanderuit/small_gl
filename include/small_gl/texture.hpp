@@ -1,6 +1,6 @@
 #pragma once
 
-#include <small_gl/detail/fwd.hpp>
+#include <small_gl/fwd.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/texture.hpp>
@@ -45,8 +45,7 @@ namespace gl {
    * Texture object wrapping OpenGL texture object.
    * 
    * Supports 1d/2d/3d textures, 1d/2d texture arrays, 2d cubemaps, 2d cubemap arrays, 
-   * 2d multisampled textures, and 2d multisampled arrays. A large collection of template 
-   * specializations is accessible through names declared in 'small_gl/detail/fwd.hpp'.
+   * 2d multisampled textures, and 2d multisampled arrays..
    */
   template <typename T,       // Underlying components type (float, int, uint, DepthComponent, ...)
             uint D,           // Nr. of dimensions (1, 2, 3)

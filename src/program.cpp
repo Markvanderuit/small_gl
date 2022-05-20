@@ -129,13 +129,13 @@ namespace gl {
                    load_info.begin(), std::back_inserter(create_info),
                    detail::zip_loaded_info);
 
-    _object = detail::create_program_object(create_info);
+    m_object = detail::create_program_object(create_info);
   }
 
   Program::Program(std::initializer_list<ShaderCreateInfo> create_info)
   : Base(true) {
     debug::check_expr(create_info.size() > 0, "no shader info was provided");
-    _object = detail::create_program_object(create_info);
+    m_object = detail::create_program_object(create_info);
   }
 
   Program::Program(ShaderLoadInfo load_info)
@@ -145,17 +145,17 @@ namespace gl {
   : Program({ create_info }) {  }
 
   Program::~Program() {
-    guard(_is_init);
-    glDeleteProgram(_object);
+    guard(m_is_init);
+    glDeleteProgram(m_object);
   }
 
   void Program::bind() const {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glUseProgram(_object);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glUseProgram(m_object);
   }
 
   void Program::unbind() const {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glUseProgram(0);
   }
 
@@ -164,7 +164,7 @@ namespace gl {
     auto f = m_loc.find(s.data());
     if (f == m_loc.end()) {
       // Obtain handle and check if it is actually valid
-      GLint handle = glGetUniformLocation(_object, s.data());
+      GLint handle = glGetUniformLocation(m_object, s.data());
       debug::check_expr(handle >= 0, fmt::format("failed for uniform name \"{}\"", s));
 
       // Insert value into map
@@ -178,27 +178,27 @@ namespace gl {
   #define gl_explicit_uniform_template(type, type_short)\
     template <> void Program::uniform<type>\
     (std::string_view s, type v)\
-    { glProgramUniform1 ## type_short (_object, loc(s), v); }\
+    { glProgramUniform1 ## type_short (m_object, loc(s), v); }\
     template <> void Program::uniform<glm::vec<2, type, glm::defaultp>>\
     (std::string_view s, glm::vec<2, type, glm::defaultp> v)\
-    { glProgramUniform2 ## type_short (_object, loc(s), v[0], v[1]); }\
+    { glProgramUniform2 ## type_short (m_object, loc(s), v[0], v[1]); }\
     template <> void Program::uniform<glm::vec<3, type, glm::defaultp>>\
     (std::string_view s, glm::vec<3, type, glm::defaultp> v)\
-    { glProgramUniform3 ## type_short (_object, loc(s), v[0], v[1], v[2]); }\
+    { glProgramUniform3 ## type_short (m_object, loc(s), v[0], v[1], v[2]); }\
     template <> void Program::uniform<glm::vec<4, type, glm::defaultp>>\
     (std::string_view s, glm::vec<4, type, glm::defaultp> v)\
-    { glProgramUniform4 ## type_short (_object, loc(s), v[0], v[1], v[2], v[3]); }
+    { glProgramUniform4 ## type_short (m_object, loc(s), v[0], v[1], v[2], v[3]); }
 
   #define gl_explicit_uniform_template_mat(type, type_short)\
     template <> void Program::uniform<glm::mat<2, 2, type, glm::defaultp>>\
     (std::string_view s, glm::mat<2, 2, type, glm::defaultp> v)\
-    { glProgramUniformMatrix2 ## type_short ## v(_object, loc(s), 1, false, glm::value_ptr(v)); }\
+    { glProgramUniformMatrix2 ## type_short ## v(m_object, loc(s), 1, false, glm::value_ptr(v)); }\
     template <> void Program::uniform<glm::mat<3, 3, type, glm::defaultp>>\
     (std::string_view s, glm::mat<3, 3, type, glm::defaultp> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, glm::value_ptr(v)); }\
+    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, glm::value_ptr(v)); }\
     template <> void Program::uniform<glm::mat<4, 4, type, glm::defaultp>>\
     (std::string_view s, glm::mat<4, 4, type, glm::defaultp> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(_object, loc(s), 1, false, glm::value_ptr(v)); }
+    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, glm::value_ptr(v)); }
 
   gl_explicit_uniform_template(bool, ui)
   gl_explicit_uniform_template(uint, ui)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <small_gl/detail/fwd.hpp>
+#include <small_gl/fwd.hpp>
 #include <utility>
 #include <tuple>
 
@@ -22,20 +22,20 @@ namespace gl::detail {
   struct Handle {
     /* public getters/setters */
 
-    T object() const { return _object; }
-    T& object() { return _object; }
-    bool is_init() const { return _is_init; }
+    T object() const { return m_object; }
+    T& object() { return m_object; }
+    bool is_init() const { return m_is_init; }
 
   protected:
     /* protected object data */
 
-    bool _is_init = false;
-    T _object = 0;
+    bool m_is_init = false;
+    T m_object = 0;
 
     /* protected constr and _virtual_ destr */
 
     constexpr Handle() = default;
-    constexpr Handle(bool init) noexcept : _is_init(init) { }
+    constexpr Handle(bool init) noexcept : m_is_init(init) { }
     constexpr virtual ~Handle() = default;
 
     /* miscellaneous */
@@ -47,14 +47,14 @@ namespace gl::detail {
 
     inline constexpr void swap(Handle &o) {
       using std::swap;
-      swap(_is_init, o._is_init);
-      swap(_object, o._object);
+      swap(m_is_init, o.m_is_init);
+      swap(m_object, o.m_object);
     }
 
     inline constexpr bool operator==(const Handle &o) const {
       using std::tie;
-      return tie(_is_init, _object) 
-          == tie(o._is_init, o._object);
+      return tie(m_is_init, m_object) 
+          == tie(o.m_is_init, o.m_object);
     }
 
     gl_declare_noncopyable(Handle)

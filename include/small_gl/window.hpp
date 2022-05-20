@@ -1,9 +1,11 @@
 #pragma once
 
-#include <small_gl/detail/fwd.hpp>
+#include <small_gl/fwd.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <glm/vec2.hpp>
+#include <list>
+#include <filesystem>
 #include <string>
 
 namespace gl {
@@ -15,7 +17,6 @@ namespace gl {
     glm::ivec2 size = { 1, 1 };
     std::string title = "";
     uint swap_interval = 1;
-    uint msaa_samples = 0;
 
     // OpenGL context settings
     ProfileType profile_type = ProfileType::eAny;
@@ -26,6 +27,23 @@ namespace gl {
 
     // Remainder of settings
     WindowCreateFlags flags = { };
+  };
+
+  /**
+   * Helper object to encapsulate all received input events for
+   * mouse, keyboard, and file drop.
+   */
+  struct WindowInputInfo {
+    // Keyboard/mouse button actions, format is <id, action>
+    std::list<std::pair<int, int>> keybd_button_actions;
+    std::list<std::pair<int, int>> mouse_button_actions;
+    
+    // Mouse cursor/wheel positions
+    glm::vec2 mouse_position;
+    glm::vec2 mouse_scroll;
+    
+    // File/dir path, in case a file is dropped into the window
+    std::list<std::filesystem::path> dropped_paths;
   };
 
   /**
@@ -48,6 +66,7 @@ namespace gl {
     bool m_should_close;  
     bool m_did_window_resize;  
     bool m_did_framebuffer_resize;
+    WindowInputInfo m_input_info;
 
   public:
     /* constr/destr */
@@ -90,6 +109,9 @@ namespace gl {
     void set_focused();
     void set_should_close();
     void set_title(const std::string &title);
+
+    // window input cannot be modified from the application r.n.
+    inline const WindowInputInfo & input_info() const { return m_input_info; }
 
     /* miscellaneous */
     

@@ -19,33 +19,33 @@ namespace gl {
 
   Framebuffer::Framebuffer(std::initializer_list<FramebufferCreateInfo> info)
   : Base(true) {
-    glCreateFramebuffers(1, &_object);
+    glCreateFramebuffers(1, &m_object);
 
     for (const auto &info : info) {
-      glNamedFramebufferTexture(_object, 
+      glNamedFramebufferTexture(m_object, 
         detail::framebuffer_attachment(info.type) + info.index, 
         info.texture->object(), 
         info.level);
     }
 
-    auto is_complete = glCheckNamedFramebufferStatus(_object, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+    auto is_complete = glCheckNamedFramebufferStatus(m_object, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     debug::check_expr(is_complete, "framebuffer is not complete");
   }
 
   Framebuffer::~Framebuffer() {
-    guard(_is_init);
-    guard(_object != 0); // Default framebuffer 0 makes this a special case
-    glDeleteFramebuffers(1, &_object);
+    guard(m_is_init);
+    guard(m_object != 0); // Default framebuffer 0 makes this a special case
+    glDeleteFramebuffers(1, &m_object);
   }
 
   void Framebuffer::bind() const {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glBindFramebuffer(GL_FRAMEBUFFER, _object);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glBindFramebuffer(GL_FRAMEBUFFER, m_object);
   }
 
   void Framebuffer::unbind() const {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    guard(_object != 0); // Default framebuffer 0 makes this a special case
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    guard(m_object != 0); // Default framebuffer 0 makes this a special case
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
@@ -56,10 +56,10 @@ namespace gl {
                             glm::ivec2 dst_offset,
                             FramebufferMaskFlags flags,
                             SamplerMagFilter filter) const {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    debug::check_expr(dst._is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(dst.m_is_init, "attempt to use an uninitialized object");
     
-    glBlitNamedFramebuffer(_object, dst.object(),
+    glBlitNamedFramebuffer(m_object, dst.object(),
       src_offset[0], src_offset[1],
       src_size[0], src_size[1],
       dst_offset[0], dst_offset[1],
@@ -69,8 +69,8 @@ namespace gl {
   
   Framebuffer Framebuffer::make_default() {
     Framebuffer framebuffer;
-    framebuffer._is_init = true;
-    framebuffer._object = 0;
+    framebuffer.m_is_init = true;
+    framebuffer.m_object = 0;
     return framebuffer;
   }
 
@@ -82,8 +82,8 @@ namespace gl {
     debug::check_expr(is_complete, "attempt to take ownership of an incomplete framebuffer");
     
     Framebuffer framebuffer;
-    framebuffer._is_init = true;
-    framebuffer._object = object;
+    framebuffer.m_is_init = true;
+    framebuffer.m_object = object;
 
     return framebuffer;
   }
@@ -93,20 +93,20 @@ namespace gl {
   #define gl_explicit_clear_template(type, type_short)\
     template <> void Framebuffer::clear<type>\
     (FramebufferType t, type v, uint i)\
-    { debug::check_expr(_is_init, "attempt to use an uninitialized object");\
-      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, &v); }\
+    { debug::check_expr(m_is_init, "attempt to use an uninitialized object");\
+      glClearNamedFramebuffer ## type_short ## v(m_object, (uint) t, i, &v); }\
     template <> void Framebuffer::clear<glm::vec<2, type, glm::defaultp>>\
     (FramebufferType t, glm::vec<2, type, glm::defaultp> v, uint i)\
-    { debug::check_expr(_is_init, "attempt to use an uninitialized object");\
-      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, glm::value_ptr(v)); }\
+    { debug::check_expr(m_is_init, "attempt to use an uninitialized object");\
+      glClearNamedFramebuffer ## type_short ## v(m_object, (uint) t, i, glm::value_ptr(v)); }\
     template <> void Framebuffer::clear<glm::vec<3, type, glm::defaultp>>\
     (FramebufferType t, glm::vec<3, type, glm::defaultp> v, uint i)\
-    { debug::check_expr(_is_init, "attempt to use an uninitialized object");\
-      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, glm::value_ptr(v)); }\
+    { debug::check_expr(m_is_init, "attempt to use an uninitialized object");\
+      glClearNamedFramebuffer ## type_short ## v(m_object, (uint) t, i, glm::value_ptr(v)); }\
     template <> void Framebuffer::clear<glm::vec<4, type, glm::defaultp>>\
     (FramebufferType t, glm::vec<4, type, glm::defaultp> v, uint i)\
-    { debug::check_expr(_is_init, "attempt to use an uninitialized object");\
-      glClearNamedFramebuffer ## type_short ## v(_object, (uint) t, i, glm::value_ptr(v)); }
+    { debug::check_expr(m_is_init, "attempt to use an uninitialized object");\
+      glClearNamedFramebuffer ## type_short ## v(m_object, (uint) t, i, glm::value_ptr(v)); }
 
   // Explicit template specializations
   gl_explicit_clear_template(float, f)

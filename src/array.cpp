@@ -41,30 +41,30 @@ namespace gl {
     debug::check_expr(info.buffers.size() > 0, "no vertex buffer info was provided");
     debug::check_expr(info.attribs.size() > 0, "no vertex attribute info was provided");
 
-    glCreateVertexArrays(1, &_object);
+    glCreateVertexArrays(1, &m_object);
 
     // Bind vertex buffer objects and vertex attributes
-    std::ranges::for_each(info.buffers, [&](auto &info) { detail::attach_buffer(_object, info); });
-    std::ranges::for_each(info.attribs, [&](auto &info) { detail::attach_attrib(_object, info); });
+    std::ranges::for_each(info.buffers, [&](auto &info) { detail::attach_buffer(m_object, info); });
+    std::ranges::for_each(info.attribs, [&](auto &info) { detail::attach_attrib(m_object, info); });
 
     // Bind elements buffer, if provided
     if (m_has_elements) {
-      glVertexArrayElementBuffer(_object, info.elements->object());
+      glVertexArrayElementBuffer(m_object, info.elements->object());
     }
   }
 
   Array::~Array() {
-    guard(_is_init);
-    glDeleteVertexArrays(1, &_object);
+    guard(m_is_init);
+    glDeleteVertexArrays(1, &m_object);
   }
 
   void Array::bind() const {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
-    glBindVertexArray(_object);
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    glBindVertexArray(m_object);
   }
 
   void Array::unbind() const {
-    debug::check_expr(_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(0);
   }
 } // namespace gl
