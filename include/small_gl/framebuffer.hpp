@@ -12,15 +12,16 @@ namespace gl {
    * Helper object to create framebuffer object by defining a single
    * framebuffer attachment.
    */
-  struct FramebufferCreateInfo {
+  struct FramebufferAttachmentInfo {
     // Framebuffer attachment type (color, depth, stencil)
     FramebufferType type;
 
     // Binding index to attach to (only applies for color)
     uint index = 0;
 
-    // Texture handle to attach to framebuffer
-    const AbstractTexture *texture;
+    // Object handle to attach to framebuffer
+    // Either a texture, texture view, or render buffer
+    const AbstractFramebufferAttachment *attachment;
 
     // Mipmap level of texture to attach
     uint level = 0;
@@ -36,8 +37,8 @@ namespace gl {
     /* constr/destr */
 
     Framebuffer() = default;
-    Framebuffer(FramebufferCreateInfo info);
-    Framebuffer(std::initializer_list<FramebufferCreateInfo> info);
+    Framebuffer(FramebufferAttachmentInfo info);
+    Framebuffer(std::initializer_list<FramebufferAttachmentInfo> info);
     ~Framebuffer();
 
     /* state */

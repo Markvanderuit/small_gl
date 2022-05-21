@@ -16,8 +16,8 @@ namespace gl {
   struct Window;
   struct Query;
 
-  // Special texture types
-  struct DepthComponent;
-  struct StencilComponent;
+  // Templated OpenGL object wrappers
+  struct AbstractFramebufferAttachment;
+  struct AbstractRenderbuffer;
   struct AbstractTexture;
 } // namespace gl

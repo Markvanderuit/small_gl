@@ -187,6 +187,14 @@ namespace gl {
   };
   gl_declare_bitflag(FramebufferMaskFlags)
 
+  /* Renderbuffer enums */
+
+  // Created type for gl::Renderbuffer<...>(...) construction
+  enum class RenderbufferType {
+    eImage, // default type
+    eMultisample
+  };
+
   /* Shader enums */
 
   // Created type for gl::Program(...) internal construction

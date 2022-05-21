@@ -14,18 +14,25 @@ namespace gl {
     }
   } // namespace detail
 
-  Framebuffer::Framebuffer(FramebufferCreateInfo info)
+  Framebuffer::Framebuffer(FramebufferAttachmentInfo info)
   : Framebuffer({info}) { }
 
-  Framebuffer::Framebuffer(std::initializer_list<FramebufferCreateInfo> info)
+  Framebuffer::Framebuffer(std::initializer_list<FramebufferAttachmentInfo> info)
   : Base(true) {
     glCreateFramebuffers(1, &m_object);
 
     for (const auto &info : info) {
-      glNamedFramebufferTexture(m_object, 
-        detail::framebuffer_attachment(info.type) + info.index, 
-        info.texture->object(), 
-        info.level);
+      if (auto attachment = dynamic_cast<const AbstractTexture *>(info.attachment)) {
+        glNamedFramebufferTexture(m_object, 
+          detail::framebuffer_attachment(info.type) + info.index, 
+          attachment->object(), 
+          info.level);
+      } else if (auto attachment = dynamic_cast<const AbstractRenderbuffer *>(info.attachment)) {
+        glNamedFramebufferRenderbuffer(m_object,
+          detail::framebuffer_attachment(info.type) + info.index, 
+          GL_RENDERBUFFER,
+          attachment->object());
+      }
     }
 
     auto is_complete = glCheckNamedFramebufferStatus(m_object, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;

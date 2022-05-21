@@ -275,11 +275,12 @@ namespace gl {
     swap(m_is_visible, o.m_is_visible);
     swap(m_is_maximized, o.m_is_maximized);
     swap(m_is_focused, o.m_is_focused);
-    swap(m_should_close, o.m_should_close);
     swap(m_is_main_context, o.m_is_main_context);
+    swap(m_should_close, o.m_should_close);
     swap(m_did_window_resize, o.m_did_window_resize);
     swap(m_did_framebuffer_resize, o.m_did_framebuffer_resize);
-    
+    swap(m_input_info, o.m_input_info);
+
     attach_callbacks(*this);
     attach_callbacks(o);
   }

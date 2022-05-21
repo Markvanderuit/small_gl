@@ -29,18 +29,6 @@ namespace gl {
     std::span<T> data = { };
   };
 
-  /* Abstract intermediate for storing pointer to any specific texture */
-  struct AbstractTexture : public detail::Handle<> {
-  protected:
-    constexpr AbstractTexture() = default;
-    constexpr AbstractTexture(bool init) noexcept : detail::Handle<>(init) { }
-    constexpr virtual ~AbstractTexture() = default;
-  };
-
-  /* Tag objects designating special depth/stencil types for a texture's value type. */
-  struct DepthComponent { };
-  struct StencilComponent { };
-
   /**
    * Texture object wrapping OpenGL texture object.
    * 
@@ -54,7 +42,7 @@ namespace gl {
             = TextureType::eImage>   
   class Texture : public AbstractTexture {
     using TextureCreateInfo = TextureCreateInfo<T, D, Ty>;
-    using Base = AbstractTexture;
+    using Base = detail::Handle<>;
     using vect = glm::vec<detail::texture_dims<D, Ty>(), int, glm::defaultp>;
 
     uint m_levels;
@@ -67,7 +55,7 @@ namespace gl {
     Texture(TextureCreateInfo info);
     ~Texture();
 
-    /* getters/setters */
+    /* getters */
 
     inline uint levels() const { return m_levels; }
     inline vect size() const { return m_size; }
