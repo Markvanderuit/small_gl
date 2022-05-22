@@ -160,6 +160,16 @@ namespace gl {
     glfwSwapInterval(m_swap_interval);
     attach_callbacks(*this);
     glfwGetFramebufferSize((GLFWwindow *) m_object, &m_framebuffer_size[0], &m_framebuffer_size[1]);
+
+    // Instantiate (and apply) window scale
+    if (info.respect_content_scale) {
+      // Assume horizontal scale is sufficient?
+      glfwGetWindowContentScale((GLFWwindow *) m_object, &m_content_scale, nullptr);
+      set_window_size(static_cast<glm::ivec2>(
+        m_content_scale * static_cast<glm::vec2>(window_size())));
+    } else {
+      m_content_scale = 1.f;
+    }
   }
 
   Window::~Window() {
@@ -280,6 +290,7 @@ namespace gl {
     swap(m_did_window_resize, o.m_did_window_resize);
     swap(m_did_framebuffer_resize, o.m_did_framebuffer_resize);
     swap(m_input_info, o.m_input_info);
+    swap(m_content_scale, o.m_content_scale);
 
     attach_callbacks(*this);
     attach_callbacks(o);
@@ -288,11 +299,11 @@ namespace gl {
   bool Window::operator==(const Window &o) const {
     using std::tie;
     return Base::operator==(o)
-      && std::tie(m_window_pos, m_window_size, m_framebuffer_size,
+      && std::tie(m_window_pos, m_window_size, m_framebuffer_size, m_content_scale,
                   m_title, m_swap_interval, m_is_visible, 
                   m_is_maximized, m_is_focused, m_should_close,
                   m_is_main_context, m_did_window_resize, m_did_framebuffer_resize)
-      == std::tie(o.m_window_pos, o.m_window_size, o.m_framebuffer_size,
+      == std::tie(o.m_window_pos, o.m_window_size, o.m_framebuffer_size, o.m_content_scale,
                   o.m_title, o.m_swap_interval, o.m_is_visible, 
                   o.m_is_maximized, o.m_is_focused, o.m_should_close,
                   o.m_is_main_context, o.m_did_window_resize, o.m_did_framebuffer_resize);

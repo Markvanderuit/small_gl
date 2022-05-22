@@ -17,6 +17,7 @@ namespace gl {
     glm::ivec2 size = { 1, 1 };
     std::string title = "";
     uint swap_interval = 1;
+    bool respect_content_scale = true;
 
     // OpenGL context settings
     ProfileType profile_type = ProfileType::eAny;
@@ -55,6 +56,7 @@ namespace gl {
     glm::ivec2 m_window_pos;
     glm::ivec2 m_window_size;
     glm::ivec2 m_framebuffer_size;
+    float m_content_scale;
     std::string m_title;
     uint m_swap_interval;
     
@@ -89,6 +91,7 @@ namespace gl {
     inline glm::ivec2 window_pos() const { return m_window_pos; }
     inline glm::ivec2 window_size() const { return m_window_size; }
     inline glm::ivec2 framebuffer_size() const { return m_framebuffer_size; }
+    inline float content_scale() const { return m_content_scale; }
     void set_window_pos(glm::ivec2 window_pos);
     void set_window_size(glm::ivec2 window_size);
     bool did_window_resize() const { return m_did_window_resize; }
