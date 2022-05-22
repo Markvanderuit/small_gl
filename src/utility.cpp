@@ -52,19 +52,25 @@ namespace gl {
     inline
     void APIENTRY debug_callback(GLenum src, GLenum type, GLuint code, GLenum severity, GLsizei length,
                                 const char *msg, const void *user_param) {
-      constexpr static std::initializer_list<uint> guard_types = { 
-        GL_DEBUG_TYPE_ERROR, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR };
-
+      // Guard against outputting unnecessary messages that can't be filtered with severity
+      constexpr static std::initializer_list<uint> guard_codes = {
+        131169, /* nvidia: The driver allocated multisample storage for renderbuffer X */
+      };
+      guard(!std::ranges::binary_search(guard_codes, code));
+          
       // Output formatted message to stdout for now
       detail::Message message;
-      message.put("info", fmt::format("type = {}, severity = {}, src = {}",
+      message.put("info", fmt::format("type = {}, severity = {}, src = {}, code = {}",
                           readable_debug_type(type),
                           readable_debug_severity(severity),
-                          readable_debug_src(src)));
+                          readable_debug_src(src),
+                          code));
       message.put("message", msg);
       fmt::print(stdout, "OpenGL debug message\n{}", message.get());
 
-      // Guard against non-errorneous message types
+      // Guard against throwing on non-errorneous message types
+      constexpr static std::initializer_list<uint> guard_types = { 
+        GL_DEBUG_TYPE_ERROR, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR };
       guard(std::ranges::binary_search(guard_types, type));
 
       // Unrecoverable (or unwanted) message; throw exception indicating this
