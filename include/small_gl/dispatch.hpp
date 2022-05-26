@@ -5,12 +5,11 @@
 
 namespace gl {
   /**
-   * Helper object to dispatch a draw operation.
+   * Helper object to dispatch a draw operation for the current context.
    */
   struct DrawInfo {
     // Draw information
     PrimitiveType type;
-    const Array *array;
 
     // Vertex range data
     uint vertex_count;
@@ -21,8 +20,12 @@ namespace gl {
     uint vertex_base = 0;
     uint instance_base = 0;
 
-    // Optional bindable program
-    const Program *program = nullptr;
+    // Required bindables; will be bound before draw
+    const Array       *bindable_array;
+
+    // Optional bindables; will be bound before draw
+    const Program     *bindable_program     = nullptr;
+    const Framebuffer *bindable_framebuffer = nullptr;
   };
 
   /**
@@ -31,17 +34,20 @@ namespace gl {
   struct DrawIndirectInfo {
     // Draw information
     PrimitiveType type;
-    const Array *array;
 
     // Indirect buffer
     const Buffer *buffer;
 
-    // Optional bindable program
-    const Program *program = nullptr; 
+    // Required bindables; will be bound before draw
+    const Array       *bindable_array;
+
+    // Optional bindables; will be bound before draw
+    const Program     *bindable_program     = nullptr;
+    const Framebuffer *bindable_framebuffer = nullptr;
   };
 
   /**
-   * Helper object to dispatch a compute operation.
+   * Helper object to dispatch a compute operation for the current context.
    */
   struct ComputeInfo {
     // Dispatch dimensions
@@ -49,8 +55,8 @@ namespace gl {
     uint groups_y = 1;
     uint groups_z = 1;
     
-    // Optional bindable program
-    const Program *program = nullptr;
+    // Optional bindables; will be bound before draw
+    const Program *bindable_program = nullptr;
   };
 
   /**
@@ -60,8 +66,8 @@ namespace gl {
     // Indirect buffer
     const Buffer *buffer;
 
-    // Optional bindable program
-    const Program *program = nullptr;
+    // Optional bindables; will be bound before draw
+    const Program *bindable_program = nullptr;
   };
   
   // Dispatch a draw/compute operation

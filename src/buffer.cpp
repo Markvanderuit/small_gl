@@ -126,9 +126,9 @@ namespace gl {
   }
 
   Buffer Buffer::make_indirect(DrawInfo info, BufferCreateFlags flags) {
-    debug::check_expr(info.array, "DrawInfo submitted without array object");
+    debug::check_expr(info.bindable_array, "DrawInfo submitted without bindable array object");
 
-    if (info.array->has_elements()) {
+    if (info.bindable_array->has_elements()) {
       std::array<uint, 5> data = { info.vertex_count, info.instance_count, 
                                    info.vertex_first, info.vertex_base,
                                    info.instance_base };
