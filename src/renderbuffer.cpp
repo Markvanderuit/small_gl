@@ -45,4 +45,9 @@ namespace gl {
   
   gl_explicit_rbuffer_all_types(RenderbufferType::eImage)
   gl_explicit_rbuffer_all_types(RenderbufferType::eMultisample)
+
+  gl_explicit_rbuffer(DepthComponent, 1, RenderbufferType::eImage);
+  gl_explicit_rbuffer(DepthComponent, 1, RenderbufferType::eMultisample);
+  gl_explicit_rbuffer(StencilComponent, 1, RenderbufferType::eImage);
+  gl_explicit_rbuffer(StencilComponent, 1, RenderbufferType::eMultisample);
 } // namespace gl
