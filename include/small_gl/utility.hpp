@@ -59,9 +59,6 @@ namespace gl {
     // Configure framebuffer blending and logic operations
     void set_op(BlendOp src_operand, BlendOp dst_operand);
     void set_op(LogicOp operand);
-    
-    // Configure framebuffer viewport transformation
-    void set_viewport(glm::ivec2 size, glm::ivec2 offset = glm::ivec2(0));
 
     // Helper object to set/unset capabilities in a local scope using RAII
     class ScopedSet {
@@ -72,6 +69,11 @@ namespace gl {
       ScopedSet(DrawCapability capability, bool enabled);
       ~ScopedSet();
     };
+    
+    // Various state components
+    void set_viewport(glm::ivec2 size, glm::ivec2 offset = glm::ivec2(0));
+    void set_line_width(float width);
+    void set_point_size(float size);
   } // namespace state
 
   namespace debug {

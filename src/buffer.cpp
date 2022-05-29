@@ -64,8 +64,8 @@ namespace gl {
     size_t safe_size = (size == 0) ? m_size : size;
     glBindBufferRange((uint) target, index, m_object, offset, safe_size);
   }
-  
-  std::span<std::byte> Buffer::map(size_t size, size_t offset, BufferAccessFlags flags) {
+
+  std::span<std::byte> Buffer::map(BufferAccessFlags flags, size_t size, size_t offset) {
     debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     debug::check_expr(!m_is_mapped, "attempt to map a previously mapped buffer");
     debug::check_expr((uint) flags != 0, "Buffer::map() requires at least some access flags as an argument");

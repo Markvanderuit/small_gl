@@ -153,10 +153,6 @@ namespace gl {
       glLogicOp((uint) operand);
     }
 
-    void set_viewport(glm::ivec2 size, glm::ivec2 offset) {
-      glViewport(offset[0], offset[1], size[0], size[1]);
-    }
-
     ScopedSet::ScopedSet(DrawCapability capability, bool enabled)
     : m_capability(capability), m_prev(get(capability)), m_curr(enabled) {
       guard(m_curr != m_prev);
@@ -168,8 +164,18 @@ namespace gl {
       set(m_capability, m_prev);
     }
 
-    // set_point_size
-    // set_line_width
+    void set_viewport(glm::ivec2 size, glm::ivec2 offset) {
+      glViewport(offset[0], offset[1], size[0], size[1]);
+    }
+    
+    void set_line_width(float width) {
+      glLineWidth(width);
+    }
+
+    void set_point_size(float size) {
+      glPointSize(size);
+    }
+
     // set_polygon_mode
     // set_depth_range
     // set_color_mask
