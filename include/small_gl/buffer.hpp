@@ -69,7 +69,9 @@ namespace gl {
     /* mapping */
 
     // Map a region of the buffer; returns a non-owning span over the mapped region
-    std::span<std::byte> map(size_t size = 0, size_t offset = 0, BufferAccessFlags flags = { });
+    std::span<std::byte> map(BufferAccessFlags flags,
+                             size_t size = 0, 
+                             size_t offset = 0);
 
     // Unmap (all mapped regions of) the buffer
     void unmap();
