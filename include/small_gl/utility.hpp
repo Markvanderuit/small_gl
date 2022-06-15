@@ -86,7 +86,7 @@ namespace gl {
 
     // Evaluate a boolean expression, throwing a detailed exception pointing
     // to the expression's origin if said expression fails
-    inline
+    constexpr inline
     void check_expr(bool expr,
                     const std::string_view &msg = "",
                     const std::source_location sl = std::source_location::current()) {
