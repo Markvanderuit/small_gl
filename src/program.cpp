@@ -103,9 +103,13 @@ namespace gl {
     }
 
     ShaderCreateInfo zip_loaded_info(const std::vector<std::byte> &data, const ShaderLoadInfo &load_info) {
-      return ShaderCreateInfo{ .type = load_info.type,  .data = data, 
-                               .is_spirv_binary = load_info.is_spirv_binary, 
-                               .spirv_entry_point = load_info.spirv_entry_point };
+      return ShaderCreateInfo { .type = load_info.type,  .data = data, 
+                                .is_spirv_binary = load_info.is_spirv_binary, 
+                                .spirv_entry_point = load_info.spirv_entry_point };
+    }
+
+    ShaderIncludeCreateInfo zip_loaded_include(const std::vector<std::byte> &data, const ShaderIncludeLoadInfo &load_info) {
+      return ShaderIncludeCreateInfo { .name = fmt::format("/{}", load_info.path.string()), .data = data };
     }
   } // namespace detail
 
@@ -173,6 +177,37 @@ namespace gl {
     return f->second;
   }
 
+  void Program::add_include(std::initializer_list<ShaderIncludeLoadInfo> load_info) {
+    std::vector<std::vector<std::byte>> shader_bins;
+    shader_bins.reserve(load_info.size());
+
+    // Load binary shader data into shader_bins using info's paths
+    std::ranges::transform(load_info, std::back_inserter(shader_bins),
+      [](const auto &i) { return io::load_shader_binary(i.path); });
+
+    std::vector<ShaderIncludeCreateInfo> create_info;
+    create_info.reserve(load_info.size());
+
+    // Construct ShaderCreateInfo objects with shader_bins as backing data
+    std::transform(shader_bins.begin(), shader_bins.end(), 
+                   load_info.begin(), std::back_inserter(create_info),
+                   detail::zip_loaded_include);
+                   
+    std::ranges::for_each(create_info, [](auto &i) { 
+      const GLchar *ptr = (const GLchar *) i.data.data();
+      const GLint size = (GLint) i.data.size_bytes();
+      glNamedStringARB(GL_SHADER_INCLUDE_ARB, i.name.size(), i.name.c_str(), size, ptr);
+    });
+  }
+
+  void Program::add_include(std::initializer_list<ShaderIncludeCreateInfo> create_info) {
+    std::ranges::for_each(create_info, [](auto &i) { 
+      const GLchar *ptr = (const GLchar *) i.data.data();
+      const GLint size = (GLint) i.data.size_bytes();
+      glNamedStringARB(GL_SHADER_INCLUDE_ARB, i.name.size(), i.name.c_str(), size, ptr);
+    });
+  }
+  
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */
     
   #define gl_explicit_uniform_template(type, type_short)\

@@ -4,7 +4,7 @@
   "dependencies" : [
     "fmt",
     { "name": "glad", 
-      "features": [ "gl-api-latest" ] },
+      "features": [ "extensions", "gl-api-latest" ] },
     "glfw3",
     "glm"
   ]

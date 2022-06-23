@@ -18,7 +18,7 @@ namespace gl {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
     ShaderType type;
 
-    // Path towards shader file, which will be loaded as the
+    // Path towards shader file, which will be loaded
     std::filesystem::path path;
 
     // Is the attached shader data a spirv binary?
@@ -45,6 +45,21 @@ namespace gl {
     // Override spirv shader entry point, if necessary
     std::string spirv_entry_point = "main";
   };
+
+  struct ShaderIncludeLoadInfo {
+    // Path towards shader file, which will be loaded
+    // and used as its registered name
+    std::filesystem::path path;
+  };
+
+  struct ShaderIncludeCreateInfo {
+    // Registered name of shader include
+    std::string name;
+
+    // Shader data in binary format
+    std::span<const std::byte> data;
+  };
+  
 
   /**
    * Program object wrapping OpenGL shader program object.
@@ -77,6 +92,9 @@ namespace gl {
     void unbind() const;
 
     /* miscellaneous */
+
+    static void add_include(std::initializer_list<ShaderIncludeLoadInfo>);
+    static void add_include(std::initializer_list<ShaderIncludeCreateInfo>);
     
     inline void swap(Program &o) {
       using std::swap;
@@ -90,5 +108,4 @@ namespace gl {
 
     gl_declare_noncopyable(Program);
   };
-
 } // namespace gl
