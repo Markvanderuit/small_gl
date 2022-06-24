@@ -96,7 +96,7 @@ namespace gl {
       size_t file_size = static_cast<size_t>(ifs.tellg());
       std::vector<std::byte> buffer(file_size);
       
-      // Set inpout position to start, then read full file into vector
+      // Set input position to start, then read full file into vector
       ifs.seekg(0);
       ifs.read((char *) buffer.data(), file_size);
       ifs.close();
