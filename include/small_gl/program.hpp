@@ -22,7 +22,7 @@ namespace gl {
     std::filesystem::path path;
 
     // Is the attached shader data a spirv binary?
-    bool is_spirv_binary = true;
+    bool is_spirv_binary = false;
 
     // Override spirv shader entry point, if necessary
     std::string spirv_entry_point = "main";
@@ -40,7 +40,7 @@ namespace gl {
     std::span<const std::byte> data;
 
     // Is the attached shader data a spirv binary?
-    bool is_spirv_binary = true;
+    bool is_spirv_binary = false;
 
     // Override spirv shader entry point, if necessary
     std::string spirv_entry_point = "main";
