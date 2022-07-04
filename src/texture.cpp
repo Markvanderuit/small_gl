@@ -224,6 +224,12 @@ namespace gl {
   void Texture<T, D, C, Ty>::bind_to(uint index) const {
     glBindTextureUnit(index, m_object);
   }
+  
+  template <typename T, uint D, uint C, TextureType Ty>
+  void Texture<T, D, C, Ty>::bind_image_to(uint index, TextureImageAccess access, uint level) const {
+    constexpr auto internal_format = detail::texture_internal_format<C, T>();
+    glBindImageTexture(index, m_object, level, GL_FALSE, 0, (uint) access, internal_format);
+  }
 
   template <typename T, uint D, uint C, TextureType Ty>
   void Texture<T, D, C, Ty>::generate_mipmaps() {

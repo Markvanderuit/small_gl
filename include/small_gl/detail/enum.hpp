@@ -219,6 +219,12 @@ namespace gl {
     eMultisampleArray
   };
 
+  enum class TextureImageAccess {
+    eReadOnly               = GL_READ_ONLY,
+    eWriteOnly              = GL_WRITE_ONLY,
+    eReadWrite              = GL_READ_WRITE
+  };
+
   /* Sampler enums */
   
   // Filter used for minimization in gl::Sampler
