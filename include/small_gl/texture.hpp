@@ -62,8 +62,7 @@ namespace gl {
 
     /* state */
 
-    void bind_to(uint index) const;
-    void bind_image_to(uint index, TextureImageAccess access, uint level = 0) const;
+    void bind_to(TextureTargetType target, uint index, uint level = 0) const;
 
     /* operands for most texture types */
 

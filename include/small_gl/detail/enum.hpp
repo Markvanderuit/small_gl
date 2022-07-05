@@ -219,10 +219,11 @@ namespace gl {
     eMultisampleArray
   };
 
-  enum class TextureImageAccess {
-    eReadOnly               = GL_READ_ONLY,
-    eWriteOnly              = GL_WRITE_ONLY,
-    eReadWrite              = GL_READ_WRITE
+  enum class TextureTargetType {
+    eTextureUnit            = 0,
+    eImageReadOnly          = GL_READ_ONLY,
+    eImageWriteOnly         = GL_WRITE_ONLY,
+    eImageReadWrite         = GL_READ_WRITE
   };
 
   /* Sampler enums */
