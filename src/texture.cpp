@@ -225,7 +225,7 @@ namespace gl {
     if (target == TextureTargetType::eTextureUnit) {
       glBindTextureUnit(index, m_object);
     } else {
-      constexpr auto internal_format = detail::texture_internal_format<C, T>();
+      constexpr auto internal_format = detail::image_internal_format<C, T>();
       glBindImageTexture(index, m_object, level, GL_FALSE, 0, (uint) target, internal_format);
     }
   }

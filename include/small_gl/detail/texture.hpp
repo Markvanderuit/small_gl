@@ -40,6 +40,10 @@ namespace gl {
     template <uint C, typename T>
     consteval uint texture_internal_format();
 
+    // Consteval function determining a texture's internal_format for image binding
+    template <uint C, typename T>
+    consteval uint image_internal_format();
+
     // Consteval function determinig a texture's correct binding target
     template <uint D, TextureType Ty>
     consteval uint texture_target();
@@ -119,6 +123,31 @@ namespace gl {
     template <> consteval uint texture_internal_format<4, float>()            { return GL_RGBA32F; }
     template <> consteval uint texture_internal_format<1, DepthComponent>()   { return GL_DEPTH_COMPONENT32F; }
     template <> consteval uint texture_internal_format<1, StencilComponent>() { return GL_STENCIL_INDEX8; }
+
+    // Template specializations for the above declared image_internal_format
+    
+    template <> consteval uint image_internal_format<1, ushort>()           { return GL_R16UI; }
+    template <> consteval uint image_internal_format<1, short>()            { return GL_R16I; }
+    template <> consteval uint image_internal_format<1, uint>()             { return GL_R32UI; }
+    template <> consteval uint image_internal_format<1, int>()              { return GL_R32I; }
+    template <> consteval uint image_internal_format<1, float>()            { return GL_R32F; }
+    template <> consteval uint image_internal_format<2, ushort>()           { return GL_RG16UI; }
+    template <> consteval uint image_internal_format<2, short>()            { return GL_RG16I; }
+    template <> consteval uint image_internal_format<2, uint>()             { return GL_RG32UI; }
+    template <> consteval uint image_internal_format<2, int>()              { return GL_RG32I; }
+    template <> consteval uint image_internal_format<2, float>()            { return GL_RG32F; }
+    template <> consteval uint image_internal_format<3, ushort>()           { return GL_RGBA16UI; }
+    template <> consteval uint image_internal_format<3, short>()            { return GL_RGBA16I; }
+    template <> consteval uint image_internal_format<3, uint>()             { return GL_RGBA32UI; }
+    template <> consteval uint image_internal_format<3, int>()              { return GL_RGBA32I; }
+    template <> consteval uint image_internal_format<3, float>()            { return GL_RGBA32F; }
+    template <> consteval uint image_internal_format<4, ushort>()           { return GL_RGBA16UI; }
+    template <> consteval uint image_internal_format<4, short>()            { return GL_RGBA16I; }
+    template <> consteval uint image_internal_format<4, uint>()             { return GL_RGBA32UI; }
+    template <> consteval uint image_internal_format<4, int>()              { return GL_RGBA32I; }
+    template <> consteval uint image_internal_format<4, float>()            { return GL_RGBA32F; }
+    template <> consteval uint image_internal_format<1, DepthComponent>()   { return GL_R32F; }
+    template <> consteval uint image_internal_format<1, StencilComponent>() { return GL_R8UI; }
 
     // Template specializations for the above declared texture_target();
     template <> consteval uint texture_target<1, TextureType::eImage>()            { return GL_TEXTURE_1D; }
