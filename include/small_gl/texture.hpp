@@ -49,6 +49,8 @@ namespace gl {
     vect m_size;
 
   public:
+    using InfoType = TextureCreateInfo;
+
     /* constr/destr */
     
     Texture() = default;

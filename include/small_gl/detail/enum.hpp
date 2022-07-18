@@ -33,7 +33,14 @@ namespace gl {
     eMapRead            = GL_MAP_READ_BIT,
     eMapWrite           = GL_MAP_WRITE_BIT,
     eMapPersistent      = GL_MAP_PERSISTENT_BIT,  
-    eMapCoherent        = GL_MAP_COHERENT_BIT
+    eMapCoherent        = GL_MAP_COHERENT_BIT,
+    
+    // Special assembled types
+    eMapReadWrite       = (uint) BufferCreateFlags::eMapRead 
+                        | (uint) BufferCreateFlags::eMapWrite,
+    eMapFull            = (uint) BufferCreateFlags::eMapReadWrite
+                        | (uint) BufferCreateFlags::eMapPersistent
+                        | (uint) BufferCreateFlags::eMapCoherent,
   };
   gl_declare_bitflag(BufferCreateFlags);
 
