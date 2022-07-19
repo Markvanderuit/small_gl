@@ -65,9 +65,9 @@ namespace gl {
     bool m_is_focused;
     bool m_is_main_context;
 
-    bool m_should_close;  
     bool m_did_window_resize;  
     bool m_did_framebuffer_resize;
+    
     WindowInputInfo m_input_info;
 
   public:
@@ -105,8 +105,8 @@ namespace gl {
     inline bool visible() const { return m_is_visible; }
     inline bool maximized() const { return m_is_maximized; }
     inline bool focused() const { return m_is_focused; }
-    inline bool should_close() const { return m_should_close; }
     inline std::string title() const { return m_title; }
+    bool should_close() const;
     void set_visible(bool visible);
     void set_maximized();
     void set_focused();

@@ -5,31 +5,36 @@
 
 namespace gl {
   void attach_callbacks(Window &window) {
-    guard( window.m_is_init);
+    guard(window.m_is_init);
     GLFWwindow *object = (GLFWwindow *) window.object();
-
     glfwSetWindowUserPointer(object, &window);
+
     glfwSetWindowCloseCallback(object, [](GLFWwindow *object) {
       gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
-      window.m_should_close = true;
+      glfwSetWindowShouldClose(object, GLFW_TRUE);
     });
+
     glfwSetWindowFocusCallback(object, [](GLFWwindow *object, int focused) {
       gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
       window.m_is_focused = focused != 0;
     });
+
     glfwSetWindowMaximizeCallback(object, [](GLFWwindow *object, int maximized) {
       gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
       window.m_is_maximized = maximized != 0;
     });
+
     glfwSetWindowPosCallback(object, [](GLFWwindow *object, int x, int y) {
       gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
       window.m_window_pos = { x, y };
     });
+
     glfwSetWindowSizeCallback(object, [](GLFWwindow *object, int x, int y) {
       gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
       window.m_window_size = { x, y };
       window.m_did_window_resize = true;
     });
+
     glfwSetFramebufferSizeCallback(object, [](GLFWwindow *object, int x, int y) {
       gl::Window &window = *((gl::Window *) glfwGetWindowUserPointer(object));
       window.m_framebuffer_size = { x, y };
@@ -81,7 +86,7 @@ namespace gl {
     glfwSetScrollCallback(object, nullptr);
     glfwSetDropCallback(object, nullptr);
   }
-  
+
   Window::Window(WindowCreateInfo info)
   : Handle<void *>(true),
     m_window_size(info.size),
@@ -91,7 +96,6 @@ namespace gl {
     m_is_visible(has_flag(info.flags, WindowCreateFlags::eVisible)),
     m_is_maximized(has_flag(info.flags, WindowCreateFlags::eMaximized)),
     m_is_focused(has_flag(info.flags, WindowCreateFlags::eFocused)),
-    m_should_close(false),
     m_is_main_context(info.is_main_context),
     m_did_window_resize(false),
     m_did_framebuffer_resize(false) {
@@ -259,6 +263,12 @@ namespace gl {
     glfwSetWindowShouldClose((GLFWwindow *) m_object, GLFW_TRUE);
   }
 
+  bool Window::should_close() const {
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    return glfwWindowShouldClose((GLFWwindow *) m_object);
+  }
+
+
   void Window::set_title(const std::string &title) {
     debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     m_title = title;
@@ -277,20 +287,23 @@ namespace gl {
     detach_callbacks(o);
 
     Base::swap(o);
+
     swap(m_window_pos, o.m_window_pos);
     swap(m_window_size, o.m_window_size);
     swap(m_framebuffer_size, o.m_framebuffer_size);
+    swap(m_content_scale, o.m_content_scale);
     swap(m_title, o.m_title);
     swap(m_swap_interval, o.m_swap_interval);
+
     swap(m_is_visible, o.m_is_visible);
     swap(m_is_maximized, o.m_is_maximized);
     swap(m_is_focused, o.m_is_focused);
     swap(m_is_main_context, o.m_is_main_context);
-    swap(m_should_close, o.m_should_close);
+
     swap(m_did_window_resize, o.m_did_window_resize);
     swap(m_did_framebuffer_resize, o.m_did_framebuffer_resize);
+
     swap(m_input_info, o.m_input_info);
-    swap(m_content_scale, o.m_content_scale);
 
     attach_callbacks(*this);
     attach_callbacks(o);
@@ -301,11 +314,11 @@ namespace gl {
     return Base::operator==(o)
       && std::tie(m_window_pos, m_window_size, m_framebuffer_size, m_content_scale,
                   m_title, m_swap_interval, m_is_visible, 
-                  m_is_maximized, m_is_focused, m_should_close,
+                  m_is_maximized, m_is_focused,
                   m_is_main_context, m_did_window_resize, m_did_framebuffer_resize)
       == std::tie(o.m_window_pos, o.m_window_size, o.m_framebuffer_size, o.m_content_scale,
                   o.m_title, o.m_swap_interval, o.m_is_visible, 
-                  o.m_is_maximized, o.m_is_focused, o.m_should_close,
+                  o.m_is_maximized, o.m_is_focused,
                   o.m_is_main_context, o.m_did_window_resize, o.m_did_framebuffer_resize);
   }
 
