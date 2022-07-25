@@ -71,6 +71,8 @@ namespace gl {
     WindowInputInfo m_input_info;
 
   public:
+    using InfoType = WindowCreateInfo;
+
     /* constr/destr */
 
     Window() = default;

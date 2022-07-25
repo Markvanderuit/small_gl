@@ -32,6 +32,8 @@ namespace gl {
     BufferCreateFlags m_flags;
 
   public:
+    using InfoType = BufferCreateInfo;
+
     /* constr/destr */
 
     Buffer() = default;
