@@ -15,10 +15,12 @@
 #define guard_continue(expr) if (!(expr)) { continue; }
 #define guard_break(expr) if (!(expr)) { break; }
 
-namespace gl {
+namespace gl {  
+  namespace fs = std::filesystem; // STL filesystem namespace shorthand
+
   namespace io {
     // Load shader binary or char data from the given filepath
-    std::vector<std::byte> load_shader_binary(std::filesystem::path path);
+    std::vector<std::byte> load_shader_binary(fs::path path);
   } // namespace io
 
   namespace sync {

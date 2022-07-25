@@ -1,6 +1,7 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/utility.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <initializer_list>
@@ -19,7 +20,7 @@ namespace gl {
     ShaderType type;
 
     // Path towards shader file, which will be loaded
-    std::filesystem::path path;
+    fs::path path;
 
     // Is the attached shader data a spirv binary?
     bool is_spirv_binary = false;
@@ -49,7 +50,7 @@ namespace gl {
   struct ShaderIncludeLoadInfo {
     // Path towards shader file, which will be loaded
     // and used as its registered name
-    std::filesystem::path path;
+    fs::path path;
   };
 
   struct ShaderIncludeCreateInfo {

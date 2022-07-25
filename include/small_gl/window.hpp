@@ -1,6 +1,7 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/utility.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <glm/vec2.hpp>
@@ -44,7 +45,7 @@ namespace gl {
     glm::vec2 mouse_scroll;
     
     // File/dir path, in case a file is dropped into the window
-    std::list<std::filesystem::path> dropped_paths;
+    std::list<fs::path> dropped_paths;
   };
 
   /**

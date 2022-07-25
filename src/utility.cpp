@@ -82,9 +82,9 @@ namespace gl {
   } // namespace detail
 
   namespace io {
-    std::vector<std::byte> load_shader_binary(std::filesystem::path path) {
+    std::vector<std::byte> load_shader_binary(fs::path path) {
       // Check that file path exists
-      debug::check_expr(std::filesystem::exists(path),
+      debug::check_expr(fs::exists(path),
         fmt::format("failed to resolve path \"{}\"", path.string()));
 
       // Attempt to open file stream
