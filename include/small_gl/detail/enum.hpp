@@ -129,7 +129,7 @@ namespace gl {
   };
 
   // Primitive types for gl::draw(...)
-  enum class PrimitiveType : uint{
+  enum class PrimitiveType : uint {
     ePoints             = GL_POINTS,
     eLines              = GL_LINES,
     eTriangles          = GL_TRIANGLES,
@@ -144,6 +144,24 @@ namespace gl {
     eTriangleFan        = GL_TRIANGLE_FAN,
     eTrianglesAdj       = GL_TRIANGLES_ADJACENCY,
     eTriangleStripAdj   = GL_TRIANGLE_STRIP_ADJACENCY,
+  };
+
+  // State variable names for gl::get_variable(...)
+  // TODO: fill as needed
+  enum class VariableName : uint {
+    // GL_KHR_shader_subgroup variables
+    eSubgroupSize       = GL_SUBGROUP_SIZE_KHR
+    
+    // eMaxComputeShaderStorageBlocks
+    //                     = GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS,
+    // eMaxCombinedShaderStorageBlocks
+    //                     = GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS,
+    // eMaxComputeUniformBlocks
+    //                     = GL_MAX_COMPUTE_UNIFORM_BLOCKS,
+    // eMaxComputeImageUnits
+    //                     = GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS,
+    // eMaxComputeUniformComponents
+    //                     = GL_MAX_COMPUTE_UNIFORM_COMPONENTS,
   };
 
   /* Debug enums */

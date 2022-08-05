@@ -4,6 +4,7 @@
 #include <small_gl/utility.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
+#include <small_gl_parser/fwd.hpp>
 #include <initializer_list>
 #include <filesystem>
 #include <string>
@@ -27,6 +28,9 @@ namespace gl {
 
     // Override spirv shader entry point, if necessary
     std::string spirv_entry_point = "main";
+
+    // Optional parser; will process shader first
+    glp::Parser *parser = nullptr;
   };
 
   /**
@@ -45,22 +49,10 @@ namespace gl {
 
     // Override spirv shader entry point, if necessary
     std::string spirv_entry_point = "main";
-  };
 
-  struct ShaderIncludeLoadInfo {
-    // Path towards shader file, which will be loaded
-    // and used as its registered name
-    fs::path path;
+    // Optional parser; will process shader first
+    glp::Parser *parser = nullptr;
   };
-
-  struct ShaderIncludeCreateInfo {
-    // Registered name of shader include
-    std::string name;
-
-    // Shader data in binary format
-    std::span<const std::byte> data;
-  };
-  
 
   /**
    * Program object wrapping OpenGL shader program object.
@@ -94,8 +86,8 @@ namespace gl {
 
     /* miscellaneous */
 
-    static void add_include(std::initializer_list<ShaderIncludeLoadInfo>);
-    static void add_include(std::initializer_list<ShaderIncludeCreateInfo>);
+   /*  static void add_include(std::initializer_list<ShaderIncludeLoadInfo>);
+    static void add_include(std::initializer_list<ShaderIncludeCreateInfo>); */
     
     inline void swap(Program &o) {
       using std::swap;

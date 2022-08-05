@@ -175,13 +175,18 @@ namespace gl {
     void set_point_size(float size) {
       glPointSize(size);
     }
+    
+    int get_variable_int(VariableName name) {
+      int i;
+      glGetIntegerv((uint) name, &i);
+      return i;
+    }
 
     // set_polygon_mode
     // set_depth_range
     // set_color_mask
     // set_op(stencilfunc?)
     // set_op(depthfunc?)
-    
   } // namespace state
 
   namespace debug {

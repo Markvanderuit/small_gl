@@ -76,6 +76,9 @@ namespace gl {
     void set_viewport(glm::ivec2 size, glm::ivec2 offset = glm::ivec2(0));
     void set_line_width(float width);
     void set_point_size(float size);
+
+    // OpenGL variable queries
+    int get_variable_int(VariableName name);
   } // namespace state
 
   namespace debug {
