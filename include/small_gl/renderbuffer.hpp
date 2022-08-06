@@ -1,15 +1,15 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/texture.hpp>
-#include <glm/glm.hpp>
 
 namespace gl {
   struct RenderbufferCreateInfo {
     // Multi-dimensional size of the rendebuffer; not in bytes
-    glm::ivec2 size;
+    eig::Array2u size;
   };
 
   template <typename T,
@@ -19,7 +19,7 @@ namespace gl {
   class Renderbuffer : public AbstractRenderbuffer {
     using Base = detail::Handle<>;
 
-    glm::ivec2 m_size;
+    eig::Array2u m_size;
 
   public:
     /* constr/destr */
@@ -30,7 +30,7 @@ namespace gl {
 
     /* getters */
 
-    inline glm::ivec2 size() const { return m_size; }
+    inline eig::Array2u size() const { return m_size; }
 
     /* miscellaneous */
 
@@ -41,7 +41,7 @@ namespace gl {
     }
 
     inline bool operator==(const Renderbuffer &o) {
-      return Base::operator==(o) && m_size == o.m_size;
+      return Base::operator==(o) && (m_size == o.m_size).all();
     }
 
     gl_declare_noncopyable(Renderbuffer)

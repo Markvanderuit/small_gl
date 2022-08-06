@@ -1,11 +1,11 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/utility.hpp>
 #include <small_gl/dispatch.hpp>
-#include <glm/glm.hpp>
 #include <chrono>
 #include <filesystem>
 #include <source_location>
@@ -73,7 +73,7 @@ namespace gl {
     };
     
     // Various state components
-    void set_viewport(glm::ivec2 size, glm::ivec2 offset = glm::ivec2(0));
+    void set_viewport(const eig::Array2u &size, const eig::Array2u &offset = 0u);
     void set_line_width(float width);
     void set_point_size(float size);
 

@@ -164,8 +164,8 @@ namespace gl {
       set(m_capability, m_prev);
     }
 
-    void set_viewport(glm::ivec2 size, glm::ivec2 offset) {
-      glViewport(offset[0], offset[1], size[0], size[1]);
+    void set_viewport(const eig::Array2u &size, const eig::Array2u &offset) {
+      glViewport(offset.x(), offset.y(), size.x(), size.y());
     }
     
     void set_line_width(float width) {

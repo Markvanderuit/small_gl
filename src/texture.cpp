@@ -1,4 +1,3 @@
-#include <small_gl/detail/glm.hpp>
 #include <small_gl/texture.hpp>
 #include <small_gl/utility.hpp>
 
@@ -6,7 +5,7 @@ namespace gl {
   template <typename T, uint D, uint C, TextureType Ty>
   Texture<T, D, C, Ty>::Texture(TextureCreateInfo info)
   : Base(true), m_size(info.size), m_levels(info.levels) {
-    debug::check_expr(glm::all(m_size >= vect(1)), "texture size must be all >= 1");
+    debug::check_expr((m_size >= vect(1)).all(), "texture size must be all >= 1");
     debug::check_expr(m_levels >= 1,  "texture level must be >= 1");
 
     glCreateTextures(detail::texture_target<D, Ty>(), 1, &m_object);
@@ -15,16 +14,16 @@ namespace gl {
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
     
     if constexpr (storage_type == detail::StorageType::e1D) {
-      glTextureStorage1D(m_object, m_levels, internal_format, m_size.x);
+      glTextureStorage1D(m_object, m_levels, internal_format, m_size.x());
     } else if constexpr (storage_type == detail::StorageType::e2D) {
-      glTextureStorage2D(m_object, m_levels, internal_format, m_size.x, m_size.y);
+      glTextureStorage2D(m_object, m_levels, internal_format, m_size.x(), m_size.y());
     } else if constexpr (storage_type == detail::StorageType::e3D) {
-      GLsizei size_z = detail::is_cubemap_type<Ty> ? m_size.z * 6 : m_size.z; // vect cubemap
-      glTextureStorage3D(m_object, m_levels, internal_format, m_size.x, m_size.y, size_z);
+      GLsizei size_z = detail::is_cubemap_type<Ty> ? m_size.z() * 6 : m_size.z(); // vect cubemap
+      glTextureStorage3D(m_object, m_levels, internal_format, m_size.x(), m_size.y(), size_z);
     } else if constexpr (storage_type == detail::StorageType::e2DMSAA) {
-      glTextureStorage2DMultisample(m_object, 4, internal_format, m_size.x, m_size.y, true);
+      glTextureStorage2DMultisample(m_object, 4, internal_format, m_size.x(), m_size.y(), true);
     } else if constexpr (storage_type == detail::StorageType::e3DMSAA) {
-      glTextureStorage3DMultisample(m_object, 4, internal_format, m_size.x, m_size.y, m_size.z, true);
+      glTextureStorage3DMultisample(m_object, 4, internal_format, m_size.x(), m_size.y(), m_size.z(), true);
     }
 
     // If prior data was provided, process this or return early
@@ -48,28 +47,28 @@ namespace gl {
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
-    const vect safe_size = (size == vect(0)) ? m_size : size;
+    const vect safe_size = size.isZero() ? m_size : size;
 
-    const size_t size_bytes = glm::prod(safe_size - offset) * C * pixel_size;
+    const size_t size_bytes = (safe_size - offset).prod() * C * pixel_size;
     debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture region to be written");
 
     if constexpr (storage_type == detail::StorageType::e1D) {
       glGetTextureSubImage(m_object, level, 
-        offset.x, 0, 0, 
-        safe_size.x, 1, 1, 
+        offset.x(), 0, 0, 
+        safe_size.x(), 1, 1, 
         format, pixel_format, data.size_bytes(), data.data());
     } else if constexpr (storage_type == detail::StorageType::e2D
                       || storage_type == detail::StorageType::e2DMSAA) {
       glGetTextureSubImage(m_object, level, 
-        offset.x, offset.y, 0, 
-        safe_size.x, safe_size.y, 1, 
+        offset.x(), offset.y(), 0, 
+        safe_size.x(), safe_size.y(), 1, 
         format, pixel_format, data.size_bytes(), data.data());
     } else if constexpr (storage_type == detail::StorageType::e3D
                       || storage_type == detail::StorageType::e3DMSAA) {
       glGetTextureSubImage(m_object, level, 
-        offset.x, offset.y, offset.z, 
-        safe_size.x, safe_size.y, safe_size.z, 
+        offset.x(), offset.y(), offset.z(), 
+        safe_size.x(), safe_size.y(), safe_size.z(), 
         format, pixel_format, data.size_bytes(), data.data());
     }
   }
@@ -81,28 +80,28 @@ namespace gl {
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
-    const vect safe_size = (size == vect(0)) ? m_size : size;
+    const vect safe_size = size.isZero() ? m_size : size;
 
-    const size_t size_bytes = glm::prod(safe_size - offset) * C * pixel_size;
+    const size_t size_bytes = (safe_size - offset).prod() * C * pixel_size;
     debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture region to be read");
 
     if constexpr (storage_type == detail::StorageType::e1D) {
       glTextureSubImage1D(m_object, level, 
-        offset.x, 
-        safe_size.x, 
+        offset.x(), 
+        safe_size.x(), 
         format, pixel_format, data.data());
     } else if constexpr (storage_type == detail::StorageType::e2D
                       || storage_type == detail::StorageType::e2DMSAA) {
       glTextureSubImage2D(m_object, level, 
-        offset.x, offset.y, 
-        safe_size.x, safe_size.y, 
+        offset.x(), offset.y(), 
+        safe_size.x(), safe_size.y(), 
         format, pixel_format, data.data());              
     } else if constexpr (storage_type == detail::StorageType::e3D
                       || storage_type == detail::StorageType::e3DMSAA) {
       glTextureSubImage3D(m_object, level, 
-        offset.x, offset.y, offset.z,
-        safe_size.x, safe_size.y, safe_size.z,
+        offset.x(), offset.y(), offset.z(),
+        safe_size.x(), safe_size.y(), safe_size.z(),
         format, pixel_format, data.data());
     }
   }
@@ -114,7 +113,7 @@ namespace gl {
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
-    const vect safe_size = (size == vect(0)) ? m_size : size;
+    const vect safe_size = size.isZero() ? m_size : size;
 
     const size_t size_bytes = C * pixel_size;
     debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
@@ -122,20 +121,20 @@ namespace gl {
 
     if constexpr (storage_type == detail::StorageType::e1D) {
       glClearTexSubImage(m_object, level, 
-        offset.x, 0, 0, 
-        safe_size.x, 1, 1, 
+        offset.x(), 0, 0, 
+        safe_size.x(), 1, 1, 
         format, pixel_format, data.data());
     } else if constexpr (storage_type == detail::StorageType::e2D
                       || storage_type == detail::StorageType::e2DMSAA) {
       glClearTexSubImage(m_object, level, 
-        offset.x, offset.y, 0, 
-        safe_size.x, safe_size.y, 1, 
+        offset.x(), offset.y(), 0, 
+        safe_size.x(), safe_size.y(), 1, 
         format, pixel_format, data.data());
     } else if constexpr (storage_type == detail::StorageType::e3D
                       || storage_type == detail::StorageType::e3DMSAA) {
       glClearTexSubImage(m_object, level, 
-        offset.x, offset.y, offset.z, 
-        safe_size.x, safe_size.y, safe_size.z, 
+        offset.x(), offset.y(), offset.z(), 
+        safe_size.x(), safe_size.y(), safe_size.z(), 
         format, pixel_format, data.data());
     }
   }
@@ -149,21 +148,21 @@ namespace gl {
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
-    const vect safe_size = (size == vect(0)) ? m_size : size;
+    const vect safe_size = size.isZero() ? m_size : size;
 
-    const size_t size_bytes = glm::prod(safe_size - offset) * C * pixel_size;
+    const size_t size_bytes = (safe_size - offset).prod() * C * pixel_size;
     debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture region to be written");
     
     if constexpr (storage_type == detail::StorageType::e2D) {
       glGetTextureSubImage(m_object, level, 
-        offset.x, offset.y, face, 
-        safe_size.x, safe_size.y, 1, 
+        offset.x(), offset.y(), face, 
+        safe_size.x(), safe_size.y(), 1, 
         format, pixel_format, data.size_bytes(), data.data());
     } else if constexpr (storage_type == detail::StorageType::e3D) {
       glGetTextureSubImage(m_object, level, 
-        offset.x, offset.y, offset.z * face, 
-        safe_size.x, safe_size.y, safe_size.z, 
+        offset.x(), offset.y(), offset.z() * face, 
+        safe_size.x(), safe_size.y(), safe_size.z(), 
         format, pixel_format, data.size_bytes(), data.data());
     }
   }
@@ -175,21 +174,21 @@ namespace gl {
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
-    const vect safe_size = (size == vect(0)) ? m_size : size;
+    const vect safe_size = size.isZero() ? m_size : size;
 
-    const size_t size_bytes = glm::prod(safe_size - offset) * C * pixel_size;
+    const size_t size_bytes = (safe_size - offset).prod() * C * pixel_size;
     debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture region to be read");
 
     if constexpr (storage_type == detail::StorageType::e2D) {
       glTextureSubImage3D(m_object, level, 
-      offset.x, offset.y, face, 
-      safe_size.x, safe_size.y, 1, 
+      offset.x(), offset.y(), face, 
+      safe_size.x(), safe_size.y(), 1, 
       format, pixel_format, data.data());
     } else if constexpr (storage_type == detail::StorageType::e3D) {
       glTextureSubImage3D(m_object, level, 
-      offset.x, offset.y, safe_size.z * face, 
-      safe_size.x, safe_size.y, safe_size.z, 
+      offset.x(), offset.y(), safe_size.z() * face, 
+      safe_size.x(), safe_size.y(), safe_size.z(), 
       format, pixel_format, data.data());
     }
   }
@@ -201,7 +200,7 @@ namespace gl {
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
-    const vect safe_size = (size == vect(0)) ? m_size : size;
+    const vect safe_size = size.isZero() ? m_size : size;
 
     const size_t size_bytes = C * pixel_size;
     debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
@@ -209,13 +208,13 @@ namespace gl {
     
     if constexpr (storage_type == detail::StorageType::e2D) {
       glClearTexSubImage(m_object, level,
-        offset.x, offset.y, face,
-        safe_size.x, safe_size.y, 1,
+        offset.x(), offset.y(), face,
+        safe_size.x(), safe_size.y(), 1,
         format, pixel_format, data.data());
     } else if constexpr (storage_type == detail::StorageType::e3D) {
       glClearTexSubImage(m_object, level,
-        offset.x, offset.y, offset.z * face,
-        safe_size.x, safe_size.y, safe_size.z,
+        offset.x(), offset.y(), offset.z() * face,
+        safe_size.x(), safe_size.y(), safe_size.z(),
         format, pixel_format, data.data());
     }
   }

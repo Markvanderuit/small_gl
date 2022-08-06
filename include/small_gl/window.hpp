@@ -2,9 +2,9 @@
 
 #include <small_gl/fwd.hpp>
 #include <small_gl/utility.hpp>
+#include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
-#include <glm/vec2.hpp>
 #include <list>
 #include <filesystem>
 #include <string>
@@ -15,20 +15,20 @@ namespace gl {
    */
   struct WindowCreateInfo {
     // Window settings
-    glm::ivec2 size = { 1, 1 };
-    std::string title = "";
-    uint swap_interval = 1;
-    bool respect_content_scale = true;
+    eig::Array2u size            = { 1, 1 };
+    std::string title            = "";
+    uint swap_interval           = 1;
+    bool respect_content_scale   = true;
 
     // OpenGL context settings
-    ProfileType profile_type = ProfileType::eAny;
-    uint profile_version_major = 1;
-    uint profile_version_minor = 0;
-    bool is_main_context = true;
+    ProfileType profile_type     = ProfileType::eAny;
+    uint profile_version_major   = 1;
+    uint profile_version_minor   = 0;
+    bool is_main_context         = true;
     const Window *shared_context = nullptr;
 
     // Remainder of settings
-    WindowCreateFlags flags = { };
+    WindowCreateFlags flags      = { };
   };
 
   /**
@@ -41,8 +41,8 @@ namespace gl {
     std::list<std::pair<int, int>> mouse_button_actions;
     
     // Mouse cursor/wheel positions
-    glm::vec2 mouse_position;
-    glm::vec2 mouse_scroll;
+    eig::Array2f mouse_position;
+    eig::Array2f mouse_scroll;
     
     // File/dir path, in case a file is dropped into the window
     std::list<fs::path> dropped_paths;
@@ -54,9 +54,9 @@ namespace gl {
   class Window : public detail::Handle<void *> {
     using Base = Handle<void *>;
 
-    glm::ivec2 m_window_pos;
-    glm::ivec2 m_window_size;
-    glm::ivec2 m_framebuffer_size;
+    eig::Array2u m_window_pos;
+    eig::Array2u m_window_size;
+    eig::Array2u m_framebuffer_size;
     float m_content_scale;
     std::string m_title;
     uint m_swap_interval;
@@ -91,12 +91,12 @@ namespace gl {
     /* getters/setters */
 
     // window/framebuffer setters/getters/change flags
-    inline glm::ivec2 window_pos() const { return m_window_pos; }
-    inline glm::ivec2 window_size() const { return m_window_size; }
-    inline glm::ivec2 framebuffer_size() const { return m_framebuffer_size; }
+    inline eig::Array2u window_pos() const { return m_window_pos; }
+    inline eig::Array2u window_size() const { return m_window_size; }
+    inline eig::Array2u framebuffer_size() const { return m_framebuffer_size; }
     inline float content_scale() const { return m_content_scale; }
-    void set_window_pos(glm::ivec2 window_pos);
-    void set_window_size(glm::ivec2 window_size);
+    void set_window_pos(const eig::Array2u &window_pos);
+    void set_window_size(const eig::Array2u &window_size);
     bool did_window_resize() const { return m_did_window_resize; }
     bool did_framebuffer_resize() const { return m_did_framebuffer_resize; }
 

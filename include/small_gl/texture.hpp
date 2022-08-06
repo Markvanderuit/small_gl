@@ -1,10 +1,10 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/texture.hpp>
-#include <glm/glm.hpp>
 #include <span>
 
 namespace gl {
@@ -16,7 +16,7 @@ namespace gl {
             TextureType Ty  // Special texture type (array, cubemap, multisampled)
             = TextureType::eImage>
   class TextureCreateInfo {
-    using vect = glm::vec<detail::texture_dims<D, Ty>(), int, glm::defaultp>;
+    using vect = eig::Array<uint, detail::texture_dims<D, Ty>(), 1>;
 
   public:
     // Multi-dimensional size of the texture; not in bytes
@@ -43,7 +43,7 @@ namespace gl {
   class Texture : public AbstractTexture {
     using TextureCreateInfo = TextureCreateInfo<T, D, Ty>;
     using Base = detail::Handle<>;
-    using vect = glm::vec<detail::texture_dims<D, Ty>(), int, glm::defaultp>;
+    using vect = eig::Array<uint, detail::texture_dims<D, Ty>(), 1>;
 
     uint m_levels;
     vect m_size;
@@ -122,7 +122,9 @@ namespace gl {
     }
 
     inline bool operator==(const Texture &o) const {
-      return Base::operator==(o) && m_levels == o.m_levels && m_size == o.m_size;
+      return Base::operator==(o) 
+        && m_levels == o.m_levels 
+        && (m_size == o.m_size).all();
     }
 
     gl_declare_noncopyable(Texture)

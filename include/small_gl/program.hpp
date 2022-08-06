@@ -79,7 +79,7 @@ namespace gl {
     /* state */  
 
     template <typename T>
-    void uniform(std::string_view s, T t);
+    void uniform(std::string_view s, const T &t);
 
     void bind() const;
     void unbind() const;

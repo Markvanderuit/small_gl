@@ -1,6 +1,6 @@
-#include <small_gl/detail/glm.hpp>
 #include <small_gl/program.hpp>
 #include <small_gl/utility.hpp>
+#include <small_gl/detail/eigen.hpp>
 #include <small_gl_parser/parser.hpp>
 #include <fmt/format.h>
 #include <ranges>
@@ -194,30 +194,63 @@ namespace gl {
   
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */
     
-  #define gl_explicit_uniform_template(type, type_short)\
-    template <> void Program::uniform<type>\
-    (std::string_view s, type v)\
-    { glProgramUniform1 ## type_short (m_object, loc(s), v); }\
-    template <> void Program::uniform<glm::vec<2, type, glm::defaultp>>\
-    (std::string_view s, glm::vec<2, type, glm::defaultp> v)\
-    { glProgramUniform2 ## type_short (m_object, loc(s), v[0], v[1]); }\
-    template <> void Program::uniform<glm::vec<3, type, glm::defaultp>>\
-    (std::string_view s, glm::vec<3, type, glm::defaultp> v)\
-    { glProgramUniform3 ## type_short (m_object, loc(s), v[0], v[1], v[2]); }\
-    template <> void Program::uniform<glm::vec<4, type, glm::defaultp>>\
-    (std::string_view s, glm::vec<4, type, glm::defaultp> v)\
-    { glProgramUniform4 ## type_short (m_object, loc(s), v[0], v[1], v[2], v[3]); }
+  #define gl_explicit_uniform_template_1(type, type_short)                           \
+    template <> void Program::uniform<type>                                          \
+    (std::string_view s, const type &v)                                              \
+    { glProgramUniform1 ## type_short (m_object, loc(s), v); }
 
-  #define gl_explicit_uniform_template_mat(type, type_short)\
-    template <> void Program::uniform<glm::mat<2, 2, type, glm::defaultp>>\
-    (std::string_view s, glm::mat<2, 2, type, glm::defaultp> v)\
-    { glProgramUniformMatrix2 ## type_short ## v(m_object, loc(s), 1, false, glm::value_ptr(v)); }\
-    template <> void Program::uniform<glm::mat<3, 3, type, glm::defaultp>>\
-    (std::string_view s, glm::mat<3, 3, type, glm::defaultp> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, glm::value_ptr(v)); }\
-    template <> void Program::uniform<glm::mat<4, 4, type, glm::defaultp>>\
-    (std::string_view s, glm::mat<4, 4, type, glm::defaultp> v)\
-    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, glm::value_ptr(v)); }
+  #define gl_explicit_uniform_template_eig_array(type, type_short)                   \
+    template <> void Program::uniform<eig::Array<type, 2, 1>>                        \
+      (std::string_view s, const eig::Array<type, 2, 1> &v)                          \
+      { glProgramUniform2 ## type_short (m_object, loc(s), v[0], v[1]); }            \
+    template <> void Program::uniform<eig::Array<type, 3, 1>>                        \
+      (std::string_view s, const eig::Array<type, 3, 1> &v)                          \
+      { glProgramUniform3 ## type_short (m_object, loc(s), v[0], v[1], v[1]); }      \
+    template <> void Program::uniform<eig::Array<type, 4, 1>>                        \
+      (std::string_view s, const eig::Array<type, 4, 1> &v)                          \
+      { glProgramUniform4 ## type_short (m_object, loc(s), v[0], v[1], v[1], v[2]); }
+    
+  #define gl_explicit_uniform_template_eig_vector(type, type_short)                  \
+    template <> void Program::uniform<eig::Matrix<type, 2, 1>>                       \
+      (std::string_view s, const eig::Matrix<type, 2, 1> &v)                         \
+      { glProgramUniform2 ## type_short (m_object, loc(s), v[0], v[1]); }            \
+    template <> void Program::uniform<eig::Matrix<type, 3, 1>>                       \
+      (std::string_view s, const eig::Matrix<type, 3, 1> &v)                         \
+      { glProgramUniform3 ## type_short (m_object, loc(s), v[0], v[1], v[1]); }      \
+    template <> void Program::uniform<eig::Matrix<type, 4, 1>>                       \
+      (std::string_view s, const eig::Matrix<type, 4, 1> &v)                         \
+      { glProgramUniform4 ## type_short (m_object, loc(s), v[0], v[1], v[1], v[2]); }
+
+  #define gl_explicit_uniform_template(type, type_short)                                  \
+    gl_explicit_uniform_template_1(type, type_short)                                      \
+    gl_explicit_uniform_template_eig_array(type, type_short)                              \
+    gl_explicit_uniform_template_eig_vector(type, type_short)
+
+  #define gl_explicit_uniform_template_eig_mat(type, type_short)                          \
+    template <> void Program::uniform<eig::Matrix<type, 2, 2>>                            \
+    (std::string_view s, const eig::Matrix<type, 2, 2> &v)                                \
+    { glProgramUniformMatrix2 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
+    template <> void Program::uniform<eig::Matrix<type, 3, 3>>                            \
+    (std::string_view s, const eig::Matrix<type, 3, 3> &v)                                \
+    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
+    template <> void Program::uniform<eig::Matrix<type, 4, 4>>                            \
+    (std::string_view s, const eig::Matrix<type, 4, 4> &v)                                \
+    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, v.data()); }
+    
+  #define gl_explicit_uniform_template_eig_mat_array(type, type_short)                    \
+    template <> void Program::uniform<eig::Array<type, 2, 2>>                             \
+    (std::string_view s, const eig::Array<type, 2, 2> &v)                                 \
+    { glProgramUniformMatrix2 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
+    template <> void Program::uniform<eig::Array<type, 3, 3>>                             \
+    (std::string_view s, const eig::Array<type, 3, 3> &v)                                 \
+    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
+    template <> void Program::uniform<eig::Array<type, 4, 4>>                             \
+    (std::string_view s, const eig::Array<type, 4, 4> &v)                                 \
+    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, v.data()); }
+
+  #define gl_explicit_uniform_template_mat(type, type_short)                              \
+    gl_explicit_uniform_template_eig_mat_array(type, type_short)                          \
+    gl_explicit_uniform_template_eig_mat(type, type_short)
 
   gl_explicit_uniform_template(bool, ui)
   gl_explicit_uniform_template(uint, ui)

@@ -3,9 +3,9 @@
   "version-string" : "1.0.0",
   "dependencies" : [
     "fmt",
+    "eigen3",
     { "name": "glad", 
       "features": [ "extensions", "gl-api-latest" ] },
-    "glfw3",
-    "glm"
+    "glfw3"
   ]
 }

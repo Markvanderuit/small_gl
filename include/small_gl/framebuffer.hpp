@@ -1,9 +1,9 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
-#include <glm/vec2.hpp>
 #include <initializer_list>
 #include <span>
 
@@ -53,10 +53,10 @@ namespace gl {
     /* miscellaneous */  
 
     void blit_to(gl::Framebuffer &dst,
-                 glm::ivec2 src_size,
-                 glm::ivec2 src_offset,
-                 glm::ivec2 dst_size,
-                 glm::ivec2 dst_offset,
+                 eig::Array2u src_size,
+                 eig::Array2u src_offset,
+                 eig::Array2u dst_size,
+                 eig::Array2u dst_offset,
                  FramebufferMaskFlags flags,
                  SamplerMagFilter filter = SamplerMagFilter::eNearest) const;
 

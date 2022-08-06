@@ -151,7 +151,7 @@ namespace gl {
                                              : nullptr;
 
     // Initialize a GLFW window 
-    m_object = (void *) glfwCreateWindow(m_window_size.x, m_window_size.y, m_title.c_str(), mon, shared);
+    m_object = (void *) glfwCreateWindow(m_window_size.x(), m_window_size.y(), m_title.c_str(), mon, shared);
     debug::check_expr(m_object, "glfwCreateWindow(...) failed");
     
     // Finally, load GLAD bindings
@@ -163,14 +163,15 @@ namespace gl {
     // Instantiate miscellaneous window properties
     glfwSwapInterval(m_swap_interval);
     attach_callbacks(*this);
-    glfwGetFramebufferSize((GLFWwindow *) m_object, &m_framebuffer_size[0], &m_framebuffer_size[1]);
+    eig::Array2i _framebuffer_size;
+    glfwGetFramebufferSize((GLFWwindow *) m_object, &_framebuffer_size.x(), &_framebuffer_size.y());
+    m_framebuffer_size = _framebuffer_size.cast<uint>();
 
     // Instantiate (and apply) window scale
     if (info.respect_content_scale) {
       // Assume horizontal scale is sufficient?
       glfwGetWindowContentScale((GLFWwindow *) m_object, &m_content_scale, nullptr);
-      set_window_size(static_cast<glm::ivec2>(
-        m_content_scale * static_cast<glm::vec2>(window_size())));
+      set_window_size((m_content_scale * window_size().cast<float>()).cast<uint>());
     } else {
       m_content_scale = 1.f;
     }
@@ -221,14 +222,14 @@ namespace gl {
     return glfwGetCurrentContext() == (GLFWwindow *) m_object;
   }
 
-  void Window::set_window_pos(glm::ivec2 window_pos) {
+  void Window::set_window_pos(const eig::Array2u &window_pos) {
     debug::check_expr(m_is_init, "attempt to use an uninitialized object");
-    glfwSetWindowPos((GLFWwindow *) m_object, window_pos[0], window_pos[1]);
+    glfwSetWindowPos((GLFWwindow *) m_object, window_pos.x(), window_pos.y());
   }
 
-  void Window::set_window_size(glm::ivec2 window_size) {
+  void Window::set_window_size(const eig::Array2u &window_size) {
     debug::check_expr(m_is_init, "attempt to use an uninitialized object");
-    glfwSetWindowSize((GLFWwindow *) m_object, window_size[0], window_size[1]);
+    glfwSetWindowSize((GLFWwindow *) m_object, window_size.x(), window_size.y());
   }
   
   void Window::set_swap_interval(uint swap_interval) {
@@ -312,11 +313,14 @@ namespace gl {
   bool Window::operator==(const Window &o) const {
     using std::tie;
     return Base::operator==(o)
-      && std::tie(m_window_pos, m_window_size, m_framebuffer_size, m_content_scale,
+      && m_window_pos.isApprox(o.m_window_pos)
+      && m_window_size.isApprox(o.m_window_size)
+      && m_framebuffer_size.isApprox(o.m_framebuffer_size)
+      && std::tie(m_content_scale,
                   m_title, m_swap_interval, m_is_visible, 
                   m_is_maximized, m_is_focused,
                   m_is_main_context, m_did_window_resize, m_did_framebuffer_resize)
-      == std::tie(o.m_window_pos, o.m_window_size, o.m_framebuffer_size, o.m_content_scale,
+      == std::tie(o.m_content_scale,
                   o.m_title, o.m_swap_interval, o.m_is_visible, 
                   o.m_is_maximized, o.m_is_focused,
                   o.m_is_main_context, o.m_did_window_resize, o.m_did_framebuffer_resize);
