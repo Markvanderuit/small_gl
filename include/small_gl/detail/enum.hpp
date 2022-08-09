@@ -51,13 +51,15 @@ namespace gl {
     eMapInvalidate      = GL_MAP_INVALIDATE_RANGE_BIT,
     eMapPersistent      = GL_MAP_PERSISTENT_BIT,  
     eMapCoherent        = GL_MAP_COHERENT_BIT,
+    eMapFlush           = GL_MAP_FLUSH_EXPLICIT_BIT,
 
     // Special assembled types
     eMapReadWrite       = (uint) BufferAccessFlags::eMapRead 
                         | (uint) BufferAccessFlags::eMapWrite,
     eMapFull            = (uint) BufferAccessFlags::eMapReadWrite
                         | (uint) BufferAccessFlags::eMapPersistent
-                        | (uint) BufferAccessFlags::eMapCoherent,
+                        | (uint) BufferAccessFlags::eMapCoherent
+                        | (uint) BufferAccessFlags::eMapFlush,
   };
   gl_declare_bitflag(BufferAccessFlags);
 

@@ -13,7 +13,7 @@ namespace gl {
     SamplerMagFilter mag_filter     = SamplerMagFilter::eNearest;
     SamplerWrap wrap                = SamplerWrap::eClampToEdge;
     SamplerCompareFunc compare_func = SamplerCompareFunc::eLessOrEqual;
-    SamplerCompareMode compare_mode = SamplerCompareMode::eCompare;
+    SamplerCompareMode compare_mode = SamplerCompareMode::eNone;
   };
 
   /**
