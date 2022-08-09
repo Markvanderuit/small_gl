@@ -29,6 +29,8 @@ namespace gl {
     SamplerCompareMode m_compare_mode;
 
   public:
+    using InfoType = SamplerCreateInfo;
+
     /* constr/destr */
 
     Sampler() = default;
