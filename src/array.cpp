@@ -38,8 +38,8 @@ namespace gl {
   Array::Array(ArrayCreateInfo info)
   : Base(true), 
     m_has_elements(info.elements) {
-    debug::check_expr(info.buffers.size() > 0, "no vertex buffer info was provided");
-    debug::check_expr(info.attribs.size() > 0, "no vertex attribute info was provided");
+    debug::check_expr_dbg(info.buffers.size() > 0, "no vertex buffer info was provided");
+    debug::check_expr_dbg(info.attribs.size() > 0, "no vertex attribute info was provided");
 
     glCreateVertexArrays(1, &m_object);
 
@@ -59,12 +59,12 @@ namespace gl {
   }
 
   void Array::bind() const {
-    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(m_object);
   }
 
   void Array::unbind() const {
-    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(0);
   }
 } // namespace gl

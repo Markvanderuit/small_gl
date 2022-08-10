@@ -7,7 +7,7 @@
 
 namespace gl {
   void dispatch_draw(DrawInfo info) {
-    debug::check_expr(info.bindable_array, "DrawInfo submitted without bindable array object");
+    debug::check_expr_dbg(info.bindable_array, "DrawInfo submitted without bindable array object");
     info.bindable_array->bind();
     if (info.bindable_program) info.bindable_program->bind();
     if (info.bindable_framebuffer) info.bindable_framebuffer->bind();
@@ -35,7 +35,7 @@ namespace gl {
   }
 
   void dispatch_draw(DrawIndirectInfo info) {
-    debug::check_expr(info.bindable_array, "DrawIndirectInfo submitted without bindable array object");
+    debug::check_expr_dbg(info.bindable_array, "DrawIndirectInfo submitted without bindable array object");
     info.bindable_array->bind();
     if (info.bindable_program) info.bindable_program->bind();
     if (info.bindable_framebuffer) info.bindable_framebuffer->bind();

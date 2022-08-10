@@ -131,7 +131,7 @@ namespace gl {
 
   Program::Program(std::initializer_list<ShaderLoadInfo> load_info) 
   : Base(true) {
-    debug::check_expr(load_info.size() > 0, "no shader info was provided");
+    debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
     
     std::vector<std::vector<std::byte>> shader_bins;
     shader_bins.reserve(load_info.size());
@@ -153,7 +153,7 @@ namespace gl {
 
   Program::Program(std::initializer_list<ShaderCreateInfo> create_info)
   : Base(true) {
-    debug::check_expr(create_info.size() > 0, "no shader info was provided");
+    debug::check_expr_dbg(create_info.size() > 0, "no shader info was provided");
     m_object = detail::create_program_object(create_info);
   }
 
@@ -169,12 +169,12 @@ namespace gl {
   }
 
   void Program::bind() const {
-    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glUseProgram(m_object);
   }
 
   void Program::unbind() const {
-    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glUseProgram(0);
   }
 
@@ -184,7 +184,7 @@ namespace gl {
     if (f == m_loc.end()) {
       // Obtain handle and check if it is actually valid
       GLint handle = glGetUniformLocation(m_object, s.data());
-      debug::check_expr(handle >= 0, fmt::format("failed for uniform name \"{}\"", s));
+      debug::check_expr_dbg(handle >= 0, fmt::format("failed for uniform name \"{}\"", s));
 
       // Insert value into map
       f = m_loc.insert({s.data(), handle}).first;

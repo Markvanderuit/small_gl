@@ -5,7 +5,7 @@ namespace gl {
   template <typename T, uint C, RenderbufferType Ty>
   Renderbuffer<T, C, Ty>::Renderbuffer(RenderbufferCreateInfo info)
   : Base(true), m_size(info.size) {
-    debug::check_expr((m_size >= eig::Array2u(1u)).all(), "renderbuffer size must be all >= 1");
+    debug::check_expr_dbg((m_size >= eig::Array2u(1u)).all(), "renderbuffer size must be all >= 1");
 
     glCreateRenderbuffers(1, &m_object);
 

@@ -92,15 +92,15 @@ namespace gl {
     // Evaluate a boolean expression, throwing a detailed exception pointing
     // to the expression's origin if said expression fails
     constexpr inline
-    void check_expr(bool expr,
-                    const std::string_view &msg = "",
-                    const std::source_location sl = std::source_location::current()) {
+    void check_expr_dbg(bool expr,
+                        const std::string_view &msg = "",
+                        const std::source_location sl = std::source_location::current()) {
   #ifdef NDEBUG
   #else
       guard(!expr);
 
       detail::Exception e;
-      e.put("src", "gl::debug::check_expr(...) failed, checked expression evaluated to false");
+      e.put("src", "gl::debug::check_expr_dbg(...) failed, checked expression evaluated to false");
       e.put("message", msg);
       e.put("in file", fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
       throw e;
