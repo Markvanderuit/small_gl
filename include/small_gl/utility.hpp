@@ -1,5 +1,7 @@
 #pragma once
 
+#define GL_TRACY_ENABLED
+
 #include <small_gl/fwd.hpp>
 #include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
@@ -14,6 +16,9 @@
 #define guard(expr,...) if (!(expr)) { return __VA_ARGS__ ; }
 #define guard_continue(expr) if (!(expr)) { continue; }
 #define guard_break(expr) if (!(expr)) { break; }
+
+// Simple range-like syntactic sugar
+#define range_iter(c) c.begin(), c.end()
 
 namespace gl {  
   namespace fs = std::filesystem; // STL filesystem namespace shorthand
@@ -92,11 +97,9 @@ namespace gl {
     // Evaluate a boolean expression, throwing a detailed exception pointing
     // to the expression's origin if said expression fails
     constexpr inline
-    void check_expr_dbg(bool expr,
+    void check_expr_rel(bool expr,
                         const std::string_view &msg = "",
                         const std::source_location sl = std::source_location::current()) {
-  #ifdef NDEBUG
-  #else
       guard(!expr);
 
       detail::Exception e;
@@ -104,27 +107,65 @@ namespace gl {
       e.put("message", msg);
       e.put("in file", fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
       throw e;
-  #endif
     }
+
+    // Evaluate a boolean expression, throwing a detailed exception pointing
+    // to the expression's origin if said expression fails
+    // Note: removed on release builds
+  #if defined(NDEBUG) || defined(GL_ENABLE_DBG_EXCEPTIONS)
+    constexpr inline
+    void check_expr_dbg(bool expr,
+                        const std::string_view &msg = "",
+                        const std::source_location sl = std::source_location::current()) {
+      guard(!expr);
+
+      detail::Exception e;
+      e.put("src", "gl::debug::check_expr_dbg(...) failed, checked expression evaluated to false");
+      e.put("message", msg);
+      e.put("in file", fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
+      throw e;
+    }
+  #else
+  #define check_expr_dbg(expr, msg, sl)
+  #endif
 
     // Evaluate OpenGL's glGetError(), throwing a detailed exception pointing
     // to the function call's origin if glGetError() fails
     // Note: enabling debug output with enable_messages(...) is seriously a much better option
     inline
-    void check_gl(const std::string_view &msg = "",
-                  const std::source_location sl = std::source_location::current()) {
-  #ifdef NDEBUG
-  #else
+    void check_gl_rel(const std::string_view &msg = "",
+                      const std::source_location sl = std::source_location::current()) {
       GLenum err = glGetError();
       guard(err != GL_NO_ERROR);
 
       detail::Exception e;
-      e.put("src", "gl::debug::check_gl(...) failed, OpenGL returned an error");
+      e.put("src", "gl::debug::check_gl_dbg(...) failed, OpenGL returned an error");
       e.put("error", detail::readable_gl_error(err));
       e.put("message", msg);
       e.put("in file", fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
       throw e;
-  #endif
     }
+    
+    // Evaluate OpenGL's glGetError(), throwing a detailed exception pointing
+    // to the function call's origin if glGetError() fails
+    // Note: enabling debug output with enable_messages(...) is seriously a much better option
+    // Note: removed on release builds
+  #if defined(NDEBUG) || defined(GL_ENABLE_DBG_EXCEPTIONS)
+    inline
+    void check_gl_dbg(const std::string_view &msg = "",
+                      const std::source_location sl = std::source_location::current()) {
+      GLenum err = glGetError();
+      guard(err != GL_NO_ERROR);
+
+      detail::Exception e;
+      e.put("src", "gl::debug::check_gl_dbg(...) failed, OpenGL returned an error");
+      e.put("error", detail::readable_gl_error(err));
+      e.put("message", msg);
+      e.put("in file", fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
+      throw e;
+    }
+  #else
+  #define check_gl_dbg(expr, sl)
+  #endif
   } // namespace debug
 } // namespace gl
