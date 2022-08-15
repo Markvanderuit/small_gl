@@ -18,6 +18,8 @@ namespace gl {
 
   Framebuffer::Framebuffer(std::initializer_list<FramebufferAttachmentInfo> info)
   : Base(true) {
+    gl_trace_full();
+
     glCreateFramebuffers(1, &m_object);
 
     for (const auto &info : info) {
@@ -39,17 +41,20 @@ namespace gl {
   }
 
   Framebuffer::~Framebuffer() {
+    gl_trace_full();
     guard(m_is_init);
     guard(m_object != 0); // Default framebuffer 0 makes this a special case
     glDeleteFramebuffers(1, &m_object);
   }
 
   void Framebuffer::bind() const {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glBindFramebuffer(GL_FRAMEBUFFER, m_object);
   }
 
   void Framebuffer::unbind() const {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     guard(m_object != 0); // Default framebuffer 0 makes this a special case
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -62,6 +67,7 @@ namespace gl {
                             eig::Array2u dst_offset,
                             FramebufferMaskFlags flags,
                             SamplerMagFilter filter) const {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     debug::check_expr_dbg(dst.m_is_init, "attempt to use an uninitialized object");
     
@@ -74,6 +80,7 @@ namespace gl {
   }
   
   Framebuffer Framebuffer::make_default() {
+    gl_trace_full();
     Framebuffer framebuffer;
     framebuffer.m_is_init = true;
     framebuffer.m_object = 0;
@@ -81,6 +88,7 @@ namespace gl {
   }
 
   Framebuffer Framebuffer::make_from(uint object) {
+    gl_trace_full();
     auto is_framebuffer = glIsFramebuffer(object);
     debug::check_expr_dbg(is_framebuffer, "attempt to take ownership over a non-framebuffer handle");
 

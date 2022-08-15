@@ -1,5 +1,6 @@
 #include <small_gl/window.hpp>
 #include <small_gl/utility.hpp>
+#include <small_gl/detail/trace.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -158,6 +159,7 @@ namespace gl {
     if (m_is_main_context) {
       attach_context();
       debug::check_expr_dbg(gladLoadGL(), "gladLoadGL() failed");
+      gl_trace_init_context();
     }
 
     // Instantiate miscellaneous window properties
@@ -187,11 +189,13 @@ namespace gl {
   }
 
   void Window::swap_buffers() {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glfwSwapBuffers((GLFWwindow *) m_object);
   }
 
   void Window::poll_events() {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 
     m_did_window_resize = false;
@@ -268,7 +272,6 @@ namespace gl {
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     return glfwWindowShouldClose((GLFWwindow *) m_object);
   }
-
 
   void Window::set_title(const std::string &title) {
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");

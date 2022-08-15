@@ -1,10 +1,10 @@
 #include <small_gl/texture.hpp>
-#include <small_gl/utility.hpp>
 
 namespace gl {
   template <typename T, uint D, uint C, TextureType Ty>
   Texture<T, D, C, Ty>::Texture(TextureCreateInfo info)
   : Base(true), m_size(info.size), m_levels(info.levels) {
+    gl_trace_full();
     debug::check_expr_dbg((m_size >= vect(1)).all(), "texture size must be all >= 1");
     debug::check_expr_dbg(m_levels >= 1,  "texture level must be >= 1");
 
@@ -26,15 +26,27 @@ namespace gl {
       glTextureStorage3DMultisample(m_object, 4, internal_format, m_size.x(), m_size.y(), m_size.z(), true);
     }
 
-    // If prior data was provided, process this or return early
-    guard(info.data.data());
-    set(info.data);
-    generate_mipmaps();
+    // If prior data was provided, upload it
+    if (info.data.data()) {
+      set(info.data);
+      generate_mipmaps();
+    }
+    
+    // Estimate texture size in bytes
+#ifdef GL_ENABLE_TRACY
+    size_t alloc_size = m_size.prod() * C * detail::texture_pixel_size_bytes<T>();
+    for (size_t lvl_alloc_size = alloc_size, i = 1; 1 < static_cast<size_t>(m_levels); ++i) {
+      lvl_alloc_size /= 2;
+      alloc_size += lvl_alloc_size;
+    }
+#endif // GL_ENABLE_TRACY
+    gl_trace_gpu_alloc("gl::Texture", object(), alloc_size);
   }
 
   template <typename T, uint D, uint C, TextureType Ty>
   Texture<T, D, C, Ty>::~Texture() {
     guard(m_is_init);
+    gl_trace_gpu_free("gl::Texture", object());
     glDeleteTextures(1, &m_object);
   }
 
@@ -43,6 +55,8 @@ namespace gl {
   template <typename T, uint D, uint C, TextureType Ty>
   void Texture<T, D, C, Ty>::get(std::span<T> data, uint level, vect size, vect offset) const
   requires(!detail::is_cubemap_type<Ty>) {
+    gl_trace_full();
+
     constexpr auto format = detail::texture_format<C, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
@@ -76,6 +90,8 @@ namespace gl {
   template <typename T, uint D, uint C, TextureType Ty>
   void Texture<T, D, C, Ty>::set(std::span<const T> data, uint level, vect size, vect offset)
   requires(!detail::is_cubemap_type<Ty>) {
+    gl_trace_full();
+
     constexpr auto format = detail::texture_format<C, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
@@ -109,6 +125,8 @@ namespace gl {
   template <typename T, uint D, uint C, TextureType Ty>
   void Texture<T, D, C, Ty>::clear(std::span<const T> data, uint level, vect size, vect offset)
   requires(!detail::is_cubemap_type<Ty>) {
+    gl_trace_full();
+
     constexpr auto format = detail::texture_format<C, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
@@ -144,6 +162,8 @@ namespace gl {
   template <typename T, uint D, uint C, TextureType Ty>
   void Texture<T, D, C, Ty>::get(std::span<T> data, uint face, uint level, vect size, vect offset) const 
   requires(detail::is_cubemap_type<Ty>) {
+    gl_trace_full();
+
     constexpr auto format = detail::texture_format<C, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
@@ -170,6 +190,8 @@ namespace gl {
   template <typename T, uint D, uint C, TextureType Ty>
   void Texture<T, D, C, Ty>::set(std::span<const T> data, uint face, uint level, vect size, vect offset)
   requires(detail::is_cubemap_type<Ty>) {
+    gl_trace_full();
+
     constexpr auto format = detail::texture_format<C, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
@@ -196,6 +218,8 @@ namespace gl {
   template <typename T, uint D, uint C, TextureType Ty>
   void Texture<T, D, C, Ty>::clear(std::span<const T> data, uint face, uint level, vect size, vect offset)
   requires(detail::is_cubemap_type<Ty>) {
+    gl_trace_full();
+
     constexpr auto format = detail::texture_format<C, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
     constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
@@ -221,6 +245,8 @@ namespace gl {
   
   template <typename T, uint D, uint C, TextureType Ty>
   void Texture<T, D, C, Ty>::bind_to(TextureTargetType target, uint index, uint level) const {
+    gl_trace_full();
+
     if (target == TextureTargetType::eTextureUnit) {
       glBindTextureUnit(index, m_object);
     } else {
@@ -231,6 +257,7 @@ namespace gl {
   
   template <typename T, uint D, uint C, TextureType Ty>
   void Texture<T, D, C, Ty>::generate_mipmaps() {
+    gl_trace_full();
     guard(m_levels > 1);
     glGenerateTextureMipmap(m_object);
   }

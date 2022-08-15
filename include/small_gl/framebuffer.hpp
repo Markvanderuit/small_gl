@@ -67,6 +67,7 @@ namespace gl {
     static Framebuffer make_from(uint object);
 
     inline void swap(Framebuffer &o) {
+      gl_trace();
       using std::swap;
       Base::swap(o);
     }

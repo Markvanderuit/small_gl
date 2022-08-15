@@ -90,6 +90,7 @@ namespace gl {
     static void add_include(std::initializer_list<ShaderIncludeCreateInfo>); */
     
     inline void swap(Program &o) {
+      gl_trace();
       using std::swap;
       Base::swap(o);
       swap(m_loc, o.m_loc);

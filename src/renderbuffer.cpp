@@ -5,6 +5,7 @@ namespace gl {
   template <typename T, uint C, RenderbufferType Ty>
   Renderbuffer<T, C, Ty>::Renderbuffer(RenderbufferCreateInfo info)
   : Base(true), m_size(info.size) {
+    gl_trace_full();
     debug::check_expr_dbg((m_size >= eig::Array2u(1u)).all(), "renderbuffer size must be all >= 1");
 
     glCreateRenderbuffers(1, &m_object);
@@ -16,12 +17,18 @@ namespace gl {
     } else if constexpr (Ty == RenderbufferType::eMultisample) {
       glNamedRenderbufferStorageMultisample(m_object, 4, internal_format, m_size.x(), m_size.y());
     }
+
+    // Poorly estimate renderbuffer size in bytes
+    size_t alloc_size = m_size.prod() * C * detail::texture_pixel_size_bytes<T>();
+    gl_trace_gpu_alloc("gl::Renderbuffer", object(), alloc_size);
   }
 
   template <typename T, uint C, RenderbufferType Ty>
   Renderbuffer<T, C, Ty>::~Renderbuffer() {
+    gl_trace_full();
     guard(m_is_init);
     glDeleteRenderbuffers(1, &m_object);
+    gl_trace_gpu_free("gl::Renderbuffer", object());
   }
 
   /* Explicit template instantiations of gl::Renderbuffer<...> */

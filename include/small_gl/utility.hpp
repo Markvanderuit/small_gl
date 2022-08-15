@@ -4,16 +4,12 @@
 #include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
+#include <small_gl/detail/trace.hpp>
 #include <small_gl/detail/utility.hpp>
 #include <small_gl/dispatch.hpp>
 #include <chrono>
 #include <filesystem>
 #include <source_location>
-
-#ifdef GL_ENABLE_TRACY
-#include <Tracy.hpp>
-#include <TracyOpenGL.hpp>
-#endif // GL_ENABLE_TRACY
 
 // Simple guard statement syntactic sugar
 #define guard(expr,...) if (!(expr)) { return __VA_ARGS__ ; }
@@ -22,28 +18,6 @@
 
 // Simple range-like syntactic sugar
 #define range_iter(c) c.begin(), c.end()
-
-// Insert Tracy scope statements if tracing is enabled
-#ifndef GL_ENABLE_TRACY
-  #define gl_trace_text(str)
-  #define gl_trace_name(name)
-  #define gl_trace()
-  #define gl_trace_gpu(name)
-  #define gl_trace_frame()
-#else // GL_ENABLE_TRACY
-  #define gl_trace_text(str)  ZoneText(str, std::char_traits<char>::length(str))
-  #define gl_trace_name(name) ZoneScopedN(name)
-  #define gl_trace()          ZoneScoped;
-  #define gl_trace_gpu(name)  TracyGpuZone(name)      
-  #define gl_trace_frame()    TracyGpuCollect; FrameMark;
-
-  #ifndef TRACY_ENABLE
-  #define TRACY_ENABLE
-  #endif // TRACY_ENABLE
-  #ifndef TRACY_ON_DEMAND
-  #define TRACY_ON_DEMAND
-  #endif // TRACY_ON_DEMAND
-#endif // GL_ENABLE_TRACY
 
 namespace gl {  
   namespace fs = std::filesystem; // STL filesystem namespace shorthand

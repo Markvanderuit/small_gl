@@ -5,6 +5,7 @@ namespace gl {
   Sampler::Sampler(SamplerCreateInfo info)
   : Base(true), m_min_filter(info.min_filter), m_mag_filter(info.mag_filter), 
     m_wrap(info.wrap), m_compare_func(info.compare_func), m_compare_mode(info.compare_mode) {
+    gl_trace_full();
     
     glCreateSamplers(1, &m_object);
 
@@ -18,11 +19,13 @@ namespace gl {
   }
 
   Sampler::~Sampler() {
+    gl_trace_full();
     guard(m_is_init);
     glDeleteSamplers(1, &m_object);
   }
 
   void Sampler::set_min_filter(SamplerMinFilter min_filter) {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     
     m_min_filter = min_filter;
@@ -30,6 +33,7 @@ namespace gl {
   }
 
   void Sampler::set_mag_filter(SamplerMagFilter mag_filter) {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 
     m_mag_filter = mag_filter;
@@ -37,6 +41,7 @@ namespace gl {
   }
 
   void Sampler::set_wrap(SamplerWrap wrap) {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 
     m_wrap = wrap;
@@ -46,6 +51,7 @@ namespace gl {
   }
 
   void Sampler::set_depth_compare_func(SamplerCompareFunc compare_func) {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 
     m_compare_func = compare_func;
@@ -53,6 +59,7 @@ namespace gl {
   }
 
   void Sampler::set_depth_compare_mode(SamplerCompareMode compare_mode) {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 
     m_compare_mode = compare_mode;
@@ -60,6 +67,7 @@ namespace gl {
   }
 
   void Sampler::bind_to(uint index) const {
+    gl_trace_full();
     glBindSampler(index, m_object);
   }
 } // namespace gl

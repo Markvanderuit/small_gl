@@ -58,6 +58,7 @@ namespace gl {
     /* miscellaneous */
 
     inline void swap(Sampler &o) {
+      gl_trace();
       using std::swap;
       Base::swap(o);
       swap(m_min_filter, o.m_min_filter);

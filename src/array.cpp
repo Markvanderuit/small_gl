@@ -6,10 +6,12 @@
 namespace gl {
   namespace detail {
     void attach_buffer(GLuint object, VertexBufferCreateInfo info) {
+      gl_trace_full();
       glVertexArrayVertexBuffer(object, info.index, info.buffer->object(), info.offset, info.stride);
     }
 
     void attach_attrib(GLuint object, VertexAttribCreateInfo info) {
+      gl_trace_full();
       switch (info.type) {
         case VertexAttribType::eInt:
         case VertexAttribType::eUInt:
@@ -38,6 +40,7 @@ namespace gl {
   Array::Array(ArrayCreateInfo info)
   : Base(true), 
     m_has_elements(info.elements) {
+    gl_trace_full();
     debug::check_expr_dbg(info.buffers.size() > 0, "no vertex buffer info was provided");
     debug::check_expr_dbg(info.attribs.size() > 0, "no vertex attribute info was provided");
 
@@ -54,16 +57,19 @@ namespace gl {
   }
 
   Array::~Array() {
+    gl_trace_full();
     guard(m_is_init);
     glDeleteVertexArrays(1, &m_object);
   }
 
   void Array::bind() const {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(m_object);
   }
 
   void Array::unbind() const {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(0);
   }

@@ -83,6 +83,8 @@ namespace gl {
 
   namespace io {
     std::vector<std::byte> load_shader_binary(fs::path path) {
+      gl_trace();
+
       // Check that file path exists
       debug::check_expr_dbg(fs::exists(path),
         fmt::format("failed to resolve path \"{}\"", path.string()));
@@ -107,33 +109,40 @@ namespace gl {
 
   namespace sync {
     void memory_barrier(BarrierFlags flags) {
+      gl_trace_full();
       glMemoryBarrier((uint) flags);
     }
 
     void texture_barrier() {
+      gl_trace_full();
       glTextureBarrier();
     }
 
     Fence::Fence() : Base(true) {
+      gl_trace_full();
       m_object = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     }
 
     Fence::~Fence() {
+      gl_trace_full();
       guard(m_is_init);
       glDeleteSync((GLsync) m_object);
     }
 
     void Fence::cpu_wait(time_ns max_time) {
+      gl_trace_full();
       glClientWaitSync((GLsync) m_object, 0, max_time.count());
     }
 
     void Fence::gpu_wait() {
+      gl_trace_full();
       glWaitSync((GLsync) m_object, 0, GL_TIMEOUT_IGNORED);
     }
   } // namespace sync
 
   namespace state {
     void set(DrawCapability capability, bool enabled) {
+      gl_trace_full();
       if (enabled) {
         glEnable((uint) capability);
       } else {
@@ -142,41 +151,50 @@ namespace gl {
     }
 
     bool get(DrawCapability capability) {
+      gl_trace_full();
       return glIsEnabled((uint) capability);
     }
 
     void set_op(BlendOp src_operand, BlendOp dst_operand) {
+      gl_trace_full();
       glBlendFunc((uint) src_operand, (uint) dst_operand);
     }
 
     void set_op(LogicOp operand) {
+      gl_trace_full();
       glLogicOp((uint) operand);
     }
 
     ScopedSet::ScopedSet(DrawCapability capability, bool enabled)
     : m_capability(capability), m_prev(get(capability)), m_curr(enabled) {
+      gl_trace_full();
       guard(m_curr != m_prev);
       set(m_capability, m_curr);
     }
 
     ScopedSet::~ScopedSet() {
+      gl_trace_full();
       guard(m_curr != m_prev);
       set(m_capability, m_prev);
     }
 
     void set_viewport(const eig::Array2u &size, const eig::Array2u &offset) {
+      gl_trace_full();
       glViewport(offset.x(), offset.y(), size.x(), size.y());
     }
     
     void set_line_width(float width) {
+      gl_trace_full();
       glLineWidth(width);
     }
 
     void set_point_size(float size) {
+      gl_trace_full();
       glPointSize(size);
     }
     
     int get_variable_int(VariableName name) {
+      gl_trace_full();
       int i;
       glGetIntegerv((uint) name, &i);
       return i;
@@ -191,6 +209,8 @@ namespace gl {
 
   namespace debug {
     void enable_messages(DebugMessageSeverity minimum_severity, DebugMessageTypeFlags type_flags) {
+      gl_trace_full();
+
       glEnable(GL_DEBUG_OUTPUT);
       glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
       glDebugMessageCallback(detail::debug_callback, nullptr);
@@ -238,10 +258,13 @@ namespace gl {
     }
 
     void insert_message(std::string_view message, DebugMessageSeverity severity) {
+      gl_trace_full();
+
       constexpr static std::array<uint, 4> severity_types = { 
         GL_DEBUG_SEVERITY_NOTIFICATION, GL_DEBUG_SEVERITY_LOW, 
         GL_DEBUG_SEVERITY_MEDIUM, GL_DEBUG_SEVERITY_HIGH
       };
+      
       glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION,
                            GL_DEBUG_TYPE_OTHER,
                            0,

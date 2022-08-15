@@ -170,6 +170,11 @@ namespace gl {
     template <> consteval uint texture_pixel_format<StencilComponent>() { return GL_UNSIGNED_BYTE; }
 
     // Template specializations for the above declared texture_pixel_size_bytes() for special types
+    template <> consteval uint texture_pixel_size_bytes<ushort>()           { return sizeof(ushort); }
+    template <> consteval uint texture_pixel_size_bytes<short>()            { return sizeof(short); }
+    template <> consteval uint texture_pixel_size_bytes<uint>()             { return sizeof(uint); }
+    template <> consteval uint texture_pixel_size_bytes<int>()              { return sizeof(int); }
+    template <> consteval uint texture_pixel_size_bytes<float>()            { return sizeof(float); }
     template <> consteval uint texture_pixel_size_bytes<DepthComponent>()   { return sizeof(float); }
     template <> consteval uint texture_pixel_size_bytes<StencilComponent>() { return sizeof(std::byte); }
 

@@ -18,18 +18,23 @@ namespace gl {
     m_is_mapped(false),
     m_flags(info.flags),
     m_size(info.size > 0 ? info.size : info.data.size_bytes()) {
+    gl_trace_full();
     debug::check_expr_dbg(m_size >= info.data.size_bytes(), "buffer size is smaller than data size");
     
     glCreateBuffers(1, &m_object);
     glNamedBufferStorage(object(), m_size, info.data.data(), (uint) info.flags);
+    gl_trace_gpu_alloc("gl::Buffer", object(), m_size);
   }
 
   Buffer::~Buffer() {  
+    gl_trace_full();
     guard(m_is_init);
+    gl_trace_gpu_free("gl::Buffer", object());
     glDeleteBuffers(1, &object());
   }
 
   void Buffer::get(std::span<std::byte> data, size_t size, size_t offset) const {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? m_size : size;
@@ -37,6 +42,7 @@ namespace gl {
   }
 
   void Buffer::set(std::span<const std::byte> data, size_t size, size_t offset) {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? m_size : size;
@@ -44,6 +50,7 @@ namespace gl {
   }
   
   void Buffer::clear(std::span<const std::byte> data, size_t stride, size_t size, size_t offset) {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 
     int intr_fmt, fmt;
@@ -59,6 +66,7 @@ namespace gl {
   }
 
   void Buffer::bind_to(BufferTargetType target, uint index, size_t size, size_t offset) const {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? m_size : size;
@@ -66,6 +74,7 @@ namespace gl {
   }
 
   std::span<std::byte> Buffer::map(BufferAccessFlags flags, size_t size, size_t offset) {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     debug::check_expr_dbg(!m_is_mapped, "attempt to map a previously mapped buffer");
     debug::check_expr_dbg((uint) flags != 0, "Buffer::map() requires at least some access flags as an argument");
@@ -97,6 +106,7 @@ namespace gl {
   }
 
   void Buffer::flush(size_t size, size_t offset) {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     debug::check_expr_dbg(m_is_mapped, "attempt to flush a unmapped buffer");
 
@@ -105,6 +115,7 @@ namespace gl {
   }
 
   void Buffer::unmap() {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     debug::check_expr_dbg(m_is_mapped, "attempt to unmap a unmapped buffer");
 
@@ -113,6 +124,7 @@ namespace gl {
   }
 
   Buffer Buffer::make_from(uint object) {
+    gl_trace_full();
     debug::check_expr_dbg(glIsBuffer(object), "attempt to take ownership over a non-buffer handle");
     
     // Fill in object details manually
@@ -122,11 +134,14 @@ namespace gl {
     buffer.m_is_mapped = detail::get_buffer_param_iv(object, GL_BUFFER_MAPPED) != GL_FALSE;
     buffer.m_size = detail::get_buffer_param_iv(object, GL_BUFFER_SIZE);
     buffer.m_flags = (BufferCreateFlags) detail::get_buffer_param_iv(object, GL_BUFFER_STORAGE_FLAGS);
+
+    gl_trace_gpu_alloc("gl::Buffer", object, buffer.m_size);
     
     return buffer;
   }
 
   Buffer Buffer::make_indirect(DrawInfo info, BufferCreateFlags flags) {
+    gl_trace_full();
     debug::check_expr_dbg(info.bindable_array, "DrawInfo submitted without bindable array object");
 
     if (info.bindable_array->has_elements()) {
@@ -146,6 +161,7 @@ namespace gl {
   }
 
   Buffer Buffer::make_indirect(ComputeInfo info, BufferCreateFlags flags) {
+    gl_trace_full();
     std::array<uint, 3> data = { info.groups_x, info.groups_y, info.groups_z };
     return Buffer({ .size = data.size() * sizeof(uint),
                     .data = std::as_bytes(std::span(data)),

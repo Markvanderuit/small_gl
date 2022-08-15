@@ -92,7 +92,8 @@ namespace gl {
     // Create a indirect buffer object from a gl::ComputeInfo object
     static Buffer make_indirect(ComputeInfo info, BufferCreateFlags flags = { });
   
-    inline constexpr void swap(Buffer &o) {
+    inline void swap(Buffer &o) {
+      gl_trace();
       using std::swap;
       Base::swap(o);
       swap(m_size, o.m_size);

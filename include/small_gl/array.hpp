@@ -3,7 +3,6 @@
 #include <small_gl/fwd.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
-#include <vector>
 
 namespace gl {
   /**
@@ -82,6 +81,7 @@ namespace gl {
     /* miscellaneous */
     
     inline void swap(Array &o) {
+      gl_trace();
       using std::swap;
       Base::swap(o);
       swap(m_has_elements, o.m_has_elements);

@@ -1,16 +1,17 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/detail/trace.hpp>
 #include <utility>
 #include <tuple>
 
 // For class T, declare swap-based move constr/operator
-// and delete copy cosntr/operators, making T non-copyable
+// and delete copy constr/operators, making T non-copyable
 #define gl_declare_noncopyable(T)\
   T(const T &) = delete;\
   T & operator= (const T &) = delete;\
-  T(T &&o) noexcept { swap(o); }\
-  inline T & operator= (T &&o) noexcept { swap(o); return *this; }
+  T(T &&o) noexcept { gl_trace(); swap(o); }\
+  inline T & operator= (T &&o) noexcept { gl_trace(); swap(o); return *this; }
 
 namespace gl::detail {
   /**

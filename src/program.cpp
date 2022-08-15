@@ -1,5 +1,4 @@
 #include <small_gl/program.hpp>
-#include <small_gl/utility.hpp>
 #include <small_gl/detail/eigen.hpp>
 #include <small_gl_parser/parser.hpp>
 #include <fmt/format.h>
@@ -9,12 +8,14 @@
 namespace gl {
   namespace detail {
     GLint get_shader_iv(GLuint object, GLenum name) {
+      gl_trace_full();
       GLint value;
       glGetShaderiv(object, name, &value);
       return value;
     }
 
     GLint get_program_iv(GLuint object, GLenum name) {
+      gl_trace_full();
       GLint value;
       glGetProgramiv(object, name, &value);
       return value;
@@ -30,6 +31,7 @@ namespace gl {
     }
 
     void check_shader_compile(GLuint object) {
+      gl_trace_full();
       guard(!get_shader_iv(object, GL_COMPILE_STATUS));
 
       // Compilation failed, obtain error log
@@ -44,6 +46,7 @@ namespace gl {
     }
 
     void check_program_link(GLuint object) {
+      gl_trace_full();
       guard(!get_program_iv(object, GL_LINK_STATUS));
 
       // Compilation failed, obtain error log
@@ -58,6 +61,8 @@ namespace gl {
     }
 
     GLuint attach_shader_object(GLuint program, const ShaderCreateInfo &i) {
+      gl_trace_full();
+
       auto *ptr = (GLchar *) i.data.data();
       auto size = (GLint)    i.data.size_bytes();
       
@@ -94,11 +99,14 @@ namespace gl {
     }
 
     void detach_shader_object(GLuint program, GLuint object) {
+      gl_trace_full();
       glDetachShader(program, object);
       glDeleteShader(object);
     }
 
     GLuint create_program_object(const std::vector<ShaderCreateInfo> &info) {
+      gl_trace_full();
+
       GLuint object = glCreateProgram();
 
       std::vector<GLuint> shader_objects;
@@ -131,6 +139,7 @@ namespace gl {
 
   Program::Program(std::initializer_list<ShaderLoadInfo> load_info) 
   : Base(true) {
+    gl_trace_full();
     debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
     
     std::vector<std::vector<std::byte>> shader_bins;
@@ -153,6 +162,7 @@ namespace gl {
 
   Program::Program(std::initializer_list<ShaderCreateInfo> create_info)
   : Base(true) {
+    gl_trace_full();
     debug::check_expr_dbg(create_info.size() > 0, "no shader info was provided");
     m_object = detail::create_program_object(create_info);
   }
@@ -161,7 +171,7 @@ namespace gl {
   : Program({ load_info }) { }
 
   Program::Program(ShaderCreateInfo create_info)
-  : Program({ create_info }) {  }
+  : Program({ create_info }) { }
 
   Program::~Program() {
     guard(m_is_init);
@@ -169,16 +179,19 @@ namespace gl {
   }
 
   void Program::bind() const {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glUseProgram(m_object);
   }
 
   void Program::unbind() const {
+    gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glUseProgram(0);
   }
 
   int Program::loc(std::string_view s) {
+    gl_trace_full();
     // Search map for the provided value
     auto f = m_loc.find(s.data());
     if (f == m_loc.end()) {

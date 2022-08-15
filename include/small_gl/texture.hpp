@@ -1,6 +1,7 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/utility.hpp>
 #include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
@@ -115,6 +116,7 @@ namespace gl {
     void generate_mipmaps();
     
     inline void swap(Texture &o) {
+      gl_trace();
       using std::swap;
       Base::swap(o);
       swap(m_levels, o.m_levels);

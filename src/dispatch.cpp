@@ -7,6 +7,7 @@
 
 namespace gl {
   void dispatch_draw(DrawInfo info) {
+    gl_trace_full();
     debug::check_expr_dbg(info.bindable_array, "DrawInfo submitted without bindable array object");
     info.bindable_array->bind();
     if (info.bindable_program) info.bindable_program->bind();
@@ -35,6 +36,7 @@ namespace gl {
   }
 
   void dispatch_draw(DrawIndirectInfo info) {
+    gl_trace_full();
     debug::check_expr_dbg(info.bindable_array, "DrawIndirectInfo submitted without bindable array object");
     info.bindable_array->bind();
     if (info.bindable_program) info.bindable_program->bind();
@@ -51,11 +53,13 @@ namespace gl {
   }
 
   void dispatch_compute(ComputeInfo info) {
+    gl_trace_full();
     if (info.bindable_program) info.bindable_program->bind();
     glDispatchCompute(info.groups_x, info.groups_y, info.groups_z);
   }
 
   void dispatch_compute(ComputeIndirectInfo info) {
+    gl_trace_full();
     if (info.bindable_program) info.bindable_program->bind();
     glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, info.buffer->object());
     sync::memory_barrier(BarrierFlags::eIndirectBuffer);

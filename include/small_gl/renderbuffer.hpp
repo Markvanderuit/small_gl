@@ -35,6 +35,7 @@ namespace gl {
     /* miscellaneous */
 
     inline void swap(Renderbuffer &o) {
+      gl_trace();
       using std::swap;
       Base::swap(o);
       swap(m_size, o.m_size);
