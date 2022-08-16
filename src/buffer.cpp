@@ -73,6 +73,14 @@ namespace gl {
     glBindBufferRange((uint) target, index, m_object, offset, safe_size);
   }
 
+  void Buffer::copy_to(gl::Buffer &dst, size_t size, size_t src_offset, size_t dst_offset) {
+    gl_trace_full();
+    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+
+    size_t safe_size = (size == 0) ? m_size : size;
+    glCopyNamedBufferSubData(m_object, dst.object(), src_offset, dst_offset, size);
+  }
+
   std::span<std::byte> Buffer::map(BufferAccessFlags flags, size_t size, size_t offset) {
     gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");

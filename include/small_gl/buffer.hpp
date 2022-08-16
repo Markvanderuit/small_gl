@@ -68,7 +68,12 @@ namespace gl {
                  size_t size = 0,
                  size_t offset = 0) const;
 
-    /* mapping */
+    /* mapping and such */
+
+    void copy_to(gl::Buffer &dst,
+                 size_t size     = 0,
+                 size_t src_offset = 0,
+                 size_t dst_offset = 0);
 
     // Map a region of the buffer; returns a non-owning span over the mapped region
     std::span<std::byte> map(BufferAccessFlags flags,
@@ -108,6 +113,6 @@ namespace gl {
         == tie(o.m_size, o.m_is_mapped, o.m_flags);
     }
 
-    gl_declare_noncopyable(Buffer)
+    gl_declare_noncopyable(Buffer);
   };
 } // namespace gl

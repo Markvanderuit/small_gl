@@ -44,16 +44,33 @@ namespace gl {
     class Fence : public detail::Handle<void *> {
       using Base = Handle<void *>;
 
+      time_ns m_wait_time;
+
     public:
       /* constr/destr */
 
-      Fence();
+      Fence() = default;
+      Fence(time_ns wait_time);
       ~Fence();
 
       /* wait operands */
 
-      void cpu_wait(time_ns max_time = time_s(1)); // blocking
+      void cpu_wait(); // blocking time
       void gpu_wait();
+
+      inline void swap(Fence &o) {
+        gl_trace();
+        using std::swap;
+        Base::swap(o);
+        swap(m_wait_time, o.m_wait_time);
+      }
+
+      inline constexpr bool operator==(const Fence &o) const {
+        using std::tie;
+        return Base::operator==(o) && m_wait_time == o.m_wait_time;
+      }
+
+      gl_declare_noncopyable(Fence);
     };
   }; // namespace sync
 

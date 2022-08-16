@@ -118,7 +118,9 @@ namespace gl {
       glTextureBarrier();
     }
 
-    Fence::Fence() : Base(true) {
+    Fence::Fence(time_ns wait_time)
+    : Base(true),
+      m_wait_time(wait_time) {
       gl_trace_full();
       m_object = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     }
@@ -129,9 +131,9 @@ namespace gl {
       glDeleteSync((GLsync) m_object);
     }
 
-    void Fence::cpu_wait(time_ns max_time) {
+    void Fence::cpu_wait() {
       gl_trace_full();
-      glClientWaitSync((GLsync) m_object, 0, max_time.count());
+      glClientWaitSync((GLsync) m_object, 0, m_wait_time.count());
     }
 
     void Fence::gpu_wait() {
