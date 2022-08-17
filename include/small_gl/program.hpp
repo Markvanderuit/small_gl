@@ -83,6 +83,7 @@ namespace gl {
 
     void bind() const;
     void unbind() const;
+    static void unbind_all();
 
     /* miscellaneous */
 

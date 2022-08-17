@@ -190,6 +190,11 @@ namespace gl {
     glUseProgram(0);
   }
 
+  void Program::unbind_all() {
+    gl_trace_full();
+    glUseProgram(0);
+  }
+
   int Program::loc(std::string_view s) {
     gl_trace_full();
     // Search map for the provided value
