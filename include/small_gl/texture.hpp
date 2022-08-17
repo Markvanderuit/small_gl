@@ -129,7 +129,7 @@ namespace gl {
         && (m_size == o.m_size).all();
     }
 
-    gl_declare_noncopyable(Texture)
+    gl_declare_noncopyable(Texture);
   };
 
   /* Shorthand notations for common texture types follow */
