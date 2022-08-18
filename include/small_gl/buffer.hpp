@@ -3,6 +3,7 @@
 #include <small_gl/fwd.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/enum.hpp>
+#include <small_gl/detail/utility.hpp>
 #include <small_gl/dispatch.hpp>
 #include <span>
 
@@ -86,6 +87,22 @@ namespace gl {
     // Flush a mapped region of the buffer
     void flush(size_t size = 0, size_t offset = 0);
     
+    /* convenience operators */
+
+    template <typename Ty>
+    void get_as(std::span<Ty> data,
+                size_t size = 0,
+                size_t offs = 0) const {
+      get(detail::cast_span<std::byte>(data), size * sizeof(Ty), offs * sizeof(Ty));
+    }
+
+    template <typename Ty>
+    std::span<Ty> map_as(BufferAccessFlags flags,
+                         size_t size = 0,
+                         size_t offs = 0) {
+      return detail::cast_span<Ty>(map(flags, size * sizeof(Ty), offs * sizeof(Ty)));
+    }
+
     /* miscellaneous */
 
     // Assume lifetime ownership over a provided buffer handle

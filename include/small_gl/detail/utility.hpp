@@ -6,11 +6,20 @@
 #include <fmt/compile.h>
 #include <exception>
 #include <iterator>
+#include <span>
 #include <string>
 #include <vector>
 #include <utility>
 
 namespace gl::detail {
+  // Convert a span over type U to 
+  template <class T, class U>
+  std::span<T> cast_span(std::span<U> s) {
+    auto data = s.data();
+    guard(data, {});
+    return { reinterpret_cast<T*>(data), s.size_bytes() / sizeof(T) };
+  }
+
   // Provide a readable translation of error values returned by glGetError();
   constexpr inline
   std::string readable_gl_error(GLenum err) {
