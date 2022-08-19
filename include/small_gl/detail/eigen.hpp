@@ -14,10 +14,10 @@ namespace gl {
 
 namespace Eigen {
   using Array2u = Array<unsigned int, 2, 1>;
-  using Array3u = Array<unsigned int, 2, 1>;
-  using Array4u = Array<unsigned int, 2, 1>;
+  using Array3u = Array<unsigned int, 3, 1>;
+  using Array4u = Array<unsigned int, 4, 1>;
 
   using Vector2u = Matrix<unsigned int, 2, 1>;
-  using Vector3u = Matrix<unsigned int, 2, 1>;
-  using Vector4u = Matrix<unsigned int, 2, 1>;
+  using Vector3u = Matrix<unsigned int, 3, 1>;
+  using Vector4u = Matrix<unsigned int, 4, 1>;
 } // namespace Eigen

@@ -45,7 +45,7 @@ namespace gl {
     debug::check_expr_dbg(info.attribs.size() > 0, "no vertex attribute info was provided");
 
     glCreateVertexArrays(1, &m_object);
-
+    
     // Bind vertex buffer objects and vertex attributes
     std::ranges::for_each(info.buffers, [&](auto &info) { detail::attach_buffer(m_object, info); });
     std::ranges::for_each(info.attribs, [&](auto &info) { detail::attach_attrib(m_object, info); });
