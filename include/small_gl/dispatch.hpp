@@ -12,20 +12,18 @@ namespace gl {
     PrimitiveType type;
 
     // Vertex range data
-    uint vertex_count;
+    uint vertex_count = 0;
     uint vertex_first = 0;
 
     // Instancing data
     uint instance_count = 0;
-    uint vertex_base = 0;
-    uint instance_base = 0;
+    uint vertex_base    = 0;
+    uint instance_base  = 0;
 
-    // Required bindables; will be bound before draw
-    const Array       *bindable_array;
-
-    // Optional bindables; will be bound before draw
-    const Program     *bindable_program     = nullptr;
-    const Framebuffer *bindable_framebuffer = nullptr;
+    // Bindables; will be bound before draw
+    const Array       *bindable_array       = nullptr; // required
+    const Program     *bindable_program     = nullptr; // optional
+    const Framebuffer *bindable_framebuffer = nullptr; // optional
   };
 
   /**
@@ -38,12 +36,10 @@ namespace gl {
     // Indirect buffer
     const Buffer *buffer;
 
-    // Required bindables; will be bound before draw
-    const Array       *bindable_array;
-
-    // Optional bindables; will be bound before draw
-    const Program     *bindable_program     = nullptr;
-    const Framebuffer *bindable_framebuffer = nullptr;
+    // Bindables; will be bound before draw
+    const Array       *bindable_array       = nullptr; // required
+    const Program     *bindable_program     = nullptr; // optional
+    const Framebuffer *bindable_framebuffer = nullptr; // optional
   };
 
   /**
@@ -55,7 +51,7 @@ namespace gl {
     uint groups_y = 1;
     uint groups_z = 1;
     
-    // Optional bindables; will be bound before draw
+    // Optional bindables will be bound before draw
     const Program *bindable_program = nullptr;
   };
 
@@ -66,7 +62,7 @@ namespace gl {
     // Indirect buffer
     const Buffer *buffer;
 
-    // Optional bindables; will be bound before draw
+    // Optional bindable; will be bound before draw
     const Program *bindable_program = nullptr;
   };
   

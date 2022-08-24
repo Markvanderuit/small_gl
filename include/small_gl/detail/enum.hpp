@@ -68,9 +68,9 @@ namespace gl {
   // Draw capabilities for gl::state::set(...)/get(...)
   enum class DrawCapability : uint {
     // Misc capabilities
-    eCullFace           = GL_CULL_FACE,
     eFramebufferSRGB    = GL_FRAMEBUFFER_SRGB,
     eMSAA               = GL_MULTISAMPLE,
+    eCullOp             = GL_CULL_FACE,
 
     // Blending capabilities
     eBlendOp            = GL_BLEND,
@@ -108,6 +108,13 @@ namespace gl {
     eOneMinusSrc1Color  = GL_ONE_MINUS_SRC1_COLOR,
     eSrc1Alpha          = GL_SRC1_ALPHA,
     eOneMinusSrc1Alpha  = GL_ONE_MINUS_SRC1_ALPHA
+  };
+
+  // Culling operations for gl::state::set_op(...)
+  enum class CullOp : uint {
+    eBack               = GL_BACK,
+    eFront              = GL_FRONT,
+    eBoth               = GL_FRONT_AND_BACK 
   };
 
   // Logic operations for gl::state::set_op(...)

@@ -167,6 +167,11 @@ namespace gl {
       glLogicOp((uint) operand);
     }
 
+    void set_op(CullOp operand) {
+      gl_trace_full();
+      glCullFace((uint) operand);
+    }
+
     ScopedSet::ScopedSet(DrawCapability capability, bool enabled)
     : m_capability(capability), m_prev(get(capability)), m_curr(enabled) {
       gl_trace_full();
