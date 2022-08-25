@@ -223,10 +223,10 @@ namespace gl {
       { glProgramUniform2 ## type_short (m_object, loc(s), v[0], v[1]); }            \
     template <> void Program::uniform<eig::Array<type, 3, 1>>                        \
       (std::string_view s, const eig::Array<type, 3, 1> &v)                          \
-      { glProgramUniform3 ## type_short (m_object, loc(s), v[0], v[1], v[1]); }      \
+      { glProgramUniform3 ## type_short (m_object, loc(s), v[0], v[1], v[2]); }      \
     template <> void Program::uniform<eig::Array<type, 4, 1>>                        \
       (std::string_view s, const eig::Array<type, 4, 1> &v)                          \
-      { glProgramUniform4 ## type_short (m_object, loc(s), v[0], v[1], v[1], v[2]); }
+      { glProgramUniform4 ## type_short (m_object, loc(s), v[0], v[1], v[2], v[3]); }
     
   #define gl_explicit_uniform_template_eig_vector(type, type_short)                  \
     template <> void Program::uniform<eig::Matrix<type, 2, 1>>                       \
@@ -234,10 +234,10 @@ namespace gl {
       { glProgramUniform2 ## type_short (m_object, loc(s), v[0], v[1]); }            \
     template <> void Program::uniform<eig::Matrix<type, 3, 1>>                       \
       (std::string_view s, const eig::Matrix<type, 3, 1> &v)                         \
-      { glProgramUniform3 ## type_short (m_object, loc(s), v[0], v[1], v[1]); }      \
+      { glProgramUniform3 ## type_short (m_object, loc(s), v[0], v[1], v[2]); }      \
     template <> void Program::uniform<eig::Matrix<type, 4, 1>>                       \
       (std::string_view s, const eig::Matrix<type, 4, 1> &v)                         \
-      { glProgramUniform4 ## type_short (m_object, loc(s), v[0], v[1], v[1], v[2]); }
+      { glProgramUniform4 ## type_short (m_object, loc(s), v[0], v[1], v[2], v[3]); }
 
   #define gl_explicit_uniform_template(type, type_short)                                  \
     gl_explicit_uniform_template_1(type, type_short)                                      \
@@ -250,7 +250,7 @@ namespace gl {
     { glProgramUniformMatrix2 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
     template <> void Program::uniform<eig::Matrix<type, 3, 3>>                            \
     (std::string_view s, const eig::Matrix<type, 3, 3> &v)                                \
-    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
+    { glProgramUniformMatrix3 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
     template <> void Program::uniform<eig::Matrix<type, 4, 4>>                            \
     (std::string_view s, const eig::Matrix<type, 4, 4> &v)                                \
     { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, v.data()); }
@@ -261,7 +261,7 @@ namespace gl {
     { glProgramUniformMatrix2 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
     template <> void Program::uniform<eig::Array<type, 3, 3>>                             \
     (std::string_view s, const eig::Array<type, 3, 3> &v)                                 \
-    { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
+    { glProgramUniformMatrix3 ## type_short ## v(m_object, loc(s), 1, false, v.data()); } \
     template <> void Program::uniform<eig::Array<type, 4, 4>>                             \
     (std::string_view s, const eig::Array<type, 4, 4> &v)                                 \
     { glProgramUniformMatrix4 ## type_short ## v(m_object, loc(s), 1, false, v.data()); }
