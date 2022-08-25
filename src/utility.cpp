@@ -133,7 +133,7 @@ namespace gl {
 
     void Fence::cpu_wait() {
       gl_trace_full();
-      glClientWaitSync((GLsync) m_object, 0, m_wait_time.count());
+      glClientWaitSync((GLsync) m_object, GL_SYNC_FLUSH_COMMANDS_BIT, m_wait_time.count());
     }
 
     void Fence::gpu_wait() {
