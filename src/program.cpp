@@ -115,7 +115,7 @@ namespace gl {
       // Generate, compile, and attach shader objects
       std::ranges::transform(info, std::back_inserter(shader_objects),
         [object] (const auto &i) { return attach_shader_object(object, i); });
-
+      
       glLinkProgram(object);
       check_program_link(object);
 
@@ -142,20 +142,18 @@ namespace gl {
     gl_trace_full();
     debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
     
-    std::vector<std::vector<std::byte>> shader_bins;
-    shader_bins.reserve(load_info.size());
+    std::vector<std::vector<std::byte>> shader_bins(load_info.size());
 
     // Load binary shader data into shader_bins using info's paths
-    std::ranges::transform(load_info, std::back_inserter(shader_bins),
+    std::ranges::transform(load_info, shader_bins.begin(),
       [](const auto &i) { return io::load_shader_binary(i.path); });
 
-    std::vector<ShaderCreateInfo> create_info;
-    create_info.reserve(load_info.size());
+    std::vector<ShaderCreateInfo> create_info(load_info.size());
 
     // Construct ShaderCreateInfo objects with shader_bins as backing data
-    std::transform(shader_bins.begin(), shader_bins.end(), 
-                   load_info.begin(), std::back_inserter(create_info),
-                   detail::zip_loaded_info);
+    std::transform(range_iter(shader_bins), 
+      load_info.begin(), create_info.begin(), 
+      detail::zip_loaded_info);
 
     m_object = detail::create_program_object(create_info);
   }
