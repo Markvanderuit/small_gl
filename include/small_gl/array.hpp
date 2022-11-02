@@ -20,6 +20,10 @@ namespace gl {
 
     // Distance between vertex elements in the buffer, in bytes
     size_t stride = sizeof(uint);
+
+    // Rate at which vertex attributes advance in the case of instanced
+    // rendering when reading from this buffer object
+    size_t divisor = 0;
   };
 
   /**
@@ -36,7 +40,7 @@ namespace gl {
     VertexAttribSize size = VertexAttribSize::e1;
 
     // Offset of the first vertex element to the start of the vertex
-    // buffer binding this attribute fecthes from, in bytes
+    // buffer binding this attribute fetches from, in bytes
     size_t offset = 0;
   };
 

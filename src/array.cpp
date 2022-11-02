@@ -8,6 +8,7 @@ namespace gl {
     void attach_buffer(GLuint object, VertexBufferCreateInfo info) {
       gl_trace_full();
       glVertexArrayVertexBuffer(object, info.index, info.buffer->object(), info.offset, info.stride);
+      glVertexArrayBindingDivisor(object, info.index, info.divisor);
     }
 
     void attach_attrib(GLuint object, VertexAttribCreateInfo info) {
