@@ -12,8 +12,8 @@
   #define gl_trace_gpu_free(alloc_name, handle)
 #else // GL_ENABLE_TRACY
   #include <glad/glad.h>
-  #include <Tracy.hpp>
-  #include <TracyOpenGL.hpp>
+  #include <tracy/Tracy.hpp>
+  #include <tracy/TracyOpenGL.hpp>
   
   // Insert CPU event trace
   #define gl_trace()                    ZoneScoped;
