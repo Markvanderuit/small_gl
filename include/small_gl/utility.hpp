@@ -81,8 +81,9 @@ namespace gl {
 
     // Configure framebuffer blending and logic operations
     void set_op(BlendOp src_operand, BlendOp dst_operand);
+    void set_op(DrawOp  operand);
     void set_op(LogicOp operand);
-    void set_op(CullOp operand);
+    void set_op(CullOp  operand);
 
     // Helper object to set/unset capabilities in a local scope using RAII
     class ScopedSet {

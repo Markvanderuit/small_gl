@@ -162,6 +162,11 @@ namespace gl {
       glBlendFunc((uint) src_operand, (uint) dst_operand);
     }
 
+    void set_op(DrawOp operand) {
+      gl_trace_full();
+      glPolygonMode(GL_FRONT_AND_BACK, (uint) operand);
+    }
+
     void set_op(LogicOp operand) {
       gl_trace_full();
       glLogicOp((uint) operand);

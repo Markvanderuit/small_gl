@@ -117,6 +117,13 @@ namespace gl {
     eBoth               = GL_FRONT_AND_BACK 
   };
 
+  // Drawing operations for gl::state::set_op(...)
+  enum class DrawOp : uint {
+    ePoint              = GL_POINT,
+    eLine               = GL_LINE,
+    eFill               = GL_FILL
+  };
+
   // Logic operations for gl::state::set_op(...)
   enum class LogicOp : uint {
     eClear              = GL_CLEAR,
