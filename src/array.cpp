@@ -53,7 +53,7 @@ namespace gl {
 
     // Bind elements buffer, if provided
     if (m_has_elements) {
-      glVertexArrayElementBuffer(m_object, info.elements->object());
+      attach_elements(*(info.elements));
     }
   }
 
@@ -81,5 +81,15 @@ namespace gl {
 
   void Array::attach_attrib(std::vector<VertexAttribCreateInfo> info) {
     std::ranges::for_each(info, [&](auto &_info) { detail::attach_attrib(m_object, _info); });
+  }
+
+  void Array::attach_elements(const Buffer &elements) {
+    m_has_elements = true;
+    glVertexArrayElementBuffer(m_object, elements.object());
+  }
+
+  void Array::detach_elements() {
+    m_has_elements = false;
+    glVertexArrayElementBuffer(m_object, 0);
   }
 } // namespace gl

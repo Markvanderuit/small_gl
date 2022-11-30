@@ -84,6 +84,8 @@ namespace gl {
 
     void attach_buffer(std::vector<VertexBufferCreateInfo> info);
     void attach_attrib(std::vector<VertexAttribCreateInfo> info);
+    void attach_elements(const Buffer &buffer);
+    void detach_elements();
 
     /* miscellaneous */
     
