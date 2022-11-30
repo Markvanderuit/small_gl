@@ -82,6 +82,9 @@ namespace gl {
     void bind() const;
     void unbind() const;
 
+    void attach_buffer(std::vector<VertexBufferCreateInfo> info);
+    void attach_attrib(std::vector<VertexAttribCreateInfo> info);
+
     /* miscellaneous */
     
     inline void swap(Array &o) {

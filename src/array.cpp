@@ -48,8 +48,8 @@ namespace gl {
     glCreateVertexArrays(1, &m_object);
     
     // Bind vertex buffer objects and vertex attributes
-    std::ranges::for_each(info.buffers, [&](auto &info) { detail::attach_buffer(m_object, info); });
-    std::ranges::for_each(info.attribs, [&](auto &info) { detail::attach_attrib(m_object, info); });
+    attach_buffer(info.buffers);
+    attach_attrib(info.attribs);
 
     // Bind elements buffer, if provided
     if (m_has_elements) {
@@ -73,5 +73,13 @@ namespace gl {
     gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(0);
+  }
+  
+  void Array::attach_buffer(std::vector<VertexBufferCreateInfo> info) {
+    std::ranges::for_each(info, [&](auto &_info) { detail::attach_buffer(m_object, _info); });
+  }
+
+  void Array::attach_attrib(std::vector<VertexAttribCreateInfo> info) {
+    std::ranges::for_each(info, [&](auto &_info) { detail::attach_attrib(m_object, _info); });
   }
 } // namespace gl
