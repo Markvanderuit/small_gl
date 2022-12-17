@@ -27,7 +27,7 @@ namespace gl {
     uint levels = 1;
 
     // Non-owning span to data passed into buffer
-    std::span<T> data = { };
+    std::span<const T> data = { };
   };
 
   /**
