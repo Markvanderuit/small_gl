@@ -10,6 +10,7 @@
   #define gl_trace_full_n(name)
   #define gl_trace_gpu_alloc(alloc_name, handle, size)
   #define gl_trace_gpu_free(alloc_name, handle)
+  #define gl_trace_init_context()
 #else // GL_ENABLE_TRACY
   #include <glad/glad.h>
   #include <tracy/Tracy.hpp>
