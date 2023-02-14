@@ -382,6 +382,13 @@ namespace gl {
     e4                      = 4
   };
 
+  // Format used for internal element buffer in gl::ArrayCreateInfo(...) object
+  enum class VertexElemType : uint {
+    eUByte  = GL_UNSIGNED_BYTE,
+    eUShort = GL_UNSIGNED_SHORT,
+    eUInt   = GL_UNSIGNED_INT,
+  };
+
   /* Window/context enums */
 
   // Window hint flags to pass to GLFW

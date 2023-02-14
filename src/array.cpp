@@ -42,8 +42,6 @@ namespace gl {
   : Base(true), 
     m_has_elements(info.elements) {
     gl_trace_full();
-    debug::check_expr_dbg(info.buffers.size() > 0, "no vertex buffer info was provided");
-    debug::check_expr_dbg(info.attribs.size() > 0, "no vertex attribute info was provided");
 
     glCreateVertexArrays(1, &m_object);
     
@@ -53,6 +51,7 @@ namespace gl {
 
     // Bind elements buffer, if provided
     if (m_has_elements) {
+      m_elements_type = info.elements_type;
       attach_elements(*(info.elements));
     }
   }

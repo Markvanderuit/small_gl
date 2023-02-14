@@ -55,8 +55,9 @@ namespace gl {
     // Vertex attribute info
     std::vector<VertexAttribCreateInfo> attribs;
 
-    // Optional elements buffer
-    const Buffer *elements = nullptr;
+    // Optional elements buffer and internal type
+    const Buffer  *elements      = nullptr;
+    VertexElemType elements_type = VertexElemType::eUInt;
   };
 
   /**
@@ -65,7 +66,8 @@ namespace gl {
   class Array : public detail::Handle<> {
     using Base = detail::Handle<>;
 
-    bool m_has_elements;
+    bool           m_has_elements;
+    VertexElemType m_elements_type;
 
   public:	
     /* constr/destr */
@@ -76,7 +78,8 @@ namespace gl {
 
     /* getters/setters */
 
-    inline bool has_elements() const { return m_has_elements; }
+    inline bool has_elements() const  { return m_has_elements; }
+    inline uint elements_type() const { return uint(m_elements_type); }
 
     /* state */
 
