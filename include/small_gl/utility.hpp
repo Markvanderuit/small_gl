@@ -84,6 +84,7 @@ namespace gl {
     void set_op(DrawOp  operand);
     void set_op(LogicOp operand);
     void set_op(CullOp  operand);
+    void set_op(DepthOp operand);
 
     // Helper object to set/unset capabilities in a local scope using RAII
     class ScopedSet {
@@ -99,6 +100,7 @@ namespace gl {
     void set_viewport(const eig::Array2u &size, const eig::Array2u &offset = 0u);
     void set_line_width(float width);
     void set_point_size(float size);
+    void set_depth_range(float z_near, float z_far);
 
     // OpenGL variable queries
     int get_variable_int(VariableName name);

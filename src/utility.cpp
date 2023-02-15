@@ -177,6 +177,11 @@ namespace gl {
       glCullFace((uint) operand);
     }
 
+    void set_op(DepthOp operand) {
+      gl_trace_full();
+      glDepthFunc((uint) operand);
+    }
+
     ScopedSet::ScopedSet(DrawCapability capability, bool enabled)
     : m_capability(capability), m_prev(get(capability)), m_curr(enabled) {
       gl_trace_full();
@@ -203,6 +208,11 @@ namespace gl {
     void set_point_size(float size) {
       gl_trace_full();
       glPointSize(size);
+    }
+
+    void set_depth_range(float z_near, float z_far) {
+      gl_trace_full();
+      glDepthRangef(z_near, z_far);
     }
     
     int get_variable_int(VariableName name) {

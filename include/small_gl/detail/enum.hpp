@@ -144,6 +144,18 @@ namespace gl {
     eOrInverse          = GL_OR_INVERTED,
   };
 
+  // Depth function operations for gl::state::set_op(...)
+  enum class DepthOp : uint {
+    eLessOrEqual        = GL_LEQUAL,
+    eGreaterOrEqual     = GL_GEQUAL,
+    eLess               = GL_LESS,
+    eGreater            = GL_GREATER,
+    eEqual              = GL_EQUAL,
+    eNotEqual           = GL_NOTEQUAL,
+    eAlways             = GL_ALWAYS,
+    eNever              = GL_NEVER
+  };
+
   // Primitive types for gl::draw(...)
   enum class PrimitiveType : uint {
     ePoints             = GL_POINTS,
