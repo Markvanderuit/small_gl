@@ -222,11 +222,7 @@ namespace gl {
       return i;
     }
 
-    // set_polygon_mode
-    // set_depth_range
     // set_color_mask
-    // set_op(stencilfunc?)
-    // set_op(depthfunc?)
   } // namespace state
 
   namespace debug {

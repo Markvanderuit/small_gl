@@ -182,6 +182,8 @@ namespace gl {
     eSharedMemorySize   = GL_MAX_COMPUTE_SHARED_MEMORY_SIZE,
     eFramebufferBinding = GL_DRAW_FRAMEBUFFER_BINDING,
     eProgramBinding     = GL_CURRENT_PROGRAM
+    
+
     // eMaxComputeShaderStorageBlocks
     //                     = GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS,
     // eMaxCombinedShaderStorageBlocks

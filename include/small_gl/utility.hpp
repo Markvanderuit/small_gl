@@ -104,6 +104,13 @@ namespace gl {
 
     // OpenGL variable queries
     int get_variable_int(VariableName name);
+
+    template <typename T>
+    T get_variable(VariableName name);
+    const auto get_variable_b = get_variable<bool>;
+    const auto get_variable_i = get_variable<int>;
+    const auto get_variable_f = get_variable<float>;
+    const auto get_variable_d = get_variable<double>;
   } // namespace state
 
   namespace debug {

@@ -2,6 +2,7 @@
 
 #include <small_gl/fwd.hpp>
 #include <small_gl/detail/enum.hpp>
+#include <optional>
 
 namespace gl {
   /**
@@ -20,6 +21,15 @@ namespace gl {
     uint vertex_base    = 0;
     uint instance_base  = 0;
 
+
+    // Specific state data; will affect active state before draw
+    std::vector<std::pair<DrawCapability, bool>> capabilities = { };
+    std::optional<DrawOp>                        draw_op      = { };
+    std::optional<LogicOp>                       logic_op     = { };
+    std::optional<CullOp>                        cull_op      = { };
+    std::optional<DepthOp>                       depth_op     = { };
+    std::optional<std::pair<BlendOp, BlendOp>>   blend_op     = { }; // { src, dst }
+    
     // Bindables; will be bound before draw
     const Array       *bindable_array       = nullptr; // required
     const Program     *bindable_program     = nullptr; // optional
@@ -36,6 +46,14 @@ namespace gl {
     // Indirect buffer
     const Buffer *buffer;
 
+    // Specific state data; will override active state before draw
+    std::vector<std::pair<DrawCapability, bool>> capabilities = { };
+    std::optional<DrawOp>                        draw_op      = { };
+    std::optional<LogicOp>                       logic_op     = { };
+    std::optional<CullOp>                        cull_op      = { };
+    std::optional<DepthOp>                       depth_op     = { };
+    std::optional<std::pair<BlendOp, BlendOp>>   blend_op     = { }; // { src, dst }
+    
     // Bindables; will be bound before draw
     const Array       *bindable_array       = nullptr; // required
     const Program     *bindable_program     = nullptr; // optional
