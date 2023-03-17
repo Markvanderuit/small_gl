@@ -38,6 +38,8 @@ namespace gl {
     // Special assembled types
     eMapReadWrite       = (uint) BufferCreateFlags::eMapRead 
                         | (uint) BufferCreateFlags::eMapWrite,
+    eMapWritePersistent = (uint) BufferCreateFlags::eMapWrite
+                        | (uint) BufferCreateFlags::eMapPersistent,
     eMapFull            = (uint) BufferCreateFlags::eMapReadWrite
                         | (uint) BufferCreateFlags::eMapPersistent
                         | (uint) BufferCreateFlags::eMapCoherent,
@@ -56,6 +58,8 @@ namespace gl {
     // Special assembled types
     eMapReadWrite       = (uint) BufferAccessFlags::eMapRead 
                         | (uint) BufferAccessFlags::eMapWrite,
+    eMapWritePersistent = (uint) BufferAccessFlags::eMapWrite
+                        | (uint) BufferAccessFlags::eMapPersistent,
     eMapFull            = (uint) BufferAccessFlags::eMapReadWrite
                         | (uint) BufferAccessFlags::eMapPersistent
                         | (uint) BufferAccessFlags::eMapCoherent
