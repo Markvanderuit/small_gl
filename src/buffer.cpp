@@ -29,6 +29,10 @@ namespace gl {
   Buffer::~Buffer() {  
     gl_trace_full();
     guard(m_is_init);
+  
+    if (m_is_mapped) 
+      unmap();
+    
     gl_trace_gpu_free("gl::Buffer", object());
     glDeleteBuffers(1, &object());
   }
