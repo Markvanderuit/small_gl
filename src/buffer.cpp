@@ -77,7 +77,7 @@ namespace gl {
     glBindBufferRange((uint) target, index, m_object, offset, safe_size);
   }
 
-  void Buffer::copy_to(gl::Buffer &dst, size_t size, size_t src_offset, size_t dst_offset) {
+  void Buffer::copy_to(gl::Buffer &dst, size_t size, size_t src_offset, size_t dst_offset) const {
     gl_trace_full();
     debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
 

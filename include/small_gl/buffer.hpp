@@ -74,7 +74,7 @@ namespace gl {
     void copy_to(gl::Buffer &dst,
                  size_t size     = 0,
                  size_t src_offset = 0,
-                 size_t dst_offset = 0);
+                 size_t dst_offset = 0) const;
 
     // Map a region of the buffer; returns a non-owning span over the mapped region
     std::span<std::byte> map(BufferAccessFlags flags,
