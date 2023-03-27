@@ -14,6 +14,39 @@
 namespace gl {  
   /**
    * Helper object to create program object with path to shader
+   * object's file data; SPIR-V shader loading will be used
+   */
+  struct ShaderLoadSPIRVInfo {
+    // Shader type (vertex, fragment, compute, geometry, tessel...)
+    ShaderType type;
+
+    // Path towards SPIRV file, which will be loaded
+    fs::path spirv_path;
+
+    // Path towards SPIRV-Cross generated reflection json file
+    fs::path cross_path;
+
+    // Override spirv shader entry point, if necessary
+    std::string entry_point = "main";
+  };
+
+  /**
+   * Helper object to create program object with path to shader
+   * object's file data; OpenGL shader loading will be used
+   */
+  struct ShaderLoadOGLInfo {
+    // Shader type (vertex, fragment, compute, geometry, tessel...)
+    ShaderType type;
+
+    // Path towards GLSL file, which will be loaded
+    fs::path glsl_path;
+
+    // Path towards SPIRV-Cross generated reflection json file
+    fs::path cross_path;
+  };
+
+  /**
+   * Helper object to create program object with path to shader
    * object's file data.
    */
   struct ShaderLoadInfo {
@@ -22,6 +55,9 @@ namespace gl {
 
     // Path towards shader file, which will be loaded
     fs::path path;
+
+    // Path towards SPIRV-Cross generated reflection json file
+    fs::path cross_path;
 
     // Is the attached shader data a spir-v binary?
     bool is_spirv = false;
@@ -59,13 +95,24 @@ namespace gl {
    */
   class Program : public detail::Handle<> {
     using Base = detail::Handle<>;
+
+    enum class BindingType {
+      eAuto,
+      eImage,
+      eSampler, // textures/samplers share name/binding
+      eShaderStorageBuffer,
+      eUniform,
+      eUniformBuffer,
+    };
+
+    struct BindingData {
+      BindingType type = BindingType::eAuto;
+      int         indx = -1;
+    };
     
     // Maps populate with object locations for reflectable string names, if available
-    std::unordered_map<std::string, int> m_locations_uniform;
-    std::unordered_map<std::string, int> m_locations_ubo;
-    std::unordered_map<std::string, int> m_locations_ssbo;
-    std::unordered_map<std::string, int> m_locations_image;
-    std::unordered_map<std::string, int> m_locations_texture;
+    std::unordered_map<std::string, int>         m_locations_uniform;
+    std::unordered_map<std::string, BindingData> m_locations_data;
 
     // Look up uniform location for uniform string name
     int loc(std::string_view s);
@@ -74,22 +121,30 @@ namespace gl {
     /* constr/destr */
 
     Program() = default;
+    ~Program();
+
     Program(ShaderLoadInfo);
     Program(std::initializer_list<ShaderLoadInfo>);
+
     Program(ShaderCreateInfo);
     Program(std::initializer_list<ShaderCreateInfo>);
-    ~Program();
 
     /* state */  
 
     template <typename T>
     void uniform(std::string_view s, const T &t);
 
+    void bind(std::string_view s, const gl::Buffer &);
+
     void bind() const;
     void unbind() const;
     static void unbind_all();
 
     /* miscellaneous */
+
+    // Populate reflectance data from SPIRV-Cross generated .json file
+    void populate(fs::path refl_path);
+    void populate(io::json refl_json);
     
     inline void swap(Program &o) {
       gl_trace();

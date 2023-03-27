@@ -1,7 +1,9 @@
 #include <small_gl/program.hpp>
 #include <small_gl/detail/eigen.hpp>
 #include <small_gl_parser/parser.hpp>
+#include <nlohmann/json.hpp>
 #include <fmt/format.h>
+#include <functional>
 #include <ranges>
 #include <sstream>
 
@@ -131,7 +133,7 @@ namespace gl {
       return ShaderCreateInfo {
         .type              = load_info.type,  
         .data              = data, 
-        .is_spirv   = load_info.is_spirv, 
+        .is_spirv          = load_info.is_spirv, 
         .spirv_entry_point = load_info.spirv_entry_point,
         .parser            = load_info.parser
       };
@@ -143,18 +145,14 @@ namespace gl {
     gl_trace_full();
     debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
     
-    std::vector<std::vector<std::byte>> shader_bins(load_info.size());
-
     // Load binary shader data into shader_bins using info's paths
+    std::vector<std::vector<std::byte>> shader_bins(load_info.size());
     std::ranges::transform(load_info, shader_bins.begin(),
       [](const auto &i) { return io::load_shader_binary(i.path); });
 
-    std::vector<ShaderCreateInfo> create_info(load_info.size());
-
     // Construct ShaderCreateInfo objects with shader_bins as backing data
-    std::transform(range_iter(shader_bins), 
-      load_info.begin(), create_info.begin(), 
-      detail::zip_loaded_info);
+    std::vector<ShaderCreateInfo> create_info(load_info.size());
+    std::transform(range_iter(shader_bins), load_info.begin(), create_info.begin(), detail::zip_loaded_info);
 
     m_object = detail::create_program_object(create_info);
   }
@@ -196,7 +194,8 @@ namespace gl {
 
   int Program::loc(std::string_view s) {
     gl_trace_full();
-    // Search map for the provided value
+
+    // Search map for the provided value; reflect if value is not yet located
     auto f = m_locations_uniform.find(s.data());
     if (f == m_locations_uniform.end()) {
       // Obtain handle and check if it is actually valid
@@ -206,7 +205,35 @@ namespace gl {
       // Insert value into map
       f = m_locations_uniform.insert({s.data(), handle}).first;
     }
+
     return f->second;
+  }
+
+  
+  void Program::populate(fs::path refl_path) {
+    return populate(io::load_json(refl_path));
+  }
+
+  void Program::populate(io::json js) {
+    using namespace std::placeholders;
+    
+    auto func = [&](const auto &iter, BindingType type) {
+      guard(iter.contains("name") && iter.contains("binding"));
+      BindingData data { type, iter.at("binding").get<int>() };
+      m_locations_data.emplace(iter.at("name").get<std::string>(), data);
+    };
+
+    if (js.contains("ubos"))
+      std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eUniformBuffer));
+    
+    if (js.contains("ssbos"))
+      std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eShaderStorageBuffer));
+
+    if (js.contains("images"))
+      std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eImage));
+
+    if (js.contains("textures")) // textures/samplers share name/binding
+      std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eSampler));
   }
   
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */
