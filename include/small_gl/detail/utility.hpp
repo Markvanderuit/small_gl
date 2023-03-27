@@ -64,8 +64,7 @@ namespace gl::detail {
    * are output line-by-line in a formatted manner, in the order
    * in which they were provided..
    */
-  class Exception : public std::exception, 
-                             public Message {
+  class Exception : public std::exception, public Message {
     mutable std::string _what;
 
   public:

@@ -23,8 +23,8 @@ namespace gl {
     // Path towards shader file, which will be loaded
     fs::path path;
 
-    // Is the attached shader data a spirv binary?
-    bool is_spirv_binary = false;
+    // Is the attached shader data a spir-v binary?
+    bool is_spirv = false;
 
     // Override spirv shader entry point, if necessary
     std::string spirv_entry_point = "main";
@@ -44,8 +44,8 @@ namespace gl {
     // Shader data in binary format
     std::span<const std::byte> data;
 
-    // Is the attached shader data a spirv binary?
-    bool is_spirv_binary = false;
+    // Is the attached shader data a spir-v binary?
+    bool is_spirv = false;
 
     // Override spirv shader entry point, if necessary
     std::string spirv_entry_point = "main";
@@ -60,8 +60,12 @@ namespace gl {
   class Program : public detail::Handle<> {
     using Base = detail::Handle<>;
     
-    // Unordered map caches uniform locations for uniform string names
-    std::unordered_map<std::string, int> m_loc;
+    // Maps populate with object locations for reflectable string names, if available
+    std::unordered_map<std::string, int> m_locations_uniform;
+    std::unordered_map<std::string, int> m_locations_ubo;
+    std::unordered_map<std::string, int> m_locations_ssbo;
+    std::unordered_map<std::string, int> m_locations_image;
+    std::unordered_map<std::string, int> m_locations_texture;
 
     // Look up uniform location for uniform string name
     int loc(std::string_view s);
@@ -86,19 +90,16 @@ namespace gl {
     static void unbind_all();
 
     /* miscellaneous */
-
-   /*  static void add_include(std::initializer_list<ShaderIncludeLoadInfo>);
-    static void add_include(std::initializer_list<ShaderIncludeCreateInfo>); */
     
     inline void swap(Program &o) {
       gl_trace();
       using std::swap;
       Base::swap(o);
-      swap(m_loc, o.m_loc);
+      swap(m_locations_uniform, o.m_locations_uniform);
     }
 
     inline bool operator==(const Program &o) const {
-      return Base::operator==(o) && m_loc == o.m_loc;
+      return Base::operator==(o) && m_locations_uniform == o.m_locations_uniform;
     }
 
     gl_declare_noncopyable(Program);
