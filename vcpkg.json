@@ -7,6 +7,7 @@
     { "name": "glad", 
       "features": [ "extensions", "gl-api-latest" ] },
     "glfw3",
+    "nlohmann-json",
     "tracy"
   ]
 }

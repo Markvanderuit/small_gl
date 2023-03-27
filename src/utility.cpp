@@ -1,6 +1,7 @@
 #include <small_gl/array.hpp>
 #include <small_gl/buffer.hpp>
 #include <small_gl/utility.hpp>
+#include <nlohmann/json.hpp>
 #include <fmt/format.h>
 #include <fmt/core.h>
 #include <array>
@@ -82,7 +83,7 @@ namespace gl {
   } // namespace detail
 
   namespace io {
-    std::vector<std::byte> load_shader_binary(fs::path path) {
+    std::vector<std::byte> load_shader_binary(const fs::path &path) {
       gl_trace();
 
       // Check that file path exists
@@ -104,6 +105,34 @@ namespace gl {
       ifs.close();
       
       return buffer;
+    }
+    
+    std::string load_string(const fs::path &path) {
+      gl_trace();
+
+      // Check that file path exists
+      debug::check_expr_dbg(fs::exists(path),
+        fmt::format("failed to resolve path \"{}\"", path.string()));
+        
+      // Attempt to open file stream
+      std::ifstream ifs(path, std::ios::ate);
+      debug::check_expr_dbg(ifs.is_open(),
+        fmt::format("failed to open file \"{}\"", path.string()));
+        
+      // Read file size and construct string to hold data
+      size_t file_size = static_cast<size_t>(ifs.tellg());
+      std::string str(file_size, ' ');
+
+      // Set input position to start, then read full file into buffer
+      ifs.seekg(0);
+      ifs.read((char *) str.data(), file_size);
+      ifs.close();
+
+      return str;
+    }
+
+    json load_json(const fs::path &path) {
+      return json::parse(load_string(path));
     }
   } // namespace io
 

@@ -7,6 +7,7 @@
 #include <small_gl/detail/trace.hpp>
 #include <small_gl/detail/utility.hpp>
 #include <small_gl/dispatch.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <chrono>
 #include <filesystem>
 #include <source_location>
@@ -20,11 +21,19 @@
 #define range_iter(c) c.begin(), c.end()
 
 namespace gl {  
-  namespace fs = std::filesystem; // STL filesystem namespace shorthand
+  namespace fs = std::filesystem; // STL namespace shorthand
 
   namespace io {
+    using json = nlohmann::json;  // json typename shorthand
+
     // Load shader binary or char data from the given filepath
-    std::vector<std::byte> load_shader_binary(fs::path path);
+    std::vector<std::byte> load_shader_binary(const fs::path &path);
+
+    // Simple string load from file
+    std::string load_string(const fs::path &path);
+
+    // Load json file to parseable structure
+    json load_json(const fs::path &path);
   } // namespace io
 
   namespace sync {
