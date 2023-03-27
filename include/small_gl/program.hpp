@@ -97,11 +97,11 @@ namespace gl {
     using Base = detail::Handle<>;
 
     enum class BindingType {
-      eAuto,
+      eAuto,                // Default for program.bind(...), defers to lookup table
       eImage,
-      eSampler, // textures/samplers share name/binding
+      eSampler,             // Textures/samplers share name/binding
       eShaderStorageBuffer,
-      eUniform,
+      eUniform,             // Unsupported in SPIR-V pipeline; use UBOs instead
       eUniformBuffer,
     };
 
@@ -134,7 +134,10 @@ namespace gl {
     template <typename T>
     void uniform(std::string_view s, const T &t);
 
-    void bind(std::string_view s, const gl::Buffer &);
+    // Bind specific object to a name; on BindingType::eAuto, populated object type is used
+    void bind(std::string_view s, const gl::AbstractTexture &, BindingType binding = BindingType::eAuto);
+    void bind(std::string_view s, const gl::Buffer          &, BindingType binding = BindingType::eAuto);
+    void bind(std::string_view s, const gl::Sampler         &, BindingType binding = BindingType::eAuto);
 
     void bind() const;
     void unbind() const;

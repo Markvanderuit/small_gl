@@ -1,4 +1,7 @@
+#include <small_gl/buffer.hpp>
 #include <small_gl/program.hpp>
+#include <small_gl/sampler.hpp>
+#include <small_gl/texture.hpp>
 #include <small_gl/detail/eigen.hpp>
 #include <small_gl_parser/parser.hpp>
 #include <nlohmann/json.hpp>
@@ -234,6 +237,48 @@ namespace gl {
 
     if (js.contains("textures")) // textures/samplers share name/binding
       std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eSampler));
+  }
+  
+  void Program::bind(std::string_view s, const gl::AbstractTexture &texture, BindingType binding) {
+    auto f = m_locations_data.find(s.data());
+    debug::check_expr_rel(f != m_locations_data.end(),
+      fmt::format("Program::bind(...) failed with name lookup for texture name: {}", s));
+      
+    const BindingData &data = f->second;
+    debug::check_expr_rel(data.type == BindingType::eSampler,
+      "Program::bind(...) failed with type mismatch for texture name: {}");
+
+    texture.bind_to(gl::TextureTargetType::eTextureUnit, data.indx, 0);
+  }
+
+  void Program::bind(std::string_view s, const gl::Buffer &buffer, BindingType binding) {
+    auto f = m_locations_data.find(s.data());
+    debug::check_expr_rel(f != m_locations_data.end(),
+      fmt::format("Program::bind(...) failed with name lookup for buffer name: {}", s));
+
+    const BindingData &data = f->second;
+    debug::check_expr_rel(
+      data.type == BindingType::eUniformBuffer || data.type == BindingType::eShaderStorageBuffer,
+      "Program::bind(...) failed with type mismatch for buffer name: {}");
+
+    // TODO; expand secondary types
+    auto target = data.type == BindingType::eUniformBuffer 
+                ? gl::BufferTargetType::eUniform
+                : gl::BufferTargetType::eShaderStorage;
+    buffer.bind_to(target, data.indx);
+  }
+
+  void Program::bind(std::string_view s, const gl::Sampler &sampler, BindingType binding) {
+    auto f = m_locations_data.find(s.data());
+    debug::check_expr_rel(f != m_locations_data.end(),
+      fmt::format("Program::bind(...) failed with name lookup for sampler name: {}", s));
+      
+    const BindingData &data = f->second;
+    debug::check_expr_rel(
+      data.type == BindingType::eSampler,
+      "Program::bind(...) failed with type mismatch for sampler name: {}");
+    
+    sampler.bind_to(data.indx);
   }
   
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */

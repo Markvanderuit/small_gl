@@ -60,12 +60,12 @@ namespace gl {
 
     /* getters */
 
-    inline uint levels() const { return m_levels; }
-    inline vect size() const { return m_size; }
+    uint levels() const override { return m_levels; }
+    vect size() const { return m_size; }
 
     /* state */
 
-    void bind_to(TextureTargetType target, uint index, uint level = 0) const;
+    void bind_to(TextureTargetType target, uint index, uint level = 0) const override;
 
     /* operands for most texture types */
 
@@ -113,7 +113,7 @@ namespace gl {
     /* miscellaneous */
 
     // Generate mipmaps if levels > 1
-    void generate_mipmaps();
+    void generate_mipmaps() override;
     
     inline void swap(Texture &o) {
       gl_trace();
