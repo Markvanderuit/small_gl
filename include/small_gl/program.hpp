@@ -97,25 +97,30 @@ namespace gl {
   class Program : public detail::Handle<> {
     using Base = detail::Handle<>;
 
+    // Internal enum used for reflectance data
     enum class BindingType {
-      eAuto,                // Default for program.bind(...), defers to lookup table
+      eAuto,          // Default for program.bind(...), defers to lookup table
       eImage,
-      eSampler,             // Textures/samplers share name/binding
-      eShaderStorageBuffer,
-      eUniform,             // Unsupported in SPIR-V pipeline; use UBOs instead
-      eUniformBuffer,
+      eSampler,       // Textures/samplers share name/binding
+      eShaderStorage,
+      eUniform,       // UBOs, not uniforms; they are not supported in the SPIR-V pipeline
     };
 
+    // Internal enum used for reflectance data
+    enum class BindingAccess { eReadOnly, eWriteOnly, eReadWrite };
+
+    // Internal struct used for reflectance data
     struct BindingData {
-      BindingType type = BindingType::eAuto;
-      int         indx = -1;
+      BindingType   type    = BindingType::eAuto;
+      BindingAccess access  = BindingAccess::eReadWrite;
+      int           binding = -1;
 
       auto operator<=>(const BindingData&) const = default;
     };
     
     // Maps populate with object locations for reflectable string names, if available
     std::unordered_map<std::string, int>         m_locations_uniform;
-    std::unordered_map<std::string, BindingData> m_locations_data;
+    std::unordered_map<std::string, BindingData> m_binding_data;
 
     // Populate reflectance data from SPIRV-Cross generated .json file
     void populate(fs::path refl_path);
@@ -160,13 +165,13 @@ namespace gl {
       using std::swap;
       Base::swap(o);
       swap(m_locations_uniform, o.m_locations_uniform);
-      swap(m_locations_data, o.m_locations_data);
+      swap(m_binding_data, o.m_binding_data);
     }
 
     inline bool operator==(const Program &o) const {
       return Base::operator==(o) 
         && m_locations_uniform == o.m_locations_uniform
-        && m_locations_data == m_locations_data;
+        && m_binding_data == m_binding_data;
     }
 
     gl_declare_noncopyable(Program);

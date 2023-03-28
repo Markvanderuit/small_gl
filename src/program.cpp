@@ -240,69 +240,92 @@ namespace gl {
   void Program::populate(io::json js) {
     gl_trace_full();
 
+    // Function to consume reflectance data from the json, for general bindings
+    auto func_general = [&](const auto &iter, BindingType type) {
+      guard(iter.contains("name") && iter.contains("binding"));
+      BindingData data { .type       = type, 
+                         .access     = BindingAccess::eReadOnly,
+                         .binding    = iter.at("binding").get<int>() };
+      m_binding_data.emplace(iter.at("name").get<std::string>(), data);
+    };
+
+    // Function to consume reflectance data from the json, for bindings with read/write qualifiers
+    auto func_qualifier = [&](const auto &iter, BindingType type) {
+      guard(iter.contains("name") && iter.contains("binding"));
+      BindingData data { .type       = type, 
+                         .binding    = iter.at("binding").get<int>() };
+      if (iter.contains("writeonly") && iter.at("writeonly").get<bool>()) 
+        data.access = BindingAccess::eWriteOnly;
+      if (iter.contains("readonly") && iter.at("readonly").get<bool>()) 
+        data.access = BindingAccess::eReadOnly;
+      m_binding_data.emplace(iter.at("name").get<std::string>(), data);
+    };
+
     using namespace std::placeholders;
 
-    fmt::print("Populating\n");
-    // return;
-
-
-    auto func = [&](const auto &iter, BindingType type) {
-      guard(iter.contains("name") && iter.contains("binding"));
-      BindingData data { type, iter.at("binding").get<int>() };
-      m_locations_data.emplace(iter.at("name").get<std::string>(), data);
-    };
-    
+    // Consume reflectance data for bindable types; buffers, textures, samplers, images, ...
     if (js.contains("ubos"))
-      std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eUniformBuffer));
-    if (js.contains("ssbos"))
-      std::ranges::for_each(js.at("ssbos"), std::bind(func, _1, BindingType::eShaderStorageBuffer));
-    if (js.contains("images"))
-      std::ranges::for_each(js.at("images"), std::bind(func, _1, BindingType::eImage));
+      std::ranges::for_each(js.at("ubos"), std::bind(func_general, _1, BindingType::eUniform));
     if (js.contains("textures")) // textures/samplers share name/binding
-      std::ranges::for_each(js.at("textures"), std::bind(func, _1, BindingType::eSampler));
+      std::ranges::for_each(js.at("textures"), std::bind(func_general, _1, BindingType::eSampler));
+    if (js.contains("ssbos"))
+      std::ranges::for_each(js.at("ssbos"), std::bind(func_qualifier, _1, BindingType::eShaderStorage));
+    if (js.contains("images"))
+      std::ranges::for_each(js.at("images"), std::bind(func_qualifier, _1, BindingType::eImage));
   }
   
   void Program::bind(std::string_view s, const gl::AbstractTexture &texture, BindingType binding) {
     gl_trace_full();
 
-    auto f = m_locations_data.find(s.data());
-    debug::check_expr_rel(f != m_locations_data.end(),
+    auto f = m_binding_data.find(s.data());
+    debug::check_expr_rel(f != m_binding_data.end(),
       fmt::format("Program::bind(...) failed with name lookup for texture name: {}", s));
       
     const BindingData &data = f->second;
     debug::check_expr_rel(data.type == BindingType::eSampler || data.type == BindingType::eImage,
       "Program::bind(...) failed with type mismatch for texture name: {}");
 
-    if (data.type == BindingType::eSampler)
-      texture.bind_to(gl::TextureTargetType::eTextureUnit, data.indx, 0);
-    else
-      texture.bind_to(gl::TextureTargetType::eImageReadWrite, data.indx, 0);
+    if (data.type == BindingType::eSampler) {
+      texture.bind_to(gl::TextureTargetType::eTextureUnit, data.binding, 0);
+    } else {
+      switch (data.access) {
+        case BindingAccess::eReadOnly:  
+          texture.bind_to(gl::TextureTargetType::eImageReadOnly, data.binding, 0);
+          break;
+        case BindingAccess::eWriteOnly: 
+          texture.bind_to(gl::TextureTargetType::eImageWriteOnly, data.binding, 0);
+          break;
+        case BindingAccess::eReadWrite: 
+          texture.bind_to(gl::TextureTargetType::eImageReadWrite, data.binding, 0);
+          break;
+      }
+    }
   }
 
   void Program::bind(std::string_view s, const gl::Buffer &buffer, BindingType binding) {
     gl_trace_full();
 
-    auto f = m_locations_data.find(s.data());
-    debug::check_expr_rel(f != m_locations_data.end(),
+    auto f = m_binding_data.find(s.data());
+    debug::check_expr_rel(f != m_binding_data.end(),
       fmt::format("Program::bind(...) failed with name lookup for buffer name: {}", s));
 
     const BindingData &data = f->second;
     debug::check_expr_rel(
-      data.type == BindingType::eUniformBuffer || data.type == BindingType::eShaderStorageBuffer,
+      data.type == BindingType::eUniform || data.type == BindingType::eShaderStorage,
       "Program::bind(...) failed with type mismatch for buffer name: {}");
 
     // TODO; expand secondary types
-    auto target = data.type == BindingType::eUniformBuffer 
+    auto target = data.type == BindingType::eUniform 
                 ? gl::BufferTargetType::eUniform
                 : gl::BufferTargetType::eShaderStorage;
-    buffer.bind_to(target, data.indx);
+    buffer.bind_to(target, data.binding);
   }
 
   void Program::bind(std::string_view s, const gl::Sampler &sampler, BindingType binding) {
     gl_trace_full();
 
-    auto f = m_locations_data.find(s.data());
-    debug::check_expr_rel(f != m_locations_data.end(),
+    auto f = m_binding_data.find(s.data());
+    debug::check_expr_rel(f != m_binding_data.end(),
       fmt::format("Program::bind(...) failed with name lookup for sampler name: {}", s));
       
     const BindingData &data = f->second;
@@ -310,7 +333,7 @@ namespace gl {
       data.type == BindingType::eSampler,
       "Program::bind(...) failed with type mismatch for sampler name: {}");
     
-    sampler.bind_to(data.indx);
+    sampler.bind_to(data.binding);
   }
   
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */
