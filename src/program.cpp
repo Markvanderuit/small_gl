@@ -254,13 +254,10 @@ namespace gl {
     
     if (js.contains("ubos"))
       std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eUniformBuffer));
-    
     if (js.contains("ssbos"))
       std::ranges::for_each(js.at("ssbos"), std::bind(func, _1, BindingType::eShaderStorageBuffer));
-
     if (js.contains("images"))
       std::ranges::for_each(js.at("images"), std::bind(func, _1, BindingType::eImage));
-
     if (js.contains("textures")) // textures/samplers share name/binding
       std::ranges::for_each(js.at("textures"), std::bind(func, _1, BindingType::eSampler));
   }
@@ -273,10 +270,13 @@ namespace gl {
       fmt::format("Program::bind(...) failed with name lookup for texture name: {}", s));
       
     const BindingData &data = f->second;
-    debug::check_expr_rel(data.type == BindingType::eSampler,
+    debug::check_expr_rel(data.type == BindingType::eSampler || data.type == BindingType::eImage,
       "Program::bind(...) failed with type mismatch for texture name: {}");
 
-    texture.bind_to(gl::TextureTargetType::eTextureUnit, data.indx, 0);
+    if (data.type == BindingType::eSampler)
+      texture.bind_to(gl::TextureTargetType::eTextureUnit, data.indx, 0);
+    else
+      texture.bind_to(gl::TextureTargetType::eImageReadWrite, data.indx, 0);
   }
 
   void Program::bind(std::string_view s, const gl::Buffer &buffer, BindingType binding) {

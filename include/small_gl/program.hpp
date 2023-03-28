@@ -2,8 +2,6 @@
 
 #include <small_gl/fwd.hpp>
 #include <small_gl/utility.hpp>
-#include <small_gl/detail/enum.hpp>
-#include <small_gl/detail/handle.hpp>
 #include <small_gl_parser/fwd.hpp>
 #include <initializer_list>
 #include <filesystem>
@@ -119,6 +117,10 @@ namespace gl {
     std::unordered_map<std::string, int>         m_locations_uniform;
     std::unordered_map<std::string, BindingData> m_locations_data;
 
+    // Populate reflectance data from SPIRV-Cross generated .json file
+    void populate(fs::path refl_path);
+    void populate(io::json refl_json);
+
     // Look up uniform location for uniform string name
     int loc(std::string_view s);
 
@@ -152,10 +154,6 @@ namespace gl {
     static void unbind_all();
 
     /* miscellaneous */
-
-    // Populate reflectance data from SPIRV-Cross generated .json file
-    void populate(fs::path refl_path);
-    void populate(io::json refl_json);
     
     inline void swap(Program &o) {
       gl_trace();
