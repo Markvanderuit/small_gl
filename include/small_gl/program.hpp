@@ -78,7 +78,10 @@ namespace gl {
     ShaderType type;
 
     // Shader data in binary format
-    std::span<const std::byte> data;
+    std::vector<std::byte> data;
+
+    // SPIRV-Cross generated reflection json files
+    std::vector<io::json> cross_json;
 
     // Is the attached shader data a spir-v binary?
     bool is_spirv = false;
@@ -108,6 +111,8 @@ namespace gl {
     struct BindingData {
       BindingType type = BindingType::eAuto;
       int         indx = -1;
+
+      auto operator<=>(const BindingData&) const = default;
     };
     
     // Maps populate with object locations for reflectable string names, if available
@@ -116,18 +121,21 @@ namespace gl {
 
     // Look up uniform location for uniform string name
     int loc(std::string_view s);
+
+    Program(ShaderCreateInfo);
+    Program(std::initializer_list<ShaderCreateInfo>);
     
   public:
     /* constr/destr */
 
     Program() = default;
     ~Program();
+    
+    Program(ShaderLoadSPIRVInfo);
+    Program(std::initializer_list<ShaderLoadSPIRVInfo>);
 
     Program(ShaderLoadInfo);
     Program(std::initializer_list<ShaderLoadInfo>);
-
-    Program(ShaderCreateInfo);
-    Program(std::initializer_list<ShaderCreateInfo>);
 
     /* state */  
 
@@ -154,10 +162,13 @@ namespace gl {
       using std::swap;
       Base::swap(o);
       swap(m_locations_uniform, o.m_locations_uniform);
+      swap(m_locations_data, o.m_locations_data);
     }
 
     inline bool operator==(const Program &o) const {
-      return Base::operator==(o) && m_locations_uniform == o.m_locations_uniform;
+      return Base::operator==(o) 
+        && m_locations_uniform == o.m_locations_uniform
+        && m_locations_data == m_locations_data;
     }
 
     gl_declare_noncopyable(Program);

@@ -70,7 +70,7 @@ namespace gl {
       gl_trace_full();
 
       auto *ptr = (GLchar *) i.data.data();
-      auto size = (GLint)    i.data.size_bytes();
+      auto size = (GLint)    i.data.size();
       
       // If a parser is provided; perform parse into parser_buffer
       std::string parser_buffer;
@@ -131,33 +131,49 @@ namespace gl {
 
       return object;
     }
-
-    ShaderCreateInfo zip_loaded_info(const std::vector<std::byte> &data, const ShaderLoadInfo &load_info) {
-      return ShaderCreateInfo {
-        .type              = load_info.type,  
-        .data              = data, 
-        .is_spirv          = load_info.is_spirv, 
-        .spirv_entry_point = load_info.spirv_entry_point,
-        .parser            = load_info.parser
-      };
-    }
   } // namespace detail
+
+  Program::Program(std::initializer_list<ShaderLoadSPIRVInfo> load_info) 
+  : Base(true) {
+    gl_trace_full();
+    debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
+    
+    std::vector<ShaderCreateInfo> create_info(load_info.size());
+    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVInfo &info) {
+      return ShaderCreateInfo { .type              = info.type,  
+                                .data              = io::load_shader_binary(info.spirv_path), 
+                                .is_spirv          = true, 
+                                .spirv_entry_point = info.entry_point };
+    });
+
+    m_object = detail::create_program_object(create_info);
+
+    auto cross_filt = load_info 
+                    | std::views::filter([](const auto &info) { return !info.cross_path.empty(); });
+    for (const auto &info : cross_filt)
+      populate(info.cross_path);
+  }
 
   Program::Program(std::initializer_list<ShaderLoadInfo> load_info) 
   : Base(true) {
     gl_trace_full();
     debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
     
-    // Load binary shader data into shader_bins using info's paths
-    std::vector<std::vector<std::byte>> shader_bins(load_info.size());
-    std::ranges::transform(load_info, shader_bins.begin(),
-      [](const auto &i) { return io::load_shader_binary(i.path); });
-
-    // Construct ShaderCreateInfo objects with shader_bins as backing data
     std::vector<ShaderCreateInfo> create_info(load_info.size());
-    std::transform(range_iter(shader_bins), load_info.begin(), create_info.begin(), detail::zip_loaded_info);
+    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadInfo &info) {
+      return ShaderCreateInfo { .type              = info.type,  
+                                .data              = io::load_shader_binary(info.path), 
+                                .is_spirv          = info.is_spirv, 
+                                .spirv_entry_point = info.spirv_entry_point,
+                                .parser            = info.parser };
+    });
 
     m_object = detail::create_program_object(create_info);
+
+    auto cross_filt = load_info 
+                    | std::views::filter([](const auto &info) { return !info.cross_path.empty(); });
+    for (const auto &info : cross_filt)
+      populate(info.cross_path);
   }
 
   Program::Program(std::initializer_list<ShaderCreateInfo> create_info)
@@ -168,6 +184,9 @@ namespace gl {
   }
 
   Program::Program(ShaderLoadInfo load_info)
+  : Program({ load_info }) { }
+
+  Program::Program(ShaderLoadSPIRVInfo load_info)
   : Program({ load_info }) { }
 
   Program::Program(ShaderCreateInfo create_info)
@@ -214,32 +233,41 @@ namespace gl {
 
   
   void Program::populate(fs::path refl_path) {
-    return populate(io::load_json(refl_path));
+    gl_trace_full();
+    populate(io::load_json(refl_path));
   }
 
   void Program::populate(io::json js) {
+    gl_trace_full();
+
     using namespace std::placeholders;
-    
+
+    fmt::print("Populating\n");
+    // return;
+
+
     auto func = [&](const auto &iter, BindingType type) {
       guard(iter.contains("name") && iter.contains("binding"));
       BindingData data { type, iter.at("binding").get<int>() };
       m_locations_data.emplace(iter.at("name").get<std::string>(), data);
     };
-
+    
     if (js.contains("ubos"))
       std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eUniformBuffer));
     
     if (js.contains("ssbos"))
-      std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eShaderStorageBuffer));
+      std::ranges::for_each(js.at("ssbos"), std::bind(func, _1, BindingType::eShaderStorageBuffer));
 
     if (js.contains("images"))
-      std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eImage));
+      std::ranges::for_each(js.at("images"), std::bind(func, _1, BindingType::eImage));
 
     if (js.contains("textures")) // textures/samplers share name/binding
-      std::ranges::for_each(js.at("ubos"), std::bind(func, _1, BindingType::eSampler));
+      std::ranges::for_each(js.at("textures"), std::bind(func, _1, BindingType::eSampler));
   }
   
   void Program::bind(std::string_view s, const gl::AbstractTexture &texture, BindingType binding) {
+    gl_trace_full();
+
     auto f = m_locations_data.find(s.data());
     debug::check_expr_rel(f != m_locations_data.end(),
       fmt::format("Program::bind(...) failed with name lookup for texture name: {}", s));
@@ -252,6 +280,8 @@ namespace gl {
   }
 
   void Program::bind(std::string_view s, const gl::Buffer &buffer, BindingType binding) {
+    gl_trace_full();
+
     auto f = m_locations_data.find(s.data());
     debug::check_expr_rel(f != m_locations_data.end(),
       fmt::format("Program::bind(...) failed with name lookup for buffer name: {}", s));
@@ -269,6 +299,8 @@ namespace gl {
   }
 
   void Program::bind(std::string_view s, const gl::Sampler &sampler, BindingType binding) {
+    gl_trace_full();
+
     auto f = m_locations_data.find(s.data());
     debug::check_expr_rel(f != m_locations_data.end(),
       fmt::format("Program::bind(...) failed with name lookup for sampler name: {}", s));
