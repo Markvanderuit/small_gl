@@ -5,6 +5,7 @@
 #include <small_gl/detail/eigen.hpp>
 #include <small_gl_parser/parser.hpp>
 #include <nlohmann/json.hpp>
+#include <fmt/ranges.h>
 #include <fmt/format.h>
 #include <functional>
 #include <ranges>
@@ -218,17 +219,25 @@ namespace gl {
     gl_trace_full();
 
     // Search map for the provided value; reflect if value is not yet located
-    auto f = m_locations_uniform.find(s.data());
-    if (f == m_locations_uniform.end()) {
+    auto f = m_binding_data.find(s.data());
+    if (f == m_binding_data.end()) {
       // Obtain handle and check if it is actually valid
       GLint handle = glGetUniformLocation(m_object, s.data());
-      debug::check_expr_dbg(handle >= 0, fmt::format("failed for uniform name \"{}\"", s));
+      debug::check_expr_dbg(handle >= 0, 
+        fmt::format("Program::uniform(...) failed with name lookup for uniform name: \"{}\"", s));
 
-      // Insert value into map
-      f = m_locations_uniform.insert({s.data(), handle}).first;
+      BindingData data { .type       = BindingType::eUniform, 
+                         .access     = BindingAccess::eReadOnly,
+                         .binding    = handle };
+      f = m_binding_data.emplace(s.data(), data).first;
     }
 
-    return f->second;
+    // Test extracted value correctness
+    const BindingData &data = f->second;
+    debug::check_expr_rel(data.type == BindingType::eUniform,
+      fmt::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
+
+    return data.binding;
   }
 
   
@@ -265,7 +274,7 @@ namespace gl {
 
     // Consume reflectance data for bindable types; buffers, textures, samplers, images, ...
     if (js.contains("ubos"))
-      std::ranges::for_each(js.at("ubos"), std::bind(func_general, _1, BindingType::eUniform));
+      std::ranges::for_each(js.at("ubos"), std::bind(func_general, _1, BindingType::eUniformBuffer));
     if (js.contains("textures")) // textures/samplers share name/binding
       std::ranges::for_each(js.at("textures"), std::bind(func_general, _1, BindingType::eSampler));
     if (js.contains("ssbos"))
@@ -279,11 +288,11 @@ namespace gl {
 
     auto f = m_binding_data.find(s.data());
     debug::check_expr_rel(f != m_binding_data.end(),
-      fmt::format("Program::bind(...) failed with name lookup for texture name: {}", s));
+      fmt::format("Program::bind(...) failed with name lookup for texture name: \"{}\"", s));
       
     const BindingData &data = f->second;
     debug::check_expr_rel(data.type == BindingType::eSampler || data.type == BindingType::eImage,
-      "Program::bind(...) failed with type mismatch for texture name: {}");
+      fmt::format("Program::bind(...) failed with type mismatch for texture name: \"{}\"", s));
 
     if (data.type == BindingType::eSampler) {
       texture.bind_to(gl::TextureTargetType::eTextureUnit, data.binding, 0);
@@ -307,15 +316,15 @@ namespace gl {
 
     auto f = m_binding_data.find(s.data());
     debug::check_expr_rel(f != m_binding_data.end(),
-      fmt::format("Program::bind(...) failed with name lookup for buffer name: {}", s));
+      fmt::format("Program::bind(...) failed with name lookup for buffer name: \"{}\"", s));
 
     const BindingData &data = f->second;
     debug::check_expr_rel(
-      data.type == BindingType::eUniform || data.type == BindingType::eShaderStorage,
-      "Program::bind(...) failed with type mismatch for buffer name: {}");
+      data.type == BindingType::eUniformBuffer || data.type == BindingType::eShaderStorage,
+      fmt::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
 
     // TODO; expand secondary types
-    auto target = data.type == BindingType::eUniform 
+    auto target = data.type == BindingType::eUniformBuffer 
                 ? gl::BufferTargetType::eUniform
                 : gl::BufferTargetType::eShaderStorage;
     buffer.bind_to(target, data.binding);
@@ -326,12 +335,12 @@ namespace gl {
 
     auto f = m_binding_data.find(s.data());
     debug::check_expr_rel(f != m_binding_data.end(),
-      fmt::format("Program::bind(...) failed with name lookup for sampler name: {}", s));
+      fmt::format("Program::bind(...) failed with name lookup for sampler name: \"{}\"", s));
       
     const BindingData &data = f->second;
     debug::check_expr_rel(
       data.type == BindingType::eSampler,
-      "Program::bind(...) failed with type mismatch for sampler name: {}");
+      fmt::format("Program::bind(...) failed with type mismatch for sampler name: \"{}\"", s));
     
     sampler.bind_to(data.binding);
   }

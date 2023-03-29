@@ -103,7 +103,8 @@ namespace gl {
       eImage,
       eSampler,       // Textures/samplers share name/binding
       eShaderStorage,
-      eUniform,       // UBOs, not uniforms; they are not supported in the SPIR-V pipeline
+      eUniform,       // Classical uniforms; not supported in the SPIR-V pipeline
+      eUniformBuffer, // UBOs, not uniforms
     };
 
     // Internal enum used for reflectance data
@@ -118,16 +119,13 @@ namespace gl {
       auto operator<=>(const BindingData&) const = default;
     };
     
-    // Maps populate with object locations for reflectable string names, if available
-    std::unordered_map<std::string, int>         m_locations_uniform;
+    // Map populated with object locations for reflectable string names, if available
     std::unordered_map<std::string, BindingData> m_binding_data;
 
-    // Populate reflectance data from SPIRV-Cross generated .json file
-    void populate(fs::path refl_path);
-    void populate(io::json refl_json);
-
-    // Look up uniform location for uniform string name
-    int loc(std::string_view s);
+    // Populate some reflectance data
+    void populate(fs::path refl_path); // Populate reflectance data from SPIRV-CROSS generated .json file
+    void populate(io::json refl_json); // Populate reflectance data from SPIRV-CROSS generated .json data
+    int loc(std::string_view s);       // Look up classic uniform location for given string name
 
     Program(ShaderCreateInfo);
     Program(std::initializer_list<ShaderCreateInfo>);
@@ -164,13 +162,11 @@ namespace gl {
       gl_trace();
       using std::swap;
       Base::swap(o);
-      swap(m_locations_uniform, o.m_locations_uniform);
       swap(m_binding_data, o.m_binding_data);
     }
 
     inline bool operator==(const Program &o) const {
       return Base::operator==(o) 
-        && m_locations_uniform == o.m_locations_uniform
         && m_binding_data == m_binding_data;
     }
 
