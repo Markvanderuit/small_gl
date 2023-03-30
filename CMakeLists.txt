@@ -24,8 +24,8 @@ option(glp_enable_dbg_exceptions "" ${gl_enable_dbg_exceptions})
 add_subdirectory(third_party/small_gl_parser)
 
 # Configuration output info
-message(STATUS "small_gl  : debug exceptions   = ${gl_enable_dbg_exceptions}")
-message(STATUS "small_gl  : Tracy support      = ${gl_enable_tracy}")
+message(STATUS "small_gl  : Enabling exceptions = ${gl_enable_dbg_exceptions}")
+message(STATUS "small_gl  : Enabling Tracy      = ${gl_enable_tracy}")
 
 # Recursively gather files
 file(GLOB_RECURSE srcs 

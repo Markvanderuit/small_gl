@@ -2,7 +2,6 @@
 
 #include <small_gl/fwd.hpp>
 #include <small_gl/utility.hpp>
-#include <small_gl_parser/fwd.hpp>
 #include <initializer_list>
 #include <filesystem>
 #include <string>
@@ -12,7 +11,7 @@
 namespace gl {  
   /**
    * Helper object to create program object with path to shader
-   * object's file data; SPIR-V shader loading will be used
+   * object's file data; OpenGL's SPIR-V shader loading will be used
    */
   struct ShaderLoadSPIRVInfo {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
@@ -24,15 +23,15 @@ namespace gl {
     // Path towards SPIRV-Cross generated reflection json file
     fs::path cross_path;
 
-    // Override spirv shader entry point, if necessary
+    // Override SPIRV shader entry point, if necessary
     std::string entry_point = "main";
   };
 
   /**
    * Helper object to create program object with path to shader
-   * object's file data; OpenGL shader loading will be used
+   * object's file data; OpenGL's GLSL shader loading will be used
    */
-  struct ShaderLoadOGLInfo {
+  struct ShaderLoadGLSLInfo {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
     ShaderType type;
 
@@ -44,51 +43,36 @@ namespace gl {
   };
 
   /**
-   * Helper object to create program object with path to shader
-   * object's file data.
-   */
-  struct ShaderLoadInfo {
+   * Helper object to create program object with shader object's byte
+   * data provided; OpenGL's SPIR-V shader loading will be used
+  */
+  struct ShaderLoadSPIRVStringInfo {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
     ShaderType type;
 
-    // Path towards shader file, which will be loaded
-    fs::path path;
+    // SPIRV shader data in byte format
+    std::vector<std::byte> spirv_data;
 
-    // Path towards SPIRV-Cross generated reflection json file
-    fs::path cross_path;
-
-    // Is the attached shader data a spir-v binary?
-    bool is_spirv = false;
-
-    // Override spirv shader entry point, if necessary
-    std::string spirv_entry_point = "main";
-
-    // Optional parser; will process shader first
-    glp::Parser *parser = nullptr;
-  };
-
-  /**
-   * Helper object to create program object with pre-loaded
-   * shader object file data.
-   */
-  struct ShaderCreateInfo {
-    // Shader type (vertex, fragment, compute, geometry, tessel...)
-    ShaderType type;
-
-    // Shader data in binary format
-    std::vector<std::byte> data;
-
-    // SPIRV-Cross generated reflection json files
+    // SPIRV-Cross generated reflection json data
     std::vector<io::json> cross_json;
 
-    // Is the attached shader data a spir-v binary?
-    bool is_spirv = false;
+    // Override SPIRV shader entry point, if necessary
+    std::string entry_point = "main";
+  };
+  
+  /**
+   * Helper object to create program object with shader object's byte
+   * data provided; OpenGL's GLSL shader loading will be used
+  */
+  struct ShaderLoadGLSLStringInfo {
+    // Shader type (vertex, fragment, compute, geometry, tessel...)
+    ShaderType type;
 
-    // Override spirv shader entry point, if necessary
-    std::string spirv_entry_point = "main";
+    // GLSL shader data in byte format
+    std::vector<std::byte> glsl_data;
 
-    // Optional parser; will process shader first
-    glp::Parser *parser = nullptr;
+    // SPIRV-Cross generated reflection json data
+    std::vector<io::json> cross_json;
   };
 
   /**
@@ -127,9 +111,6 @@ namespace gl {
     void populate(io::json refl_json); // Populate reflectance data from SPIRV-CROSS generated .json data
     int loc(std::string_view s);       // Look up classic uniform location for given string name
 
-    Program(ShaderCreateInfo);
-    Program(std::initializer_list<ShaderCreateInfo>);
-    
   public:
     /* constr/destr */
 
@@ -137,10 +118,14 @@ namespace gl {
     ~Program();
     
     Program(ShaderLoadSPIRVInfo);
-    Program(std::initializer_list<ShaderLoadSPIRVInfo>);
+    Program(ShaderLoadGLSLInfo);
+    Program(ShaderLoadSPIRVStringInfo);
+    Program(ShaderLoadGLSLStringInfo);
 
-    Program(ShaderLoadInfo);
-    Program(std::initializer_list<ShaderLoadInfo>);
+    Program(std::initializer_list<ShaderLoadSPIRVInfo>);
+    Program(std::initializer_list<ShaderLoadGLSLInfo>);
+    Program(std::initializer_list<ShaderLoadSPIRVStringInfo>);
+    Program(std::initializer_list<ShaderLoadGLSLStringInfo>);
 
     /* state */  
 

@@ -3,7 +3,6 @@
 #include <small_gl/sampler.hpp>
 #include <small_gl/texture.hpp>
 #include <small_gl/detail/eigen.hpp>
-#include <small_gl_parser/parser.hpp>
 #include <nlohmann/json.hpp>
 #include <fmt/ranges.h>
 #include <fmt/format.h>
@@ -12,6 +11,22 @@
 #include <sstream>
 
 namespace gl {
+  // Internal struct used for construction 
+  struct ShaderCreateInfo {
+    // Shader type (vertex, fragment, compute, geometry, tessel...)
+    ShaderType type;
+
+    // Shader data in binary format
+    std::vector<std::byte> data;
+
+    // SPIRV-Cross generated reflection json files
+    std::vector<io::json> cross_json;
+
+    // Is the attached shader data a spir-v binary?
+    bool is_spirv = false;
+    std::string spirv_entry_point = "main";
+  };
+
   namespace detail {
     GLint get_shader_iv(GLuint object, GLenum name) {
       gl_trace_full();
@@ -72,20 +87,6 @@ namespace gl {
 
       auto *ptr = (GLchar *) i.data.data();
       auto size = (GLint)    i.data.size();
-      
-      // If a parser is provided; perform parse into parser_buffer
-      std::string parser_buffer;
-      if (i.parser) {
-        // Resize buffer to accomodate
-        parser_buffer.resize(size);
-        std::copy(ptr, ptr + size, parser_buffer.begin());
-        
-        parser_buffer = i.parser->parse_str(parser_buffer);
-
-        // Redirect pointers to parsed buffer instead of provided input buffer
-        ptr  = (GLchar *) parser_buffer.data();
-        size = (GLint) parser_buffer.size();
-      }
 
       // Assemble shader object
       GLuint object = glCreateShader((uint) i.type);
@@ -134,11 +135,24 @@ namespace gl {
     }
   } // namespace detail
 
+  Program::Program(ShaderLoadSPIRVInfo load_info)
+  : Program({ load_info }) { }
+
+  Program::Program(ShaderLoadGLSLInfo load_info)
+  : Program({ load_info }) { }
+
+  Program::Program(ShaderLoadSPIRVStringInfo load_info)
+  : Program({ load_info }) { }
+
+  Program::Program(ShaderLoadGLSLStringInfo load_info)
+  : Program({ load_info }) { }
+
   Program::Program(std::initializer_list<ShaderLoadSPIRVInfo> load_info) 
   : Base(true) {
     gl_trace_full();
     debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
     
+    // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
     std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVInfo &info) {
       return ShaderCreateInfo { .type              = info.type,  
@@ -147,51 +161,77 @@ namespace gl {
                                 .spirv_entry_point = info.entry_point };
     });
 
+    // Initialize program
     m_object = detail::create_program_object(create_info);
 
-    auto cross_filt = load_info 
-                    | std::views::filter([](const auto &info) { return !info.cross_path.empty(); });
-    for (const auto &info : cross_filt)
-      populate(info.cross_path);
+    // Handle reflectance data population, if available
+    auto filt = load_info | std::views::filter([](const auto &info) { return !info.cross_path.empty(); });
+    for (const auto &info : filt) populate(info.cross_path);
   }
 
-  Program::Program(std::initializer_list<ShaderLoadInfo> load_info) 
+  Program::Program(std::initializer_list<ShaderLoadSPIRVStringInfo> load_info) 
   : Base(true) {
     gl_trace_full();
     debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
     
+    // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
-    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadInfo &info) {
+    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVStringInfo &info) {
       return ShaderCreateInfo { .type              = info.type,  
-                                .data              = io::load_shader_binary(info.path), 
-                                .is_spirv          = info.is_spirv, 
-                                .spirv_entry_point = info.spirv_entry_point,
-                                .parser            = info.parser };
+                                .data              = info.spirv_data, 
+                                .is_spirv          = true, 
+                                .spirv_entry_point = info.entry_point };
     });
 
+    // Initialize program
     m_object = detail::create_program_object(create_info);
 
-    auto cross_filt = load_info 
-                    | std::views::filter([](const auto &info) { return !info.cross_path.empty(); });
-    for (const auto &info : cross_filt)
-      populate(info.cross_path);
+    // Handle reflectance data population, if available
+    auto filt = load_info | std::views::filter([](const auto &info) { return !info.cross_json.empty(); });
+    for (const auto &info : filt) populate(info.cross_json);
   }
 
-  Program::Program(std::initializer_list<ShaderCreateInfo> create_info)
+  Program::Program(std::initializer_list<ShaderLoadGLSLInfo> load_info) 
   : Base(true) {
     gl_trace_full();
-    debug::check_expr_dbg(create_info.size() > 0, "no shader info was provided");
+    debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
+    
+    // Transform to internal load info object
+    std::vector<ShaderCreateInfo> create_info(load_info.size());
+    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLInfo &info) {
+      return ShaderCreateInfo { .type              = info.type,  
+                                .data              = io::load_shader_binary(info.glsl_path), 
+                                .is_spirv          = false };
+    });
+
+    // Initialize program
     m_object = detail::create_program_object(create_info);
+
+    // Handle reflectance data population, if available
+    auto filt = load_info | std::views::filter([](const auto &info) { return !info.cross_path.empty(); });
+    for (const auto &info : filt) populate(info.cross_path);
   }
 
-  Program::Program(ShaderLoadInfo load_info)
-  : Program({ load_info }) { }
+  Program::Program(std::initializer_list<ShaderLoadGLSLStringInfo> load_info) 
+  : Base(true) {
+    gl_trace_full();
+    debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
+    
+    // Transform to internal load info object
+    std::vector<ShaderCreateInfo> create_info(load_info.size());
+    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLStringInfo &info) {
+      return ShaderCreateInfo { .type              = info.type,  
+                                .data              = info.glsl_data, 
+                                .is_spirv          = false };
+    });
 
-  Program::Program(ShaderLoadSPIRVInfo load_info)
-  : Program({ load_info }) { }
+    // Initialize program
+    m_object = detail::create_program_object(create_info);
 
-  Program::Program(ShaderCreateInfo create_info)
-  : Program({ create_info }) { }
+    // Handle reflectance data population, if available
+    auto filt = load_info | std::views::filter([](const auto &info) { return !info.cross_json.empty(); });
+    for (const auto &info : filt) populate(info.cross_json);
+  }
 
   Program::~Program() {
     guard(m_is_init);
