@@ -10,7 +10,7 @@ namespace gl {
     gl_trace_full();
 
     // Bind array object, which is required
-    debug::check_expr_dbg(info.bindable_array, 
+    debug::check_expr(info.bindable_array, 
       "DrawInfo submitted without bindable array object");
     info.bindable_array->bind();
 
@@ -57,7 +57,7 @@ namespace gl {
     gl_trace_full();
 
     // Bind array object, which is required
-    debug::check_expr_dbg(info.bindable_array, 
+    debug::check_expr(info.bindable_array, 
       "DrawIndirectInfo submitted without bindable array object");
     info.bindable_array->bind();
     

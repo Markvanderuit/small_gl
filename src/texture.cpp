@@ -5,8 +5,8 @@ namespace gl {
   Texture<T, D, C, Ty>::Texture(TextureCreateInfo info)
   : Base(true), m_size(info.size), m_levels(info.levels) {
     gl_trace_full();
-    debug::check_expr_dbg((m_size >= vect(1)).all(), "texture size must be all >= 1");
-    debug::check_expr_dbg(m_levels >= 1,  "texture level must be >= 1");
+    debug::check_expr((m_size >= vect(1)).all(), "texture size must be all >= 1");
+    debug::check_expr(m_levels >= 1,  "texture level must be >= 1");
 
     glCreateTextures(detail::texture_target<D, Ty>(), 1, &m_object);
   
@@ -64,7 +64,7 @@ namespace gl {
     const vect safe_size = size.isZero() ? m_size : size;
 
     const size_t size_bytes = (safe_size - offset).prod() * C * pixel_size;
-    debug::check_expr_dbg(!data.data() || data.size_bytes() >= size_bytes,
+    debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture region to be written");
 
     if constexpr (storage_type == detail::StorageType::e1D) {
@@ -99,7 +99,7 @@ namespace gl {
     const vect safe_size = size.isZero() ? m_size : size;
 
     const size_t size_bytes = (safe_size - offset).prod() * C * pixel_size;
-    debug::check_expr_dbg(!data.data() || data.size_bytes() >= size_bytes,
+    debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture region to be read");
 
     if constexpr (storage_type == detail::StorageType::e1D) {
@@ -134,7 +134,7 @@ namespace gl {
     const vect safe_size = size.isZero() ? m_size : size;
 
     const size_t size_bytes = C * pixel_size;
-    debug::check_expr_dbg(!data.data() || data.size_bytes() >= size_bytes,
+    debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture to be cleared");
 
     if constexpr (storage_type == detail::StorageType::e1D) {
@@ -171,7 +171,7 @@ namespace gl {
     const vect safe_size = size.isZero() ? m_size : size;
 
     const size_t size_bytes = (safe_size - offset).prod() * C * pixel_size;
-    debug::check_expr_dbg(!data.data() || data.size_bytes() >= size_bytes,
+    debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture region to be written");
     
     if constexpr (storage_type == detail::StorageType::e2D) {
@@ -199,7 +199,7 @@ namespace gl {
     const vect safe_size = size.isZero() ? m_size : size;
 
     const size_t size_bytes = (safe_size - offset).prod() * C * pixel_size;
-    debug::check_expr_dbg(!data.data() || data.size_bytes() >= size_bytes,
+    debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture region to be read");
 
     if constexpr (storage_type == detail::StorageType::e2D) {
@@ -227,7 +227,7 @@ namespace gl {
     const vect safe_size = size.isZero() ? m_size : size;
 
     const size_t size_bytes = C * pixel_size;
-    debug::check_expr_dbg(!data.data() || data.size_bytes() >= size_bytes,
+    debug::check_expr(!data.data() || data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture to be cleared");
     
     if constexpr (storage_type == detail::StorageType::e2D) {

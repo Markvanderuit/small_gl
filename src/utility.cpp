@@ -87,12 +87,12 @@ namespace gl {
       gl_trace();
 
       // Check that file path exists
-      debug::check_expr_dbg(fs::exists(path),
+      debug::check_expr(fs::exists(path),
         fmt::format("failed to resolve path \"{}\"", path.string()));
 
       // Attempt to open file stream
       std::ifstream ifs(path, std::ios::ate | std::ios::binary);
-      debug::check_expr_dbg(ifs.is_open(),
+      debug::check_expr(ifs.is_open(),
         fmt::format("failed to open file \"{}\"", path.string()));
 
       // Read file size and construct vector to hold data
@@ -111,12 +111,12 @@ namespace gl {
       gl_trace();
 
       // Check that file path exists
-      debug::check_expr_dbg(fs::exists(path),
+      debug::check_expr(fs::exists(path),
         fmt::format("failed to resolve path \"{}\"", path.string()));
         
       // Attempt to open file stream
       std::ifstream ifs(path, std::ios::ate);
-      debug::check_expr_dbg(ifs.is_open(),
+      debug::check_expr(ifs.is_open(),
         fmt::format("failed to open file \"{}\"", path.string()));
         
       // Read file size and construct string to hold data

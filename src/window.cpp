@@ -103,7 +103,7 @@ namespace gl {
 
     // Initialize the GLFW library before any function calls can be made
     if (m_is_main_context) {
-      debug::check_expr_dbg(glfwInit(), "glfwInit() failed");
+      debug::check_expr(glfwInit(), "glfwInit() failed");
     }
 
     // Determine correct profile flag to pass to GLFW
@@ -153,12 +153,12 @@ namespace gl {
 
     // Initialize a GLFW window 
     m_object = (void *) glfwCreateWindow(m_window_size.x(), m_window_size.y(), m_title.c_str(), mon, shared);
-    debug::check_expr_dbg(m_object, "glfwCreateWindow(...) failed");
+    debug::check_expr(m_object, "glfwCreateWindow(...) failed");
     
     // Finally, load GLAD bindings
     if (m_is_main_context) {
       attach_context();
-      debug::check_expr_dbg(gladLoadGL(), "gladLoadGL() failed");
+      debug::check_expr(gladLoadGL(), "gladLoadGL() failed");
       gl_trace_init_context();
     }
 
@@ -190,13 +190,13 @@ namespace gl {
 
   void Window::swap_buffers() {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glfwSwapBuffers((GLFWwindow *) m_object);
   }
 
   void Window::poll_events() {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
 
     m_did_window_resize = false;
     m_did_framebuffer_resize = false;
@@ -210,41 +210,41 @@ namespace gl {
   }
 
   void Window::attach_context() {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     guard(!is_current_context());
     glfwMakeContextCurrent((GLFWwindow *) m_object);
   }
 
   void Window::detach_context() {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     guard(is_current_context());
     glfwMakeContextCurrent( nullptr);
   }
 
   bool Window::is_current_context() const {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     return glfwGetCurrentContext() == (GLFWwindow *) m_object;
   }
 
   void Window::set_window_pos(const eig::Array2u &window_pos) {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glfwSetWindowPos((GLFWwindow *) m_object, window_pos.x(), window_pos.y());
   }
 
   void Window::set_window_size(const eig::Array2u &window_size) {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glfwSetWindowSize((GLFWwindow *) m_object, window_size.x(), window_size.y());
   }
   
   void Window::set_swap_interval(uint swap_interval) {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     attach_context();
     m_swap_interval = swap_interval;
     glfwSwapInterval(m_swap_interval);
   }
 
   void Window::set_visible(bool visible) {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     m_is_visible = visible;
     if (m_is_visible) {
       glfwShowWindow((GLFWwindow *) m_object);
@@ -254,33 +254,33 @@ namespace gl {
   }
 
   void Window::set_maximized() {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glfwMaximizeWindow((GLFWwindow *) m_object);
   }
 
   void Window::set_focused() {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glfwFocusWindow((GLFWwindow *) m_object);
   }
 
   void Window::set_should_close() {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glfwSetWindowShouldClose((GLFWwindow *) m_object, GLFW_TRUE);
   }
 
   bool Window::should_close() const {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     return glfwWindowShouldClose((GLFWwindow *) m_object);
   }
 
   void Window::set_title(const std::string &title) {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     m_title = title;
     glfwSetWindowTitle((GLFWwindow *) m_object, m_title.c_str());
   }
 
   void Window::request_attention() const {
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glfwRequestWindowAttention((GLFWwindow *) m_object);
   }
 

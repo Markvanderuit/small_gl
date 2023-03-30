@@ -150,7 +150,7 @@ namespace gl {
   Program::Program(std::initializer_list<ShaderLoadSPIRVInfo> load_info) 
   : Base(true) {
     gl_trace_full();
-    debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
+    debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
@@ -172,7 +172,7 @@ namespace gl {
   Program::Program(std::initializer_list<ShaderLoadSPIRVStringInfo> load_info) 
   : Base(true) {
     gl_trace_full();
-    debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
+    debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
@@ -194,7 +194,7 @@ namespace gl {
   Program::Program(std::initializer_list<ShaderLoadGLSLInfo> load_info) 
   : Base(true) {
     gl_trace_full();
-    debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
+    debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
@@ -215,7 +215,7 @@ namespace gl {
   Program::Program(std::initializer_list<ShaderLoadGLSLStringInfo> load_info) 
   : Base(true) {
     gl_trace_full();
-    debug::check_expr_dbg(load_info.size() > 0, "no shader info was provided");
+    debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
@@ -240,13 +240,13 @@ namespace gl {
 
   void Program::bind() const {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glUseProgram(m_object);
   }
 
   void Program::unbind() const {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glUseProgram(0);
   }
 
@@ -263,7 +263,7 @@ namespace gl {
     if (f == m_binding_data.end()) {
       // Obtain handle and check if it is actually valid
       GLint handle = glGetUniformLocation(m_object, s.data());
-      debug::check_expr_dbg(handle >= 0, 
+      debug::check_expr(handle >= 0, 
         fmt::format("Program::uniform(...) failed with name lookup for uniform name: \"{}\"", s));
 
       BindingData data { .type       = BindingType::eUniform, 
@@ -274,7 +274,7 @@ namespace gl {
 
     // Test extracted value correctness
     const BindingData &data = f->second;
-    debug::check_expr_rel(data.type == BindingType::eUniform,
+    debug::check_expr(data.type == BindingType::eUniform,
       fmt::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
 
     return data.binding;
@@ -327,11 +327,11 @@ namespace gl {
     gl_trace_full();
 
     auto f = m_binding_data.find(s.data());
-    debug::check_expr_rel(f != m_binding_data.end(),
+    debug::check_expr(f != m_binding_data.end(),
       fmt::format("Program::bind(...) failed with name lookup for texture name: \"{}\"", s));
       
     const BindingData &data = f->second;
-    debug::check_expr_rel(data.type == BindingType::eSampler || data.type == BindingType::eImage,
+    debug::check_expr(data.type == BindingType::eSampler || data.type == BindingType::eImage,
       fmt::format("Program::bind(...) failed with type mismatch for texture name: \"{}\"", s));
 
     if (data.type == BindingType::eSampler) {
@@ -355,11 +355,11 @@ namespace gl {
     gl_trace_full();
 
     auto f = m_binding_data.find(s.data());
-    debug::check_expr_rel(f != m_binding_data.end(),
+    debug::check_expr(f != m_binding_data.end(),
       fmt::format("Program::bind(...) failed with name lookup for buffer name: \"{}\"", s));
 
     const BindingData &data = f->second;
-    debug::check_expr_rel(
+    debug::check_expr(
       data.type == BindingType::eUniformBuffer || data.type == BindingType::eShaderStorage,
       fmt::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
 
@@ -374,11 +374,11 @@ namespace gl {
     gl_trace_full();
 
     auto f = m_binding_data.find(s.data());
-    debug::check_expr_rel(f != m_binding_data.end(),
+    debug::check_expr(f != m_binding_data.end(),
       fmt::format("Program::bind(...) failed with name lookup for sampler name: \"{}\"", s));
       
     const BindingData &data = f->second;
-    debug::check_expr_rel(
+    debug::check_expr(
       data.type == BindingType::eSampler,
       fmt::format("Program::bind(...) failed with type mismatch for sampler name: \"{}\"", s));
     

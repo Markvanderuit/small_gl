@@ -8,8 +8,8 @@ set(CMAKE_TOOLCHAIN_FILE
 project(small_gl LANGUAGES CXX)
 
 # Build options
-option(gl_enable_dbg_exceptions "Enable debug exceptions on release" OFF)
-option(gl_enable_tracy          "Enable Tracy support"               OFF)
+option(gl_enable_exceptions "Enable debug exceptions on release" OFF)
+option(gl_enable_tracy      "Enable Tracy support"               OFF)
 
 # Include third party libraries provided through vcpkg
 find_package(Eigen3        CONFIG REQUIRED)
@@ -20,7 +20,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Tracy         CONFIG REQUIRED)
 
 # Configuration output info
-message(STATUS "small_gl  : Enabling exceptions = ${gl_enable_dbg_exceptions}")
+message(STATUS "small_gl  : Enabling exceptions = ${gl_enable_exceptions}")
 message(STATUS "small_gl  : Enabling Tracy      = ${gl_enable_tracy}")
 
 # Recursively gather files
@@ -44,8 +44,8 @@ target_include_directories(small_gl PUBLIC include)
 target_compile_features(small_gl PRIVATE cxx_std_20)
 
 # Configure build options
-if (gl_enable_dbg_exceptions)
-  target_compile_definitions(small_gl PUBLIC GL_ENABLE_DBG_EXCEPTIONS)
+if (gl_enable_exceptions)
+  target_compile_definitions(small_gl PUBLIC GL_ENABLE_EXCEPTIONS)
 endif()
 if (gl_enable_tracy)
   target_compile_definitions(small_gl PUBLIC GL_ENABLE_TRACY)

@@ -64,13 +64,13 @@ namespace gl {
 
   void Array::bind() const {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(m_object);
   }
 
   void Array::unbind() const {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
     glBindVertexArray(0);
   }
   

@@ -19,7 +19,7 @@ namespace gl {
     m_flags(info.flags),
     m_size(info.size > 0 ? info.size : info.data.size_bytes()) {
     gl_trace_full();
-    debug::check_expr_dbg(m_size >= info.data.size_bytes(), "buffer size is smaller than data size");
+    debug::check_expr(m_size >= info.data.size_bytes(), "buffer size is smaller than data size");
     
     glCreateBuffers(1, &m_object);
     glNamedBufferStorage(object(), m_size, info.data.data(), (uint) info.flags);
@@ -39,7 +39,7 @@ namespace gl {
 
   void Buffer::get(std::span<std::byte> data, size_t size, size_t offset) const {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? m_size : size;
     glGetNamedBufferSubData(m_object, offset, safe_size, data.data());
@@ -47,7 +47,7 @@ namespace gl {
 
   void Buffer::set(std::span<const std::byte> data, size_t size, size_t offset) {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? m_size : size;
     glNamedBufferSubData(m_object, offset, safe_size, data.data());
@@ -55,7 +55,7 @@ namespace gl {
   
   void Buffer::clear(std::span<const std::byte> data, size_t stride, size_t size, size_t offset) {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
 
     int intr_fmt, fmt;
     switch (stride) {
@@ -71,7 +71,7 @@ namespace gl {
 
   void Buffer::bind_to(BufferTargetType target, uint index, size_t size, size_t offset) const {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? m_size : size;
     glBindBufferRange((uint) target, index, m_object, offset, safe_size);
@@ -79,7 +79,7 @@ namespace gl {
 
   void Buffer::copy_to(gl::Buffer &dst, size_t size, size_t src_offset, size_t dst_offset) const {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? m_size : size;
     glCopyNamedBufferSubData(m_object, dst.object(), src_offset, dst_offset, size);
@@ -87,24 +87,24 @@ namespace gl {
 
   std::span<std::byte> Buffer::map(BufferAccessFlags flags, size_t size, size_t offset) {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
-    debug::check_expr_dbg(!m_is_mapped, "attempt to map a previously mapped buffer");
-    debug::check_expr_dbg((uint) flags != 0, "Buffer::map() requires at least some access flags as an argument");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(!m_is_mapped, "attempt to map a previously mapped buffer");
+    debug::check_expr((uint) flags != 0, "Buffer::map() requires at least some access flags as an argument");
 
     // Check if buffer create flags at least superseed buffer access flags
-    debug::check_expr_dbg(!has_flag(flags, BufferAccessFlags::eMapRead)
+    debug::check_expr(!has_flag(flags, BufferAccessFlags::eMapRead)
                     || has_flag(m_flags, BufferCreateFlags::eMapRead)
                     == has_flag(flags, BufferAccessFlags::eMapRead),
       "Buffer::map() requested read access; this was not specified during buffer creation");
-    debug::check_expr_dbg(!has_flag(flags, BufferAccessFlags::eMapWrite)
+    debug::check_expr(!has_flag(flags, BufferAccessFlags::eMapWrite)
                     || has_flag(m_flags, BufferCreateFlags::eMapWrite)
                     == has_flag(flags, BufferAccessFlags::eMapWrite),
       "Buffer::map() requested write access; this was not specified during buffer creation");
-    debug::check_expr_dbg(!has_flag(flags, BufferAccessFlags::eMapCoherent)
+    debug::check_expr(!has_flag(flags, BufferAccessFlags::eMapCoherent)
                     || has_flag(m_flags, BufferCreateFlags::eMapCoherent)
                     == has_flag(flags, BufferAccessFlags::eMapCoherent),
       "Buffer::map() requested coherent access; this was not specified during buffer creation");
-    debug::check_expr_dbg(!has_flag(flags, BufferAccessFlags::eMapPersistent)
+    debug::check_expr(!has_flag(flags, BufferAccessFlags::eMapPersistent)
                     || has_flag(m_flags, BufferCreateFlags::eMapPersistent)
                     == has_flag(flags, BufferAccessFlags::eMapPersistent),
       "Buffer::map() requested persistent access; this was not specified during buffer creation");
@@ -119,8 +119,8 @@ namespace gl {
 
   void Buffer::flush(size_t size, size_t offset) {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
-    debug::check_expr_dbg(m_is_mapped, "attempt to flush a unmapped buffer");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_mapped, "attempt to flush a unmapped buffer");
 
     size_t safe_size = (size == 0) ? m_size : size;
     glFlushMappedNamedBufferRange(m_object, offset, safe_size);
@@ -128,8 +128,8 @@ namespace gl {
 
   void Buffer::unmap() {
     gl_trace_full();
-    debug::check_expr_dbg(m_is_init, "attempt to use an uninitialized object");
-    debug::check_expr_dbg(m_is_mapped, "attempt to unmap a unmapped buffer");
+    debug::check_expr(m_is_init, "attempt to use an uninitialized object");
+    debug::check_expr(m_is_mapped, "attempt to unmap a unmapped buffer");
 
     m_is_mapped  = false;
     glUnmapNamedBuffer(m_object);
@@ -137,7 +137,7 @@ namespace gl {
 
   Buffer Buffer::make_from(uint object) {
     gl_trace_full();
-    debug::check_expr_dbg(glIsBuffer(object), "attempt to take ownership over a non-buffer handle");
+    debug::check_expr(glIsBuffer(object), "attempt to take ownership over a non-buffer handle");
     
     // Fill in object details manually
     Buffer buffer;
@@ -154,7 +154,7 @@ namespace gl {
 
   Buffer Buffer::make_indirect(DrawInfo info, BufferCreateFlags flags) {
     gl_trace_full();
-    debug::check_expr_dbg(info.bindable_array, "DrawInfo submitted without bindable array object");
+    debug::check_expr(info.bindable_array, "DrawInfo submitted without bindable array object");
 
     if (info.bindable_array->has_elements()) {
       std::array<uint, 5> data = { info.vertex_count, info.instance_count, 
