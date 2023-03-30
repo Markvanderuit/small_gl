@@ -1,6 +1,3 @@
 [submodule "third_party/vcpkg"]
 	path = third_party/vcpkg
 	url = https://github.com/Microsoft/vcpkg.git
-[submodule "third_party/small_gl_parser"]
-	path = third_party/small_gl_parser
-	url = https://github.com/Markvanderuit/small_gl_parser.git
