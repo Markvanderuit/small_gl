@@ -54,7 +54,8 @@ namespace gl {
     void APIENTRY debug_callback(GLenum src, GLenum type, GLuint code, GLenum severity, GLsizei length,
                                 const char *msg, const void *user_param) {
       // Guard against outputting unnecessary messages that can't be filtered with severity
-      constexpr static std::initializer_list<uint> guard_codes = {
+      constexpr static std::initializer_list<uint> guard_codes = { // NOTE: keep sorted
+        131154, /* nvidia: Pixel-path performance warning: Pixel transfer is synchronized with 3D rendering */
         131169, /* nvidia: The driver allocated multisample storage for renderbuffer X */
       };
       guard(!std::ranges::binary_search(guard_codes, code));
