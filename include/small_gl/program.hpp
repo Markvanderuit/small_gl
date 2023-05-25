@@ -134,8 +134,9 @@ namespace gl {
 
     // Bind specific object to a name; on BindingType::eAuto, populated object type is used
     void bind(std::string_view s, const gl::AbstractTexture &, BindingType binding = BindingType::eAuto);
-    void bind(std::string_view s, const gl::Buffer          &, BindingType binding = BindingType::eAuto);
     void bind(std::string_view s, const gl::Sampler         &, BindingType binding = BindingType::eAuto);
+    void bind(std::string_view s, const gl::Buffer          &, 
+              size_t size = 0, size_t offset = 0, BindingType binding = BindingType::eAuto);
 
     void bind() const;
     void unbind() const;

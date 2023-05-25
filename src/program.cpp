@@ -351,7 +351,7 @@ namespace gl {
     }
   }
 
-  void Program::bind(std::string_view s, const gl::Buffer &buffer, BindingType binding) {
+  void Program::bind(std::string_view s, const gl::Buffer &buffer, size_t size, size_t offset, BindingType binding) {
     gl_trace_full();
 
     auto f = m_binding_data.find(s.data());
@@ -367,7 +367,7 @@ namespace gl {
     auto target = data.type == BindingType::eUniformBuffer 
                 ? gl::BufferTargetType::eUniform
                 : gl::BufferTargetType::eShaderStorage;
-    buffer.bind_to(target, data.binding);
+    buffer.bind_to(target, data.binding, size, offset);
   }
 
   void Program::bind(std::string_view s, const gl::Sampler &sampler, BindingType binding) {

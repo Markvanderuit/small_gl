@@ -182,12 +182,13 @@ namespace gl {
   // TODO: fill as needed
   enum class VariableName : uint {
     // GL_KHR_shader_subgroup variables
-    eSubgroupSize       = GL_SUBGROUP_SIZE_KHR,
-    eSharedMemorySize   = GL_MAX_COMPUTE_SHARED_MEMORY_SIZE,
-    eFramebufferBinding = GL_DRAW_FRAMEBUFFER_BINDING,
-    eProgramBinding     = GL_CURRENT_PROGRAM
-    
+    eSubgroupSize           = GL_SUBGROUP_SIZE_KHR,
+    eSharedMemorySize       = GL_MAX_COMPUTE_SHARED_MEMORY_SIZE,
+    eFramebufferBinding     = GL_DRAW_FRAMEBUFFER_BINDING,
+    eProgramBinding         = GL_CURRENT_PROGRAM,
 
+    eUBOOffsetAlignment     = GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
+    eSSBOOffsetAlignment    = GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT
     // eMaxComputeShaderStorageBlocks
     //                     = GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS,
     // eMaxCombinedShaderStorageBlocks
