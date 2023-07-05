@@ -25,6 +25,7 @@ namespace gl {
     // Is the attached shader data a spir-v binary?
     bool is_spirv = false;
     std::string spirv_entry_point = "main";
+    std::vector<std::pair<uint, uint>> spirv_spec_const = { };
   };
 
   namespace detail {
@@ -91,9 +92,14 @@ namespace gl {
       // Assemble shader object
       GLuint object = glCreateShader((uint) i.type);
       if (i.is_spirv) {
+        // Split specialization constants into index/value
+        auto const_i = i.spirv_spec_const | std::views::elements<0> | std::ranges::to<std::vector>();
+        auto const_v = i.spirv_spec_const | std::views::elements<1> | std::ranges::to<std::vector>();
+
         // Submit spir-v binary and specialize shader
         glShaderBinary(1, &object, GL_SHADER_BINARY_FORMAT_SPIR_V, ptr, size);
-        glSpecializeShader(object, i.spirv_entry_point.c_str(), 0, nullptr, nullptr);
+        glSpecializeShader(object, i.spirv_entry_point.c_str(), 
+          i.spirv_spec_const.size(), const_i.data(), const_v.data());
       } else {
         // Submit glsl character data and compile shader
         glShaderSource(object, 1, &ptr, &size);
@@ -158,7 +164,8 @@ namespace gl {
       return ShaderCreateInfo { .type              = info.type,  
                                 .data              = io::load_shader_binary(info.spirv_path), 
                                 .is_spirv          = true, 
-                                .spirv_entry_point = info.entry_point };
+                                .spirv_entry_point = info.entry_point,
+                                .spirv_spec_const  = info.spec_const };
     });
 
     // Initialize program
@@ -180,7 +187,8 @@ namespace gl {
       return ShaderCreateInfo { .type              = info.type,  
                                 .data              = info.spirv_data, 
                                 .is_spirv          = true, 
-                                .spirv_entry_point = info.entry_point };
+                                .spirv_entry_point = info.entry_point,
+                                .spirv_spec_const  = info.spec_const };
     });
 
     // Initialize program
@@ -318,7 +326,7 @@ namespace gl {
     if (js.contains("textures")) // textures/samplers share name/binding
       std::ranges::for_each(js.at("textures"), std::bind(func_general, _1, BindingType::eSampler));
     if (js.contains("ssbos"))
-      std::ranges::for_each(js.at("ssbos"), std::bind(func_qualifier, _1, BindingType::eShaderStorage));
+      std::ranges::for_each(js.at("ssbos"), std::bind(func_qualifier, _1, BindingType::eStorageBuffer));
     if (js.contains("images"))
       std::ranges::for_each(js.at("images"), std::bind(func_qualifier, _1, BindingType::eImage));
   }
@@ -360,13 +368,13 @@ namespace gl {
 
     const BindingData &data = f->second;
     debug::check_expr(
-      data.type == BindingType::eUniformBuffer || data.type == BindingType::eShaderStorage,
+      data.type == BindingType::eUniformBuffer || data.type == BindingType::eStorageBuffer,
       fmt::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
 
     // TODO; expand secondary types
     auto target = data.type == BindingType::eUniformBuffer 
                 ? gl::BufferTargetType::eUniform
-                : gl::BufferTargetType::eShaderStorage;
+                : gl::BufferTargetType::eStorage;
     buffer.bind_to(target, data.binding, size, offset);
   }
 

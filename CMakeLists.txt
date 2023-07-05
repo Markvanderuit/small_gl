@@ -41,7 +41,7 @@ target_link_libraries(small_gl PRIVATE
   Tracy::TracyClient
 )
 target_include_directories(small_gl PUBLIC include)
-target_compile_features(small_gl PRIVATE cxx_std_20)
+target_compile_features(small_gl PRIVATE cxx_std_23)
 
 # Configure build options
 if (gl_enable_exceptions)

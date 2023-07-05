@@ -21,7 +21,7 @@ namespace gl {
   // Binding target for gl::Buffer::bind_to(...)
   enum class BufferTargetType : uint {
     eAtomicCounter      = GL_ATOMIC_COUNTER_BUFFER,
-    eShaderStorage      = GL_SHADER_STORAGE_BUFFER,
+    eStorage            = GL_SHADER_STORAGE_BUFFER,
     eTransformFeedback  = GL_TRANSFORM_FEEDBACK_BUFFER,
     eUniform            = GL_UNIFORM_BUFFER
   };
@@ -371,7 +371,7 @@ namespace gl {
     // Data sourced from bound buffer targets reflects shader writes prior to barrier
     eAtomicCounterBuffer    = GL_ATOMIC_COUNTER_BARRIER_BIT,
     eIndirectBuffer         = GL_COMMAND_BARRIER_BIT,
-    eShaderStorageBuffer    = GL_SHADER_STORAGE_BARRIER_BIT,
+    eStorageBuffer          = GL_SHADER_STORAGE_BARRIER_BIT,
     ePixelBuffer            = GL_PIXEL_BUFFER_BARRIER_BIT,
     eUniformBuffer          = GL_UNIFORM_BARRIER_BIT,
     eQueryBuffer            = GL_QUERY_BUFFER_BARRIER_BIT,

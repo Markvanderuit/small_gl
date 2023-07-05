@@ -25,6 +25,9 @@ namespace gl {
 
     // Override SPIRV shader entry point, if necessary
     std::string entry_point = "main";
+
+    // Pass in indexed SPIRV specialization constants
+    std::vector<std::pair<uint, uint>> spec_const = { };
   };
 
   /**
@@ -58,6 +61,9 @@ namespace gl {
 
     // Override SPIRV shader entry point, if necessary
     std::string entry_point = "main";
+
+    // Pass in indexed SPIRV specialization constants
+    std::vector<std::pair<uint, uint>> spec_const = { };
   };
   
   /**
@@ -86,9 +92,9 @@ namespace gl {
       eAuto,          // Default for program.bind(...), defers to lookup table
       eImage,
       eSampler,       // Textures/samplers share name/binding
-      eShaderStorage,
-      eUniform,       // Classical uniforms; not supported in the SPIR-V pipeline
+      eStorageBuffer, // SSBOs
       eUniformBuffer, // UBOs, not uniforms
+      eUniform,       // Classical uniforms; not supported in the SPIR-V pipeline
     };
 
     // Internal enum used for reflectance data
