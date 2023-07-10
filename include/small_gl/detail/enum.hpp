@@ -28,6 +28,8 @@ namespace gl {
 
   // Storage flags for gl::Buffer(...) construction
   enum class BufferCreateFlags : uint {
+    eNone               = 0,
+
     eStorageDynamic     = GL_DYNAMIC_STORAGE_BIT,
     eStorageClient      = GL_CLIENT_STORAGE_BIT,
     eMapRead            = GL_MAP_READ_BIT,
@@ -38,6 +40,8 @@ namespace gl {
     // Special assembled types
     eMapReadWrite       = (uint) BufferCreateFlags::eMapRead 
                         | (uint) BufferCreateFlags::eMapWrite,
+    eMapReadPersistent  = (uint) BufferCreateFlags::eMapRead
+                        | (uint) BufferCreateFlags::eMapPersistent,
     eMapWritePersistent = (uint) BufferCreateFlags::eMapWrite
                         | (uint) BufferCreateFlags::eMapPersistent,
     eMapFull            = (uint) BufferCreateFlags::eMapReadWrite
@@ -48,6 +52,8 @@ namespace gl {
 
   // Access flags for gl::Buffer::map(...)
   enum class BufferAccessFlags : uint {
+    eNone               = 0,
+    
     eMapRead            = GL_MAP_READ_BIT,
     eMapWrite           = GL_MAP_WRITE_BIT,
     eMapInvalidate      = GL_MAP_INVALIDATE_RANGE_BIT,
@@ -58,6 +64,8 @@ namespace gl {
     // Special assembled types
     eMapReadWrite       = (uint) BufferAccessFlags::eMapRead 
                         | (uint) BufferAccessFlags::eMapWrite,
+    eMapReadPersistent  = (uint) BufferAccessFlags::eMapRead
+                        | (uint) BufferAccessFlags::eMapPersistent,
     eMapWritePersistent = (uint) BufferAccessFlags::eMapWrite
                         | (uint) BufferAccessFlags::eMapPersistent,
     eMapFull            = (uint) BufferAccessFlags::eMapReadWrite
