@@ -82,7 +82,7 @@ namespace gl {
     debug::check_expr(m_is_init, "attempt to use an uninitialized object");
 
     size_t safe_size = (size == 0) ? m_size : size;
-    glCopyNamedBufferSubData(m_object, dst.object(), src_offset, dst_offset, size);
+    glCopyNamedBufferSubData(m_object, dst.object(), src_offset, dst_offset, safe_size);
   }
 
   std::span<std::byte> Buffer::map(BufferAccessFlags flags, size_t size, size_t offset) {
