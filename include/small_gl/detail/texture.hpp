@@ -6,8 +6,8 @@
 
 namespace gl {
   /* Tag objects designating special depth/stencil types for a texture's value type. */
-  struct DepthComponent { };
-  struct StencilComponent { };
+  struct DepthComponent   { float      _; };
+  struct StencilComponent { std::byte  _; };
 
   /* Singular object for Renderbuffer and Texture to derive from. */
   struct AbstractFramebufferAttachment : public virtual detail::Handle<> {

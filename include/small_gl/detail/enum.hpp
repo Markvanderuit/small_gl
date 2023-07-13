@@ -83,6 +83,7 @@ namespace gl {
     eFramebufferSRGB    = GL_FRAMEBUFFER_SRGB,
     eMSAA               = GL_MULTISAMPLE,
     eCullOp             = GL_CULL_FACE,
+    eDither             = GL_DITHER,
 
     // Blending capabilities
     eBlendOp            = GL_BLEND,

@@ -6,9 +6,9 @@ namespace gl {
   namespace detail {
     GLenum framebuffer_attachment(gl::FramebufferType type) {
       switch (type) {
-        case gl::FramebufferType::eDepth: return GL_DEPTH_ATTACHMENT;
+        case gl::FramebufferType::eDepth:   return GL_DEPTH_ATTACHMENT;
         case gl::FramebufferType::eStencil: return GL_STENCIL_ATTACHMENT;
-        default: return GL_COLOR_ATTACHMENT0;
+        default:                            return GL_COLOR_ATTACHMENT0;
       }
     }
   } // namespace detail
