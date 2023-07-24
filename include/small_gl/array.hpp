@@ -3,6 +3,7 @@
 #include <small_gl/fwd.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
+#include <small_gl/detail/trace.hpp>
 #include <vector>
 
 namespace gl {

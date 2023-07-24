@@ -15,7 +15,6 @@ option(gl_enable_tracy      "Enable Tracy support"               OFF)
 find_package(Eigen3        CONFIG REQUIRED)
 find_package(glad          CONFIG REQUIRED)
 find_package(glfw3         CONFIG REQUIRED)
-find_package(fmt           CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Tracy         CONFIG REQUIRED)
 
@@ -35,7 +34,6 @@ target_link_libraries(small_gl PRIVATE
   Eigen3::Eigen
   glad::glad
   glfw
-  fmt::fmt-header-only
   nlohmann_json::nlohmann_json
   small_gl_parser_lib
   Tracy::TracyClient

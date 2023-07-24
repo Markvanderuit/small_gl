@@ -3,7 +3,6 @@
   "version-string" : "1.0.0",
   "dependencies" : [
     "eigen3",
-    "fmt",
     { "name": "glad", 
       "features": [ "extensions", "gl-api-latest" ] },
     "glfw3",

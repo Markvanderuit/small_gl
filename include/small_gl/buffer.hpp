@@ -115,7 +115,6 @@ namespace gl {
     static Buffer make_indirect(ComputeInfo info, BufferCreateFlags flags = { });
   
     inline void swap(Buffer &o) {
-      gl_trace();
       using std::swap;
       Base::swap(o);
       swap(m_size, o.m_size);

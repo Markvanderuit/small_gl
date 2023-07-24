@@ -5,6 +5,7 @@
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/texture.hpp>
+#include <small_gl/detail/trace.hpp>
 
 namespace gl {
   struct RenderbufferCreateInfo {

@@ -4,6 +4,7 @@
 #include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
+#include <small_gl/detail/trace.hpp>
 #include <initializer_list>
 #include <span>
 

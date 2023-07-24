@@ -287,7 +287,6 @@ namespace gl {
 
     return data.binding;
   }
-
   
   void Program::populate(fs::path refl_path) {
     gl_trace_full();
