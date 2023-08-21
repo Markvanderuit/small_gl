@@ -98,11 +98,30 @@ namespace gl {
     // Helper object to set/unset capabilities in a local scope using RAII
     class ScopedSet {
       DrawCapability m_capability;
-      bool m_prev, m_curr;
+      bool m_is_init = false,
+           m_prev    = false,
+           m_curr    = false;
     
     public:
+      ScopedSet() = default;
       ScopedSet(DrawCapability capability, bool enabled);
       ~ScopedSet();
+
+      inline void swap(ScopedSet &o) {
+        using std::swap;
+        swap(m_is_init,    o.m_is_init);
+        swap(m_capability, o.m_capability);
+        swap(m_prev,       o.m_prev);
+        swap(m_curr,       o.m_curr);
+      }
+
+      inline constexpr bool operator==(const ScopedSet &o) const {
+        using std::tie;
+        return tie(m_is_init, m_capability, m_prev, m_curr)
+            == tie(o.m_is_init, o.m_capability, o.m_prev, o.m_curr);
+      }
+
+      gl_declare_noncopyable(ScopedSet);
     };
     
     // Various state components

@@ -6,7 +6,7 @@
 #include <small_gl/utility.hpp>
 
 namespace gl {
-  void dispatch_draw(DrawInfo info) {
+  void dispatch_draw(const DrawInfo &info) {
     gl_trace_full();
 
     // Bind array object, which is required
@@ -24,7 +24,7 @@ namespace gl {
     if (info.cull_op)  state::set_op(*info.cull_op);
     if (info.depth_op) state::set_op(*info.depth_op);
     if (info.blend_op) state::set_op(info.blend_op->first, info.blend_op->second);
-    
+
     // Set scoped state capabilities
     std::vector<state::ScopedSet> scoped_state;
     for (auto [key, value] : info.capabilities)
@@ -53,7 +53,7 @@ namespace gl {
     }
   }
 
-  void dispatch_draw(DrawIndirectInfo info) {
+  void dispatch_draw(const DrawIndirectInfo &info) {
     gl_trace_full();
 
     // Bind array object, which is required
@@ -89,13 +89,13 @@ namespace gl {
     }
   }
 
-  void dispatch_compute(ComputeInfo info) {
+  void dispatch_compute(const ComputeInfo &info) {
     gl_trace_full();
     if (info.bindable_program) info.bindable_program->bind();
     glDispatchCompute(info.groups_x, info.groups_y, info.groups_z);
   }
 
-  void dispatch_compute(ComputeIndirectInfo info) {
+  void dispatch_compute(const ComputeIndirectInfo &info) {
     gl_trace_full();
     if (info.bindable_program) info.bindable_program->bind();
     glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, info.buffer->object());

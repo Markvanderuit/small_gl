@@ -214,15 +214,18 @@ namespace gl {
     }
 
     ScopedSet::ScopedSet(DrawCapability capability, bool enabled)
-    : m_capability(capability), m_prev(get(capability)), m_curr(enabled) {
-      gl_trace_full();
+    : m_is_init(true),
+      m_capability(capability), 
+      m_prev(get(capability)), 
+      m_curr(enabled) {
+      gl_trace();
       guard(m_curr != m_prev);
       set(m_capability, m_curr);
     }
 
     ScopedSet::~ScopedSet() {
-      gl_trace_full();
-      guard(m_curr != m_prev);
+      gl_trace();
+      guard(m_is_init && m_curr != m_prev);
       set(m_capability, m_prev);
     }
 
@@ -252,8 +255,6 @@ namespace gl {
       glGetIntegerv((uint) name, &i);
       return i;
     }
-
-    // set_color_mask
   } // namespace state
 
   namespace debug {

@@ -85,8 +85,8 @@ namespace gl {
   };
   
   // Dispatch a draw/compute operation
-  void dispatch_draw(DrawInfo info);
-  void dispatch_draw(DrawIndirectInfo info);
-  void dispatch_compute(ComputeInfo info);
-  void dispatch_compute(ComputeIndirectInfo info); 
+  void dispatch_draw(const DrawInfo               &info);
+  void dispatch_draw(const DrawIndirectInfo       &info);
+  void dispatch_compute(const ComputeInfo         &info);
+  void dispatch_compute(const ComputeIndirectInfo &info); 
 } // namespace gl
