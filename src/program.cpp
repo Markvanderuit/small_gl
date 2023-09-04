@@ -4,10 +4,9 @@
 #include <small_gl/texture.hpp>
 #include <small_gl/detail/eigen.hpp>
 #include <nlohmann/json.hpp>
-#include <fmt/ranges.h>
-#include <fmt/format.h>
 #include <functional>
 #include <ranges>
+#include <format>
 #include <sstream>
 
 namespace gl {
@@ -48,7 +47,7 @@ namespace gl {
       std::stringstream ss_o, ss_i(log);
       for (std::string line; std::getline(ss_i, line);) {
         guard_continue(line.length() > 2);
-        ss_o << fmt::format("{:<8}\n", line);
+        ss_o << std::format("{:<8}\n", line);
       }
       return ss_o.str();
     }
@@ -272,7 +271,7 @@ namespace gl {
       // Obtain handle and check if it is actually valid
       GLint handle = glGetUniformLocation(m_object, s.data());
       debug::check_expr(handle >= 0, 
-        fmt::format("Program::uniform(...) failed with name lookup for uniform name: \"{}\"", s));
+        std::format("Program::uniform(...) failed with name lookup for uniform name: \"{}\"", s));
 
       BindingData data { .type       = BindingType::eUniform, 
                          .access     = BindingAccess::eReadOnly,
@@ -283,7 +282,7 @@ namespace gl {
     // Test extracted value correctness
     const BindingData &data = f->second;
     debug::check_expr(data.type == BindingType::eUniform,
-      fmt::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
+      std::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
 
     return data.binding;
   }
@@ -335,11 +334,11 @@ namespace gl {
 
     auto f = m_binding_data.find(s.data());
     debug::check_expr(f != m_binding_data.end(),
-      fmt::format("Program::bind(...) failed with name lookup for texture name: \"{}\"", s));
+      std::format("Program::bind(...) failed with name lookup for texture name: \"{}\"", s));
       
     const BindingData &data = f->second;
     debug::check_expr(data.type == BindingType::eSampler || data.type == BindingType::eImage,
-      fmt::format("Program::bind(...) failed with type mismatch for texture name: \"{}\"", s));
+      std::format("Program::bind(...) failed with type mismatch for texture name: \"{}\"", s));
 
     if (data.type == BindingType::eSampler) {
       texture.bind_to(gl::TextureTargetType::eTextureUnit, data.binding, 0);
@@ -363,12 +362,12 @@ namespace gl {
 
     auto f = m_binding_data.find(s.data());
     debug::check_expr(f != m_binding_data.end(),
-      fmt::format("Program::bind(...) failed with name lookup for buffer name: \"{}\"", s));
+      std::format("Program::bind(...) failed with name lookup for buffer name: \"{}\"", s));
 
     const BindingData &data = f->second;
     debug::check_expr(
       data.type == BindingType::eUniformBuffer || data.type == BindingType::eStorageBuffer,
-      fmt::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
+      std::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
 
     // TODO; expand secondary types
     auto target = data.type == BindingType::eUniformBuffer 
@@ -382,12 +381,12 @@ namespace gl {
 
     auto f = m_binding_data.find(s.data());
     debug::check_expr(f != m_binding_data.end(),
-      fmt::format("Program::bind(...) failed with name lookup for sampler name: \"{}\"", s));
+      std::format("Program::bind(...) failed with name lookup for sampler name: \"{}\"", s));
       
     const BindingData &data = f->second;
     debug::check_expr(
       data.type == BindingType::eSampler,
-      fmt::format("Program::bind(...) failed with type mismatch for sampler name: \"{}\"", s));
+      std::format("Program::bind(...) failed with type mismatch for sampler name: \"{}\"", s));
     
     sampler.bind_to(data.binding);
   }
