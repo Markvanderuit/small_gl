@@ -70,7 +70,7 @@ namespace gl {
       uint vertex_first = 0;
 
       // Instancing data
-      uint instance_count = 0;
+      uint instance_count = 1;
       uint vertex_base    = 0;
       uint instance_base  = 0;
     };

@@ -195,6 +195,9 @@ namespace gl {
     eSharedMemorySize       = GL_MAX_COMPUTE_SHARED_MEMORY_SIZE,
     eFramebufferBinding     = GL_DRAW_FRAMEBUFFER_BINDING,
     eProgramBinding         = GL_CURRENT_PROGRAM,
+    
+    eMaxTextureSize         = GL_MAX_TEXTURE_SIZE,
+    eMaxArrayTextureLayers  = GL_MAX_ARRAY_TEXTURE_LAYERS,
 
     eUBOOffsetAlignment     = GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
     eSSBOOffsetAlignment    = GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT
