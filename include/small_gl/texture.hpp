@@ -114,6 +114,10 @@ namespace gl {
 
     // Generate mipmaps if levels > 1
     void generate_mipmaps() override;
+
+    // Format queries
+    uint internal_format() const override { return detail::texture_internal_format<C, T>(); }
+    uint format()          const override { return detail::texture_format<C, T>();          }
     
     inline void swap(Texture &o) {
       gl_trace();
@@ -130,6 +134,77 @@ namespace gl {
     }
 
     gl_declare_noncopyable(Texture);
+  };
+
+  /**
+   * Helper object to create texture view object.
+   */
+  struct TextureViewCreateInfo {
+    // Object handle to viewed underlying texture
+    const AbstractTexture *texture;
+
+    // Range of mip levels included in the texture view
+    uint levels    = 1;
+    uint min_level = 0;
+
+    // Range of array layers included in the texture view
+    uint layers    = 1;
+    uint min_layer = 0;
+  };
+
+  /**
+   * Texture view object wrapping OpenGL view textures
+   * 
+   * Note; conversions are not currently verified, so OpenGL will complain
+   * if an incompatible view is created over a certain texture. 
+   */
+  template <typename T,        // Underlying components type (float, int, uint, DepthComponent, ...)
+            uint D,            // Nr. of dimensions (1, 2, 3)
+            uint C,            // Nr. of components (1, 2, 3, 4)
+            TextureType Ty     // Special texture type (array, cubemap, multisampled)
+            = TextureType::eImage>
+  class TextureView : public AbstractTexture {
+    using Base = detail::Handle<>;
+
+    uint m_levels;
+
+  public:
+    using InfoType = TextureViewCreateInfo;
+
+    /* constr/destr */
+    
+    TextureView() = default;
+    TextureView(TextureViewCreateInfo info);
+    ~TextureView();
+
+    /* state */
+
+    void bind_to(TextureTargetType target, uint index, uint level = 0) const override;
+
+    /* getters */
+
+    uint levels() const override { return m_levels; }
+
+    /* miscellaneous */
+
+    void generate_mipmaps() override { /*  */ }
+
+    // Format queries
+    uint internal_format() const override { return detail::texture_internal_format<C, T>(); }
+    uint format()          const override { return detail::texture_format<C, T>();          }
+
+    inline void swap(TextureView &o) {
+      gl_trace();
+      using std::swap;
+      Base::swap(o);
+      swap(m_levels, o.m_levels);
+    }
+
+    inline bool operator==(const TextureView &o) const {
+      return Base::operator==(o) && m_levels == o.m_levels;
+    }
+
+    gl_declare_noncopyable(TextureView);
   };
 
   /* Shorthand notations for common texture types follow */
@@ -215,4 +290,29 @@ namespace gl {
   using Texture1dStencil = Texture1d<StencilComponent, 1>;
   using Texture2dStencil = Texture2d<StencilComponent, 1>;
   using Texture3dStencil = Texture3d<StencilComponent, 1>;
+
+  /* Shorthand notations for common texture view types follow */
+
+  template <typename T, uint D, TextureType Ty = TextureType::eImage>
+  using TextureView1d = TextureView<T, 1, D, Ty>;
+
+  template <typename T, uint D, TextureType Ty = TextureType::eImage>
+  using TextureView2d = TextureView<T, 2, D, Ty>;
+  
+  template <typename T, uint D, TextureType Ty = TextureType::eImage>
+  using TextureView3d = TextureView<T, 3, D, Ty>;
+
+
+  using TextureView1d1f = TextureView1d<float, 1>;
+  using TextureView1d2f = TextureView1d<float, 2>;
+  using TextureView1d3f = TextureView1d<float, 3>;
+  using TextureView1d4f = TextureView1d<float, 4>;
+  using TextureView2d1f = TextureView2d<float, 1>;
+  using TextureView2d2f = TextureView2d<float, 2>;
+  using TextureView2d3f = TextureView2d<float, 3>;
+  using TextureView2d4f = TextureView2d<float, 4>;
+  using TextureView3d1f = TextureView3d<float, 1>;
+  using TextureView3d2f = TextureView3d<float, 2>;
+  using TextureView3d3f = TextureView3d<float, 3>;
+  using TextureView3d4f = TextureView3d<float, 4>;
 } // namespace gl

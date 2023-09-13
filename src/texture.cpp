@@ -1,6 +1,8 @@
 #include <small_gl/texture.hpp>
 
 namespace gl {
+  /* Texture section */
+
   template <typename T, uint D, uint C, TextureType Ty>
   Texture<T, D, C, Ty>::Texture(TextureCreateInfo info)
   : Base(true), m_size(info.size), m_levels(info.levels) {
@@ -262,10 +264,46 @@ namespace gl {
     glGenerateTextureMipmap(m_object);
   }
 
+  /* Texture view section */
+
+  template <typename T, uint D, uint C, TextureType Ty>
+  TextureView<T, D, C, Ty>::TextureView(TextureViewCreateInfo info)
+  : Base(true) {
+    gl_trace_full();
+    glGenTextures(1, &m_object);
+    glTextureView(m_object, 
+                  detail::texture_target<D, Ty>(),
+                  info.texture->object(),
+                  detail::texture_internal_format<C, T>(),
+                  info.min_level,
+                  info.levels,
+                  info.min_layer,
+                  info.layers);
+  }
+
+  template <typename T, uint D, uint C, TextureType Ty>
+  TextureView<T, D, C, Ty>::~TextureView() {
+    guard(m_is_init);
+    glDeleteTextures(1, &m_object);
+  }
+  
+  template <typename T, uint D, uint C, TextureType Ty>
+  void TextureView<T, D, C, Ty>::bind_to(TextureTargetType target, uint index, uint level) const {
+    gl_trace_full();
+
+    if (target == TextureTargetType::eTextureUnit) {
+      glBindTextureUnit(index, m_object);
+    } else {
+      constexpr auto internal_format = detail::image_internal_format<C, T>();
+      glBindImageTexture(index, m_object, level, GL_FALSE, 0, (uint) target, internal_format);
+    }
+  }
+
   /* Explicit template instantiations of gl::Texture<...> */
   
-  #define gl_explicit_texture(type, dims, components, texture_type)\
-    template class Texture<type, dims, components, texture_type>;
+  #define gl_explicit_texture(type, dims, components, texture_type)  \
+    template class Texture<type, dims, components, texture_type>;    \
+    template class TextureView<type, dims, components, texture_type>;
 
   #define gl_explicit_texture_components_123(type, dims, texture_type)\
     gl_explicit_texture(type, dims, 1, texture_type)\
