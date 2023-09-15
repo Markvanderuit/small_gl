@@ -70,45 +70,60 @@ namespace gl {
     /* operands for most texture types */
 
     void get(std::span<T> data,
-             uint level = 0,
-             vect size = vect(0),
-             vect offset = vect(0)) const
+             uint level                  = 0,
+             vect size                   = vect(0),
+             vect offset                 = vect(0)) const
              requires(!detail::is_cubemap_type<Ty>);
 
     void set(std::span<const T> data,
-             uint level = 0,
-             vect size = vect(0),
-             vect offset = vect(0)) 
+             uint level                  = 0,
+             vect size                   = vect(0),
+             vect offset                 = vect(0)) 
              requires(!detail::is_cubemap_type<Ty>);
 
-    void clear(std::span<const T> data = { }, 
-               uint level = 0,
-               vect size = vect(0),
-               vect offset = vect(0)) 
+    void clear(std::span<const T> data     = { }, 
+               uint level                  = 0,
+               vect size                   = vect(0),
+               vect offset                 = vect(0)) 
                requires(!detail::is_cubemap_type<Ty>);
+
+    void copy_to(AbstractTexture &dst,
+                 uint level                  = 0,
+                 vect size                   = vect(0),
+                 vect src_offset             = vect(0),
+                 vect dst_offset             = vect(0)) const
+                 requires(!detail::is_cubemap_type<Ty>);
 
     /* operands for cubemap texture types */
 
     void get(std::span<T> data,
-             uint face = 0,
-             uint level = 0,
-             vect size = vect(0),
-             vect offset = vect(0)) const
+             uint face                  = 0,
+             uint level                 = 0,
+             vect size                  = vect(0),
+             vect offset                = vect(0)) const
              requires(detail::is_cubemap_type<Ty>);
     
     void set(std::span<const T> data,
-             uint face = 0,
-             uint level = 0,
-             vect size = vect(0),
-             vect offset = vect(0)) 
+             uint face                  = 0,
+             uint level                 = 0,
+             vect size                  = vect(0),
+             vect offset                = vect(0)) 
              requires(detail::is_cubemap_type<Ty>);
 
-    void clear(std::span<const T> data = { }, 
-               uint face = 0,
-               uint level = 0,
-               vect size = vect(0),
-               vect offset = vect(0)) 
+    void clear(std::span<const T> data    = { }, 
+               uint face                  = 0,
+               uint level                 = 0,
+               vect size                  = vect(0),
+               vect offset                = vect(0)) 
                requires(detail::is_cubemap_type<Ty>);
+
+    void copy_to(AbstractTexture &dst,
+                 uint face                   = 0,
+                 uint level                  = 0,
+                 vect size                   = vect(0),
+                 vect src_offset             = vect(0),
+                 vect dst_offset             = vect(0)) const
+                 requires(detail::is_cubemap_type<Ty>);
 
     /* miscellaneous */
 
@@ -118,6 +133,7 @@ namespace gl {
     // Format queries
     uint internal_format() const override { return detail::texture_internal_format<C, T>(); }
     uint format()          const override { return detail::texture_format<C, T>();          }
+    uint target()          const override { return detail::texture_target<D, Ty>();         }
     
     inline void swap(Texture &o) {
       gl_trace();
@@ -192,6 +208,7 @@ namespace gl {
     // Format queries
     uint internal_format() const override { return detail::texture_internal_format<C, T>(); }
     uint format()          const override { return detail::texture_format<C, T>();          }
+    uint target()          const override { return detail::texture_target<D, Ty>();         }
 
     inline void swap(TextureView &o) {
       gl_trace();

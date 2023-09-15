@@ -23,6 +23,7 @@ namespace gl {
     virtual void bind_to(TextureTargetType, uint index, uint level = 0) const = 0;
     virtual void generate_mipmaps()                                           = 0;
     virtual uint internal_format() const                                      = 0;
+    virtual uint target() const                                               = 0;
     virtual uint format() const                                               = 0;
   };
 

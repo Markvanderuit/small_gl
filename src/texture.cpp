@@ -94,13 +94,14 @@ namespace gl {
   requires(!detail::is_cubemap_type<Ty>) {
     gl_trace_full();
 
-    constexpr auto format = detail::texture_format<C, T>();
+    constexpr auto format       = detail::texture_format<C, T>();
     constexpr auto pixel_format = detail::texture_pixel_format<T>();
-    constexpr auto pixel_size = detail::texture_pixel_size_bytes<T>();
+    constexpr auto pixel_size   = detail::texture_pixel_size_bytes<T>();
     constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
-    const vect safe_size = size.isZero() ? m_size : size;
 
+    const vect   safe_size  = size.isZero() ? m_size : size;
     const size_t size_bytes = safe_size.prod() * C * pixel_size;
+
     debug::check_expr(data.data() && data.size_bytes() >= size_bytes,
       "provided data span is too small for requested texture region to be read");
 
@@ -243,6 +244,35 @@ namespace gl {
         safe_size.x(), safe_size.y(), safe_size.z(),
         format, pixel_format, data.data());
     }
+  }
+
+  template <typename T, uint D, uint C, TextureType Ty>
+  void Texture<T, D, C, Ty>::copy_to(AbstractTexture &dst, uint level, vect size, vect src_offset, vect dst_offset) const
+  requires(!detail::is_cubemap_type<Ty>) {
+    gl_trace_full();
+
+    constexpr auto format       = detail::texture_format<C, T>();
+    constexpr auto pixel_format = detail::texture_pixel_format<T>();
+    constexpr auto pixel_size   = detail::texture_pixel_size_bytes<T>();
+    constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
+
+    eig::Array3u src_safe = 0, dst_safe = 0, whd_safe = 1;
+    src_safe.head<vect::RowsAtCompileTime>() = src_offset;
+    dst_safe.head<vect::RowsAtCompileTime>() = dst_offset;
+    whd_safe.head<vect::RowsAtCompileTime>() = size.matrix().isZero() ? m_size : size;
+
+    glCopyImageSubData(m_object, target(), level,
+      src_safe.x(), src_safe.y(), src_safe.z(),
+      dst.object(), dst.target(),
+      level, dst_safe.x(), dst_safe.y(), dst_safe.z(),
+      whd_safe.x(), whd_safe.y(), whd_safe.z());
+  }
+
+  template <typename T, uint D, uint C, TextureType Ty>
+  void Texture<T, D, C, Ty>::copy_to(AbstractTexture &dst, uint face, uint level, vect size, vect src_offset, vect dst_offset) const
+  requires(detail::is_cubemap_type<Ty>) {
+    gl_trace_full();
+    debug::check_expr(false, "Not implemented!");
   }
   
   template <typename T, uint D, uint C, TextureType Ty>
