@@ -37,7 +37,7 @@ namespace gl {
     // Estimate texture size in bytes
 #ifdef GL_ENABLE_TRACY
     size_t alloc_size = m_size.prod() * C * detail::texture_pixel_size_bytes<T>();
-    for (size_t lvl_alloc_size = alloc_size, i = 1; 1 < static_cast<size_t>(m_levels); ++i) {
+    for (size_t lvl_alloc_size = alloc_size, i = 1; i < static_cast<size_t>(m_levels); ++i) {
       lvl_alloc_size /= 2;
       alloc_size += lvl_alloc_size;
     }
