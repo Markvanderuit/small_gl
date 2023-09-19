@@ -1,4 +1,5 @@
 #include <small_gl/texture.hpp>
+#include <small_gl/buffer.hpp>
 
 namespace gl {
   /* Texture section */
@@ -123,6 +124,47 @@ namespace gl {
         safe_size.x(), safe_size.y(), safe_size.z(),
         format, pixel_format, data.data());
     }
+  }
+
+  template <typename T, uint D, uint C, TextureType Ty>
+  void Texture<T, D, C, Ty>::set(const gl::Buffer &data, uint level, vect size, vect offset)
+  requires(!detail::is_cubemap_type<Ty>) {
+    gl_trace_full();
+
+    constexpr auto format       = detail::texture_format<C, T>();
+    constexpr auto pixel_format = detail::texture_pixel_format<T>();
+    constexpr auto pixel_size   = detail::texture_pixel_size_bytes<T>();
+    constexpr auto storage_type = detail::texture_storage_type<D, Ty>();
+
+    const vect   safe_size  = size.isZero() ? m_size : size;
+    const size_t size_bytes = safe_size.prod() * C * pixel_size;
+
+    debug::check_expr(data.is_init() && data.size() >= size_bytes,
+      "provided data buffer is too small for requested texture region to be read");
+
+    // Bind buffer for pixel unpack operation
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, data.object());
+
+    if constexpr (storage_type == detail::StorageType::e1D) {
+      glTextureSubImage1D(m_object, level, 
+        offset.x(), 
+        safe_size.x(), 
+        format, pixel_format, nullptr);
+    } else if constexpr (storage_type == detail::StorageType::e2D
+                      || storage_type == detail::StorageType::e2DMSAA) {
+      glTextureSubImage2D(m_object, level, 
+        offset.x(), offset.y(), 
+        safe_size.x(), safe_size.y(), 
+        format, pixel_format, nullptr);              
+    } else if constexpr (storage_type == detail::StorageType::e3D
+                      || storage_type == detail::StorageType::e3DMSAA) {
+      glTextureSubImage3D(m_object, level, 
+        offset.x(), offset.y(), offset.z(),
+        safe_size.x(), safe_size.y(), safe_size.z(),
+        format, pixel_format, nullptr);
+    }
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER,0);
   }
 
   template <typename T, uint D, uint C, TextureType Ty>

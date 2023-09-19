@@ -75,6 +75,12 @@ namespace gl {
              vect offset                 = vect(0)) const
              requires(!detail::is_cubemap_type<Ty>);
 
+    void set(const gl::Buffer &data,
+             uint level                  = 0,
+             vect size                   = vect(0),
+             vect offset                 = vect(0)) 
+             requires(!detail::is_cubemap_type<Ty>);
+
     void set(std::span<const T> data,
              uint level                  = 0,
              vect size                   = vect(0),
