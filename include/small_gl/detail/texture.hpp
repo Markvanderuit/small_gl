@@ -31,7 +31,7 @@ namespace gl {
     // Concept to evaluate whether a cubemap type is used
     template <TextureType Ty>
     concept is_cubemap_type = Ty == TextureType::eCubemap
-                          || Ty == TextureType::eCubemapArray;
+                           || Ty == TextureType::eCubemapArray;
 
     // Consteval function determining a texture's underlying dimensions at compile time
     template <uint D, TextureType Ty>
