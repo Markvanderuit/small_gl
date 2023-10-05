@@ -22,19 +22,27 @@ namespace gl {
 
     glCreateFramebuffers(1, &m_object);
 
+    uint n_color_targets = 0;
+    std::vector<uint> color_targets;
+
     for (const auto &info : info) {
+      auto attachment_type = detail::framebuffer_attachment(info.type);
+      if (info.type == gl::FramebufferType::eColor)
+        color_targets.push_back(attachment_type + info.index);
+
       if (auto attachment = dynamic_cast<const AbstractTexture *>(info.attachment)) {
         glNamedFramebufferTexture(m_object, 
-          detail::framebuffer_attachment(info.type) + info.index, 
+          attachment_type + info.index, 
           attachment->object(), 
           info.level);
       } else if (auto attachment = dynamic_cast<const AbstractRenderbuffer *>(info.attachment)) {
         glNamedFramebufferRenderbuffer(m_object,
-          detail::framebuffer_attachment(info.type) + info.index, 
+          attachment_type + info.index, 
           GL_RENDERBUFFER,
           attachment->object());
       }
     }
+    glNamedFramebufferDrawBuffers(m_object, color_targets.size(), color_targets.data());
 
     auto is_complete = glCheckNamedFramebufferStatus(m_object, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     debug::check_expr(is_complete, "framebuffer is not complete");
