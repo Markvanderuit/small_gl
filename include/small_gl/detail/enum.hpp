@@ -372,7 +372,7 @@ namespace gl {
     eTextureUpdate          = GL_TEXTURE_UPDATE_BARRIER_BIT,
 
     // Shader image load/store/atomics reflect shader writes prior to barrier
-    eShaderImageAccess      = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT,
+    eImageAccess            = GL_SHADER_IMAGE_ACCESS_BARRIER_BIT,
 
     // Operations using set*/get*/copy*/mapped memory reflect shader writes prior to barrier
     eBufferUpdate           = GL_BUFFER_UPDATE_BARRIER_BIT,
