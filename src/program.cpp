@@ -140,6 +140,8 @@ namespace gl {
     }
   } // namespace detail
 
+  /* Program code */
+
   Program::Program(ShaderLoadSPIRVInfo load_info)
   : Program({ load_info }) { }
 
@@ -390,6 +392,38 @@ namespace gl {
     
     sampler.bind_to(data.binding);
   }
+
+  /* ProgramCache code */
+
+  template <typename CreateInfo>
+  std::string ProgramCache<CreateInfo>::set(CreateInfo info) {
+    gl_trace();
+    auto k = info.to_string();
+    if (auto f = m_cache.find(k); f == m_cache.end()) {
+      m_cache.emplace(k, gl::Program(info));
+    }
+    return k;
+  }
+
+  template <typename CreateInfo>
+  std::pair<std::string, gl::Program &> ProgramCache<CreateInfo>::get(CreateInfo info) {
+    gl_trace();
+    auto k = info.to_string();
+    auto f = m_cache.find(k);
+    if (f == m_cache.end()) {
+      return { k, m_cache.insert({ k, gl::Program(info) }).first->second };
+    }
+    return { k, f->second };
+  }
+
+  template <typename CreateInfo>
+  gl::Program & ProgramCache<CreateInfo>::at(const KeyType &k) {
+    gl_trace();
+    auto f = m_cache.find(k);
+    debug::check_expr(f != m_cache.end(),
+      std::format("ProgramCache::at(...) failed with key lookup for key: \"{}\"", k));
+    return f->second;
+  }
   
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */
     
@@ -431,4 +465,8 @@ namespace gl {
   gl_explicit_uniform_template(float, f)
   gl_explicit_uniform_template_matrix(float, eig::Matrix, f)
   gl_explicit_uniform_template_matrix(float, eig::Array, f)
+
+  /* Explicit template instantiations of gl::ProgramCache<...> */
+
+  template class ProgramCache<ShaderLoadSPIRVInfo>;
 } // namespace gl

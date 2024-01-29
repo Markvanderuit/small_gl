@@ -4,6 +4,7 @@
 #include <small_gl/utility.hpp>
 #include <initializer_list>
 #include <filesystem>
+#include <format>
 #include <string>
 #include <span>
 #include <unordered_map>
@@ -28,6 +29,21 @@ namespace gl {
 
     // Pass in indexed SPIRV specialization constants
     std::vector<std::pair<uint, uint>> spec_const = { };
+
+  public: // Helpers for use in std::unordered_map in gl::ProgramCache
+    std::string to_string() const {
+      std::stringstream ss;
+      ss << std::format("{}_{}_{}_{}", 
+                        static_cast<gl::uint>(type), 
+                        spirv_path.string(), 
+                        cross_path.string(), 
+                        entry_point);
+      for (const auto &[i, value] : spec_const)
+        ss << std::format("_({},{})", i, value);
+      return ss.str();
+    }
+
+    auto operator<=>(const ShaderLoadSPIRVInfo &) const = default;
   };
 
   /**
@@ -115,7 +131,7 @@ namespace gl {
     // Populate some reflectance data
     void populate(fs::path refl_path); // Populate reflectance data from SPIRV-CROSS generated .json file
     void populate(io::json refl_json); // Populate reflectance data from SPIRV-CROSS generated .json data
-    int loc(std::string_view s);       // Look up classic uniform location for given string name
+    int  loc(std::string_view s);      // Look up classic uniform location for given string name
 
   public:
     /* constr/destr */
@@ -164,4 +180,50 @@ namespace gl {
 
     gl_declare_noncopyable(Program);
   };
+  	
+  /**
+   * Helper object to initialize, store and load program objects
+   * based on their construction objects, to avoid unnecessary
+   * recreation of some heavier program objects.
+   */
+  template <typename CreateInfo = ShaderLoadSPIRVInfo>
+  class ProgramCache {
+    using KeyType  = std::string;
+    using InfoType = CreateInfo;
+
+    std::unordered_map<std::string, Program> m_cache;
+    
+  public:
+    // Initialize, or initialize-and-return a reference to a program object
+    KeyType                          set(CreateInfo info);
+    std::pair<KeyType, gl::Program&> get(CreateInfo info);   // Non-const, as program uniforms are 
+    gl::Program&                     at(const KeyType &k); // non-const, and program creation can 
+                                                            // happen on get(...)...
+    
+    // Clear out program cache
+    void clear() {
+      m_cache.clear();
+    }
+  };
 } // namespace gl
+
+namespace std {
+  // Rather naive hash overload for gl::ShaderLoadSPIRVInfo
+  template <>
+  struct hash<gl::ShaderLoadSPIRVInfo> {
+    size_t operator()(const gl::ShaderLoadSPIRVInfo &info) {
+      gl_trace();
+      std::stringstream ss;
+      ss << std::format("{}_{}_{}_{}", 
+                        static_cast<gl::uint>(info.type), 
+                        info.spirv_path.string(), 
+                        info.cross_path.string(), 
+                        info.entry_point);
+      for (const auto &[i, value] : info.spec_const)
+        ss << std::format("_({},{})", i, value);
+      return std::hash<std::string>()(ss.str());
+    }
+  };
+
+  // ...
+} // namespace std
