@@ -8,6 +8,7 @@
 #include <string>
 #include <span>
 #include <unordered_map>
+#include <variant>
 
 namespace gl {  
   /**
@@ -42,8 +43,6 @@ namespace gl {
         ss << std::format("_({},{})", i, value);
       return ss.str();
     }
-
-    auto operator<=>(const ShaderLoadSPIRVInfo &) const = default;
   };
 
   /**
@@ -59,6 +58,14 @@ namespace gl {
 
     // Path towards SPIRV-Cross generated reflection json file
     fs::path cross_path;
+
+  public: // Helpers for use in std::unordered_map in gl::ProgramCache
+    std::string to_string() const {
+      return std::format("{}_{}_{}", 
+                         static_cast<gl::uint>(type), 
+                         glsl_path.string(), 
+                         cross_path.string());
+    }
   };
 
   /**
@@ -186,44 +193,37 @@ namespace gl {
    * based on their construction objects, to avoid unnecessary
    * recreation of some heavier program objects.
    */
-  template <typename CreateInfo = ShaderLoadSPIRVInfo>
   class ProgramCache {
     using KeyType  = std::string;
-    using InfoType = CreateInfo;
+    using InfoType = std::variant<ShaderLoadSPIRVInfo, ShaderLoadGLSLInfo>;
+    
+    std::unordered_map<KeyType, InfoType> m_info_cache;
+    std::unordered_map<KeyType, Program>  m_prog_cache;
 
-    std::unordered_map<std::string, Program> m_cache;
-    
+    // Initialize-and-return a reference to a program object
+    // Overloaded below for variant types to support 
+    // aggregate initialization from the front-end
+    std::pair<KeyType, gl::Program&> set(InfoType info); 
+
   public:
-    // Initialize, or initialize-and-return a reference to a program object
-    KeyType                          set(CreateInfo info);
-    std::pair<KeyType, gl::Program&> get(CreateInfo info);   // Non-const, as program uniforms are 
-    gl::Program&                     at(const KeyType &k); // non-const, and program creation can 
-                                                            // happen on get(...)...
+    // Return an existing program for a given key
+    gl::Program& at(const KeyType &k);
     
+    // Reload and rebuild all cached programs
+    void reload();
+
     // Clear out program cache
-    void clear() {
-      m_cache.clear();
+    void clear();
+
+  public:
+    // Forward to private variant constructor
+    std::pair<KeyType, gl::Program&> set(ShaderLoadSPIRVInfo info) {
+      return set(InfoType(std::move(info)));
+    }
+    
+    // Forward to private variant constructor
+    std::pair<KeyType, gl::Program&> set(ShaderLoadGLSLInfo info) {
+      return set(InfoType(std::move(info)));
     }
   };
 } // namespace gl
-
-namespace std {
-  // Rather naive hash overload for gl::ShaderLoadSPIRVInfo
-  template <>
-  struct hash<gl::ShaderLoadSPIRVInfo> {
-    size_t operator()(const gl::ShaderLoadSPIRVInfo &info) {
-      gl_trace();
-      std::stringstream ss;
-      ss << std::format("{}_{}_{}_{}", 
-                        static_cast<gl::uint>(info.type), 
-                        info.spirv_path.string(), 
-                        info.cross_path.string(), 
-                        info.entry_point);
-      for (const auto &[i, value] : info.spec_const)
-        ss << std::format("_({},{})", i, value);
-      return std::hash<std::string>()(ss.str());
-    }
-  };
-
-  // ...
-} // namespace std

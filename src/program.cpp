@@ -395,34 +395,76 @@ namespace gl {
 
   /* ProgramCache code */
 
-  template <typename CreateInfo>
-  std::string ProgramCache<CreateInfo>::set(CreateInfo info) {
+  std::pair<std::string, gl::Program &> ProgramCache::set(InfoType info) {
     gl_trace();
-    auto k = info.to_string();
-    if (auto f = m_cache.find(k); f == m_cache.end()) {
-      m_cache.emplace(k, gl::Program(info));
+
+    bool is_spv = std::holds_alternative<ShaderLoadSPIRVInfo>(info);
+
+    // Visitor generates key, and tests if program exists in cache
+    auto key = std::visit([](const auto &i) { return i.to_string(); }, info);
+    auto it  = m_prog_cache.find(key);
+
+    // If program is not in cache
+    if (it == m_prog_cache.end()) {
+      // Visitor generates program
+      auto prog = std::visit([](const auto &i) { return gl::Program(i); }, info);
+      
+      // Program and info object are newly cached
+           m_info_cache.emplace(key, info);
+      it = m_prog_cache.emplace(key, std::move(prog)).first;
     }
-    return k;
+
+    return { key, it->second };
   }
 
-  template <typename CreateInfo>
-  std::pair<std::string, gl::Program &> ProgramCache<CreateInfo>::get(CreateInfo info) {
+  /* std::pair<std::string, gl::Program &> ProgramCache::set(ShaderLoadSPIRVInfo info) {
     gl_trace();
+    
     auto k = info.to_string();
-    auto f = m_cache.find(k);
-    if (f == m_cache.end()) {
-      return { k, m_cache.insert({ k, gl::Program(info) }).first->second };
+    auto f = m_prog_cache.find(k);
+
+    if (f == m_prog_cache.end()) {
+      m_info_cache.insert({ k, info });
+      auto it = m_prog_cache.insert({ k, gl::Program(info) }).first;
+      return { k, it->second };
     }
+
     return { k, f->second };
-  }
+  } */
 
-  template <typename CreateInfo>
-  gl::Program & ProgramCache<CreateInfo>::at(const KeyType &k) {
+  /* std::pair<std::string, gl::Program &> ProgramCache::set(ShaderLoadGLSLInfo info) {
     gl_trace();
-    auto f = m_cache.find(k);
-    debug::check_expr(f != m_cache.end(),
+    
+    auto k = info.to_string();
+    auto f = m_prog_cache.find(k);
+
+    if (f == m_prog_cache.end()) {
+      m_info_cache.insert({ k, info });
+      auto it = m_prog_cache.insert({ k, gl::Program(info) }).first;
+      return { k, it->second };
+    }
+
+    return { k, f->second };
+  } */
+
+  gl::Program & ProgramCache::at(const KeyType &k) {
+    gl_trace();
+    auto f = m_prog_cache.find(k);
+    debug::check_expr(f != m_prog_cache.end(),
       std::format("ProgramCache::at(...) failed with key lookup for key: \"{}\"", k));
     return f->second;
+  }
+
+  void ProgramCache::clear() {
+    gl_trace();
+    m_info_cache.clear();
+    m_prog_cache.clear();
+  }
+
+  void ProgramCache::reload() {
+    gl_trace_full();
+    for (const auto &[key, info] : m_info_cache)
+      m_prog_cache[key] = std::visit([](const auto &i) { return gl::Program(i); }, info);
   }
   
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */
@@ -465,8 +507,4 @@ namespace gl {
   gl_explicit_uniform_template(float, f)
   gl_explicit_uniform_template_matrix(float, eig::Matrix, f)
   gl_explicit_uniform_template_matrix(float, eig::Array, f)
-
-  /* Explicit template instantiations of gl::ProgramCache<...> */
-
-  template class ProgramCache<ShaderLoadSPIRVInfo>;
 } // namespace gl
