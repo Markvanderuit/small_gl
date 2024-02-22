@@ -145,16 +145,24 @@ namespace gl {
 
     Program() = default;
     ~Program();
-    
-    Program(ShaderLoadSPIRVInfo);
-    Program(ShaderLoadGLSLInfo);
-    Program(ShaderLoadSPIRVStringInfo);
-    Program(ShaderLoadGLSLStringInfo);
 
-    Program(std::initializer_list<ShaderLoadSPIRVInfo>);
-    Program(std::initializer_list<ShaderLoadGLSLInfo>);
-    Program(std::initializer_list<ShaderLoadSPIRVStringInfo>);
-    Program(std::initializer_list<ShaderLoadGLSLStringInfo>);
+    // Constructor over non-owned info objects; primary constructor
+    Program(std::span<const ShaderLoadSPIRVInfo>       info);
+    Program(std::span<const ShaderLoadGLSLInfo>        info);
+    Program(std::span<const ShaderLoadSPIRVStringInfo> info);
+    Program(std::span<const ShaderLoadGLSLStringInfo>  info);
+    
+    // Constructor over owned info objects; forwarded to above
+    Program(std::initializer_list<ShaderLoadSPIRVInfo>       info);
+    Program(std::initializer_list<ShaderLoadGLSLInfo>        info);
+    Program(std::initializer_list<ShaderLoadSPIRVStringInfo> info);
+    Program(std::initializer_list<ShaderLoadGLSLStringInfo>  info);
+
+    // Constructor over single info object; forwarded to above
+    Program(const ShaderLoadSPIRVInfo       &info);
+    Program(const ShaderLoadGLSLInfo        &info);
+    Program(const ShaderLoadSPIRVStringInfo &info);
+    Program(const ShaderLoadGLSLStringInfo  &info);
 
     /* state */  
 
@@ -196,14 +204,17 @@ namespace gl {
   class ProgramCache {
     using KeyType  = std::string;
     using InfoType = std::variant<ShaderLoadSPIRVInfo, ShaderLoadGLSLInfo>;
+    using InfoList = std::variant<std::initializer_list<ShaderLoadSPIRVInfo>, 
+                                  std::initializer_list<ShaderLoadGLSLInfo >>;
     
-    std::unordered_map<KeyType, InfoType> m_info_cache;
-    std::unordered_map<KeyType, Program>  m_prog_cache;
+    std::unordered_map<KeyType, std::vector<InfoType>> m_info_cache;
+    std::unordered_map<KeyType, Program>               m_prog_cache;
 
     // Initialize-and-return a reference to a program object
     // Overloaded below for variant types to support 
     // aggregate initialization from the front-end
-    std::pair<KeyType, gl::Program&> set(InfoType info); 
+    std::pair<KeyType, gl::Program&> set(InfoType &&info); 
+    std::pair<KeyType, gl::Program&> set(InfoList &&info); 
 
   public:
     // Return an existing program for a given key
@@ -217,13 +228,23 @@ namespace gl {
 
   public:
     // Forward to private variant constructor
-    std::pair<KeyType, gl::Program&> set(ShaderLoadSPIRVInfo info) {
-      return set(InfoType(std::move(info)));
+    std::pair<KeyType, gl::Program&> set(ShaderLoadSPIRVInfo &&info) {
+      return set(std::forward<InfoType>(std::forward<ShaderLoadSPIRVInfo>(info)));
     }
     
     // Forward to private variant constructor
-    std::pair<KeyType, gl::Program&> set(ShaderLoadGLSLInfo info) {
-      return set(InfoType(std::move(info)));
+    std::pair<KeyType, gl::Program&> set(ShaderLoadGLSLInfo &&info) {
+      return set(std::forward<InfoType>(std::forward<ShaderLoadGLSLInfo>(info)));
+    }
+
+    // Forward to private variant constructor
+    std::pair<KeyType, gl::Program&> set(std::initializer_list<ShaderLoadSPIRVInfo> &&info) {
+      return set(std::forward<InfoList>(std::forward<std::initializer_list<ShaderLoadSPIRVInfo>>(info)));
+    }
+    
+    // Forward to private variant constructor
+    std::pair<KeyType, gl::Program&> set(std::initializer_list<ShaderLoadGLSLInfo> &&info) {
+      return set(std::forward<InfoList>(std::forward<std::initializer_list<ShaderLoadGLSLInfo>>(info)));
     }
   };
 } // namespace gl

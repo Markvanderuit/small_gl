@@ -10,6 +10,10 @@
 #include <sstream>
 
 namespace gl {
+  // Ranges shorthands
+  namespace rng = std::ranges;
+  namespace vws = std::views;
+  
   // Internal struct used for construction 
   struct ShaderCreateInfo {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
@@ -92,8 +96,8 @@ namespace gl {
       GLuint object = glCreateShader((uint) i.type);
       if (i.is_spirv) {
         // Split specialization constants into index/value
-        auto const_i = i.spirv_spec_const | std::views::elements<0> | std::ranges::to<std::vector>();
-        auto const_v = i.spirv_spec_const | std::views::elements<1> | std::ranges::to<std::vector>();
+        auto const_i = i.spirv_spec_const | vws::elements<0> | rng::to<std::vector>();
+        auto const_v = i.spirv_spec_const | vws::elements<1> | rng::to<std::vector>();
 
         // Submit spir-v binary and specialize shader
         glShaderBinary(1, &object, GL_SHADER_BINARY_FORMAT_SPIR_V, ptr, size);
@@ -126,14 +130,14 @@ namespace gl {
       shader_objects.reserve(info.size());
 
       // Generate, compile, and attach shader objects
-      std::ranges::transform(info, std::back_inserter(shader_objects),
+      rng::transform(info, std::back_inserter(shader_objects),
         [object] (const auto &i) { return attach_shader_object(object, i); });
       
       glLinkProgram(object);
       check_program_link(object);
 
       // Detach and destroy shader objects
-      std::ranges::for_each(shader_objects, 
+      rng::for_each(shader_objects, 
         [object] (const auto &i) { detach_shader_object(object, i); });
 
       return object;
@@ -142,26 +146,45 @@ namespace gl {
 
   /* Program code */
 
-  Program::Program(ShaderLoadSPIRVInfo load_info)
-  : Program({ load_info }) { }
+  // Program::Program(const ShaderLoadSPIRVInfo &load_info)
+  // : Program({ load_info }) { }
 
-  Program::Program(ShaderLoadGLSLInfo load_info)
-  : Program({ load_info }) { }
+  // Program::Program(const ShaderLoadGLSLInfo &load_info)
+  // : Program({ load_info }) { }
 
-  Program::Program(ShaderLoadSPIRVStringInfo load_info)
-  : Program({ load_info }) { }
+  // Program::Program(const ShaderLoadSPIRVStringInfo &load_info)
+  // : Program({ load_info }) { }
 
-  Program::Program(ShaderLoadGLSLStringInfo load_info)
-  : Program({ load_info }) { }
+  // Program::Program(const ShaderLoadGLSLStringInfo &load_info)
+  // : Program({ load_info }) { }
+  
+  
+  Program::Program(std::initializer_list<ShaderLoadSPIRVInfo> info)       
+  : Program(std::span(info.begin(), info.end())) {}
+  Program::Program(std::initializer_list<ShaderLoadGLSLInfo> info)        
+  : Program(std::span(info.begin(), info.end())) {}
+  Program::Program(std::initializer_list<ShaderLoadSPIRVStringInfo> info) 
+  : Program(std::span(info.begin(), info.end())) {}
+  Program::Program(std::initializer_list<ShaderLoadGLSLStringInfo> info)  
+  : Program(std::span(info.begin(), info.end())) {}
+    
+  Program::Program(const ShaderLoadSPIRVInfo       &info) 
+  : Program({ info }) { }
+  Program::Program(const ShaderLoadGLSLInfo        &info) 
+  : Program({ info }) { }
+  Program::Program(const ShaderLoadSPIRVStringInfo &info) 
+  : Program({ info }) { }
+  Program::Program(const ShaderLoadGLSLStringInfo  &info) 
+  : Program({ info }) { }
 
-  Program::Program(std::initializer_list<ShaderLoadSPIRVInfo> load_info) 
+  Program::Program(std::span<const ShaderLoadSPIRVInfo> load_info) 
   : Base(true) {
     gl_trace_full();
     debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
-    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVInfo &info) {
+    rng::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVInfo &info) {
       return ShaderCreateInfo { .type              = info.type,  
                                 .data              = io::load_shader_binary(info.spirv_path), 
                                 .is_spirv          = true, 
@@ -173,18 +196,18 @@ namespace gl {
     m_object = detail::create_program_object(create_info);
 
     // Handle reflectance data population, if available
-    auto filt = load_info | std::views::filter([](const auto &info) { return !info.cross_path.empty(); });
+    auto filt = load_info | vws::filter([](const auto &info) { return !info.cross_path.empty(); });
     for (const auto &info : filt) populate(info.cross_path);
   }
 
-  Program::Program(std::initializer_list<ShaderLoadSPIRVStringInfo> load_info) 
+  Program::Program(std::span<const ShaderLoadSPIRVStringInfo> load_info) 
   : Base(true) {
     gl_trace_full();
     debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
-    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVStringInfo &info) {
+    rng::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVStringInfo &info) {
       return ShaderCreateInfo { .type              = info.type,  
                                 .data              = info.spirv_data, 
                                 .is_spirv          = true, 
@@ -196,18 +219,18 @@ namespace gl {
     m_object = detail::create_program_object(create_info);
 
     // Handle reflectance data population, if available
-    auto filt = load_info | std::views::filter([](const auto &info) { return !info.cross_json.empty(); });
+    auto filt = load_info | vws::filter([](const auto &info) { return !info.cross_json.empty(); });
     for (const auto &info : filt) populate(info.cross_json);
   }
 
-  Program::Program(std::initializer_list<ShaderLoadGLSLInfo> load_info) 
+  Program::Program(std::span<const ShaderLoadGLSLInfo> load_info) 
   : Base(true) {
     gl_trace_full();
     debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
-    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLInfo &info) {
+    rng::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLInfo &info) {
       return ShaderCreateInfo { .type              = info.type,  
                                 .data              = io::load_shader_binary(info.glsl_path), 
                                 .is_spirv          = false };
@@ -217,18 +240,18 @@ namespace gl {
     m_object = detail::create_program_object(create_info);
 
     // Handle reflectance data population, if available
-    auto filt = load_info | std::views::filter([](const auto &info) { return !info.cross_path.empty(); });
+    auto filt = load_info | vws::filter([](const auto &info) { return !info.cross_path.empty(); });
     for (const auto &info : filt) populate(info.cross_path);
   }
 
-  Program::Program(std::initializer_list<ShaderLoadGLSLStringInfo> load_info) 
+  Program::Program(std::span<const ShaderLoadGLSLStringInfo> load_info) 
   : Base(true) {
     gl_trace_full();
     debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
-    std::ranges::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLStringInfo &info) {
+    rng::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLStringInfo &info) {
       return ShaderCreateInfo { .type              = info.type,  
                                 .data              = info.glsl_data, 
                                 .is_spirv          = false };
@@ -238,7 +261,7 @@ namespace gl {
     m_object = detail::create_program_object(create_info);
 
     // Handle reflectance data population, if available
-    auto filt = load_info | std::views::filter([](const auto &info) { return !info.cross_json.empty(); });
+    auto filt = load_info | vws::filter([](const auto &info) { return !info.cross_json.empty(); });
     for (const auto &info : filt) populate(info.cross_json);
   }
 
@@ -322,13 +345,13 @@ namespace gl {
 
     // Consume reflectance data for bindable types; buffers, textures, samplers, images, ...
     if (js.contains("ubos"))
-      std::ranges::for_each(js.at("ubos"), std::bind(func_general, _1, BindingType::eUniformBuffer));
+      rng::for_each(js.at("ubos"), std::bind(func_general, _1, BindingType::eUniformBuffer));
     if (js.contains("textures")) // textures/samplers share name/binding
-      std::ranges::for_each(js.at("textures"), std::bind(func_general, _1, BindingType::eSampler));
+      rng::for_each(js.at("textures"), std::bind(func_general, _1, BindingType::eSampler));
     if (js.contains("ssbos"))
-      std::ranges::for_each(js.at("ssbos"), std::bind(func_qualifier, _1, BindingType::eStorageBuffer));
+      rng::for_each(js.at("ssbos"), std::bind(func_qualifier, _1, BindingType::eStorageBuffer));
     if (js.contains("images"))
-      std::ranges::for_each(js.at("images"), std::bind(func_qualifier, _1, BindingType::eImage));
+      rng::for_each(js.at("images"), std::bind(func_qualifier, _1, BindingType::eImage));
   }
   
   void Program::bind(std::string_view s, const gl::AbstractTexture &texture, BindingType binding) {
@@ -395,10 +418,8 @@ namespace gl {
 
   /* ProgramCache code */
 
-  std::pair<std::string, gl::Program &> ProgramCache::set(InfoType info) {
+  std::pair<std::string, gl::Program &> ProgramCache::set(InfoType &&info) {
     gl_trace();
-
-    bool is_spv = std::holds_alternative<ShaderLoadSPIRVInfo>(info);
 
     // Visitor generates key, and tests if program exists in cache
     auto key = std::visit([](const auto &i) { return i.to_string(); }, info);
@@ -410,42 +431,40 @@ namespace gl {
       auto prog = std::visit([](const auto &i) { return gl::Program(i); }, info);
       
       // Program and info object are newly cached
-           m_info_cache.emplace(key, info);
+           m_info_cache.emplace(key, std::vector { std::move(info) });
       it = m_prog_cache.emplace(key, std::move(prog)).first;
     }
 
     return { key, it->second };
   }
 
-  /* std::pair<std::string, gl::Program &> ProgramCache::set(ShaderLoadSPIRVInfo info) {
+  std::pair<std::string, gl::Program &> ProgramCache::set(InfoList &&info) {
     gl_trace();
-    
-    auto k = info.to_string();
-    auto f = m_prog_cache.find(k);
 
-    if (f == m_prog_cache.end()) {
-      m_info_cache.insert({ k, info });
-      auto it = m_prog_cache.insert({ k, gl::Program(info) }).first;
-      return { k, it->second };
+    // Visitor generates key, and tests if program exists in cache,
+    // by joining consecutive info objects as keys
+    auto key = std::visit([](const auto &l) {
+      return l | vws::transform([](const auto &i) { return i.to_string(); }) 
+               | vws::join 
+               | rng::to<std::string>();
+    }, info);
+    auto it  = m_prog_cache.find(key);
+
+    // If program is not in cache
+    if (it == m_prog_cache.end()) {
+      // Visitor generates program from list
+      auto prog = std::visit([](const auto &l) { return gl::Program(l); }, info);
+      
+      // Program and info object are newly cached
+      auto cval = std::visit([](const auto &l) { 
+        return l | vws::transform([](const auto &t) { return InfoType(t); }) 
+                 | rng::to<std::vector>();  }, info);
+           m_info_cache.emplace(key, std::move(cval));
+      it = m_prog_cache.emplace(key, std::move(prog)).first;
     }
 
-    return { k, f->second };
-  } */
-
-  /* std::pair<std::string, gl::Program &> ProgramCache::set(ShaderLoadGLSLInfo info) {
-    gl_trace();
-    
-    auto k = info.to_string();
-    auto f = m_prog_cache.find(k);
-
-    if (f == m_prog_cache.end()) {
-      m_info_cache.insert({ k, info });
-      auto it = m_prog_cache.insert({ k, gl::Program(info) }).first;
-      return { k, it->second };
-    }
-
-    return { k, f->second };
-  } */
+    return { key, it->second };
+  }
 
   gl::Program & ProgramCache::at(const KeyType &k) {
     gl_trace();
@@ -463,8 +482,11 @@ namespace gl {
 
   void ProgramCache::reload() {
     gl_trace_full();
-    for (const auto &[key, info] : m_info_cache)
-      m_prog_cache[key] = std::visit([](const auto &i) { return gl::Program(i); }, info);
+    /* for (const auto &[key, info] : m_info_cache)
+      m_prog_cache[key] = std::visit([](const auto &i) {
+        std::span s = i;
+        return gl::Program(s); 
+      }, info); */
   }
   
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */
