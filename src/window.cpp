@@ -88,15 +88,15 @@ namespace gl {
     glfwSetDropCallback(object, nullptr);
   }
 
-  Window::Window(WindowCreateInfo info)
+  Window::Window(WindowInfo info)
   : Handle<void *>(true),
     m_window_size(info.size),
     m_window_pos(0, 0),
     m_title(info.title),
     m_swap_interval(info.swap_interval),
-    m_is_visible(has_flag(info.flags, WindowCreateFlags::eVisible)),
-    m_is_maximized(has_flag(info.flags, WindowCreateFlags::eMaximized)),
-    m_is_focused(has_flag(info.flags, WindowCreateFlags::eFocused)),
+    m_is_visible(has_flag(info.flags, WindowFlags::eVisible)),
+    m_is_maximized(has_flag(info.flags, WindowFlags::eMaximized)),
+    m_is_focused(has_flag(info.flags, WindowFlags::eFocused)),
     m_is_main_context(info.is_main_context),
     m_did_window_resize(false),
     m_did_framebuffer_resize(false) {
@@ -124,21 +124,21 @@ namespace gl {
     glfwWindowHint(GLFW_OPENGL_PROFILE, profile);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, info.profile_version_major);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, info.profile_version_minor);
-    glfwWindowHint(GLFW_DECORATED,    has_flag(info.flags, WindowCreateFlags::eDecorated));
-    glfwWindowHint(GLFW_FLOATING,     has_flag(info.flags, WindowCreateFlags::eFloating));
-    glfwWindowHint(GLFW_FOCUSED,      has_flag(info.flags, WindowCreateFlags::eFocused));
-    glfwWindowHint(GLFW_MAXIMIZED,    has_flag(info.flags, WindowCreateFlags::eMaximized));
-    glfwWindowHint(GLFW_VISIBLE,      has_flag(info.flags, WindowCreateFlags::eVisible));
-    glfwWindowHint(GLFW_RESIZABLE,    has_flag(info.flags, WindowCreateFlags::eResizable));
-    glfwWindowHint(GLFW_SRGB_CAPABLE, has_flag(info.flags, WindowCreateFlags::eSRGB));
-    glfwWindowHint(GLFW_SAMPLES,      has_flag(info.flags, WindowCreateFlags::eMSAA) ? 4 : 0); 
+    glfwWindowHint(GLFW_DECORATED,    has_flag(info.flags, WindowFlags::eDecorated));
+    glfwWindowHint(GLFW_FLOATING,     has_flag(info.flags, WindowFlags::eFloating));
+    glfwWindowHint(GLFW_FOCUSED,      has_flag(info.flags, WindowFlags::eFocused));
+    glfwWindowHint(GLFW_MAXIMIZED,    has_flag(info.flags, WindowFlags::eMaximized));
+    glfwWindowHint(GLFW_VISIBLE,      has_flag(info.flags, WindowFlags::eVisible));
+    glfwWindowHint(GLFW_RESIZABLE,    has_flag(info.flags, WindowFlags::eResizable));
+    glfwWindowHint(GLFW_SRGB_CAPABLE, has_flag(info.flags, WindowFlags::eSRGB));
+    glfwWindowHint(GLFW_SAMPLES,      has_flag(info.flags, WindowFlags::eMSAA) ? 4 : 0); 
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 
-                                      has_flag(info.flags, WindowCreateFlags::eDebug));
+                                      has_flag(info.flags, WindowFlags::eDebug));
 
     // Obtain and configure main monitor for fullscreen, if requested
     GLFWmonitor *mon = nullptr;
-    if (has_flag(info.flags, WindowCreateFlags::eFullscreen)
-     && has_flag(info.flags, WindowCreateFlags::eVisible)) {
+    if (has_flag(info.flags, WindowFlags::eFullscreen)
+     && has_flag(info.flags, WindowFlags::eVisible)) {
       GLFWmonitor *monitor = glfwGetPrimaryMonitor();
       const GLFWvidmode *mode = glfwGetVideoMode(monitor);
       glfwWindowHint(GLFW_RED_BITS,     mode->redBits);

@@ -413,7 +413,7 @@ namespace gl {
     e4                      = 4
   };
 
-  // Format used for internal element buffer in gl::ArrayCreateInfo(...) object
+  // Format used for internal element buffer in gl::ArrayInfo(...) object
   enum class VertexElemType : uint {
     eUByte  = GL_UNSIGNED_BYTE,
     eUShort = GL_UNSIGNED_SHORT,
@@ -423,7 +423,7 @@ namespace gl {
   /* Window/context enums */
 
   // Window hint flags to pass to GLFW
-  enum class WindowCreateFlags : uint {
+  enum class WindowFlags : uint {
     eDebug                  = 0x001u,
     eDecorated              = 0x002u,
     eFloating               = 0x004u,
@@ -435,7 +435,7 @@ namespace gl {
     eSRGB                   = 0x100u,
     eMSAA                   = 0x200u
   };  
-  gl_declare_bitflag(WindowCreateFlags);
+  gl_declare_bitflag(WindowFlags);
 
   // Preferred OpenGL profile for GLFW to support
   enum class ProfileType {

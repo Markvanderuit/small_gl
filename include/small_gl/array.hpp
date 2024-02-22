@@ -8,9 +8,9 @@
 
 namespace gl {
   /**
-   * Helper object to specify a vertex buffer for ArrayCreateInfo object.
+   * Helper object to specify a vertex buffer for ArrayInfo object.
    */
-  struct VertexBufferCreateInfo {
+  struct VertexBufferInfo {
     // Pointer to attached bufer object
     const Buffer *buffer;
 
@@ -29,9 +29,9 @@ namespace gl {
   };
 
   /**
-   * Helper object to specify a vertex attribute for ArrayCreateInfo object.
+   * Helper object to specify a vertex attribute for ArrayInfo object.
    */
-  struct VertexAttribCreateInfo {
+  struct VertexAttribInfo {
     // Buffer/attrib binding point indices
     uint attrib_index, buffer_index;
     
@@ -49,12 +49,12 @@ namespace gl {
   /**
    * Helper object to create Array object.
    */
-  struct ArrayCreateInfo {
+  struct ArrayInfo {
     // Vertex buffer binding info
-    std::vector<VertexBufferCreateInfo> buffers;
+    std::vector<VertexBufferInfo> buffers;
 
     // Vertex attribute info
-    std::vector<VertexAttribCreateInfo> attribs;
+    std::vector<VertexAttribInfo> attribs;
 
     // Optional elements buffer and internal type
     const Buffer  *elements      = nullptr;
@@ -74,7 +74,7 @@ namespace gl {
     /* constr/destr */
     
     Array() = default;
-    Array(ArrayCreateInfo info);
+    Array(ArrayInfo info);
     ~Array();
 
     /* getters/setters */
@@ -87,8 +87,8 @@ namespace gl {
     void bind() const;
     void unbind() const;
 
-    void attach_buffer(std::vector<VertexBufferCreateInfo> info);
-    void attach_attrib(std::vector<VertexAttribCreateInfo> info);
+    void attach_buffer(std::vector<VertexBufferInfo> info);
+    void attach_attrib(std::vector<VertexAttribInfo> info);
     void attach_elements(const Buffer &buffer);
     void detach_elements();
 

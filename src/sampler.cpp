@@ -2,7 +2,7 @@
 #include <small_gl/utility.hpp>
 
 namespace gl {
-  Sampler::Sampler(SamplerCreateInfo info)
+  Sampler::Sampler(SamplerInfo info)
   : Base(true), m_min_filter(info.min_filter), m_mag_filter(info.mag_filter), 
     m_wrap(info.wrap), m_compare_func(info.compare_func), m_compare_mode(info.compare_mode) {
     gl_trace_full();

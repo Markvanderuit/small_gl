@@ -9,7 +9,7 @@ namespace gl {
   /**
    * Helper object to create sampler object.
    */
-  struct SamplerCreateInfo {
+  struct SamplerInfo {
     SamplerMinFilter min_filter     = SamplerMinFilter::eNearest;
     SamplerMagFilter mag_filter     = SamplerMagFilter::eNearest;
     SamplerWrap wrap                = SamplerWrap::eClampToEdge;
@@ -30,12 +30,12 @@ namespace gl {
     SamplerCompareMode m_compare_mode;
 
   public:
-    using InfoType = SamplerCreateInfo;
+    using InfoType = SamplerInfo;
 
     /* constr/destr */
 
     Sampler() = default;
-    Sampler(SamplerCreateInfo info);
+    Sampler(SamplerInfo info);
     ~Sampler();
 
     /* getters/setters */

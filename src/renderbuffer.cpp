@@ -3,7 +3,7 @@
 
 namespace gl {
   template <typename T, uint C, RenderbufferType Ty>
-  Renderbuffer<T, C, Ty>::Renderbuffer(RenderbufferCreateInfo info)
+  Renderbuffer<T, C, Ty>::Renderbuffer(RenderBufferInfo info)
   : Base(true), m_size(info.size) {
     gl_trace_full();
     debug::check_expr((m_size >= eig::Array2u(1u)).all(), "renderbuffer size must be all >= 1");

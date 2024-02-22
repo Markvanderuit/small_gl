@@ -13,7 +13,7 @@ namespace gl {
   /**
    * Helper object to create window/context in window object.
    */
-  struct WindowCreateInfo {
+  struct WindowInfo {
     // Window settings
     eig::Array2u size            = { 1, 1 };
     std::string title            = "";
@@ -28,7 +28,7 @@ namespace gl {
     const Window *shared_context = nullptr;
 
     // Remainder of settings
-    WindowCreateFlags flags      = { };
+    WindowFlags flags      = { };
   };
 
   /**
@@ -72,12 +72,12 @@ namespace gl {
     WindowInputInfo m_input_info;
 
   public:
-    using InfoType = WindowCreateInfo;
+    using InfoType = WindowInfo;
 
     /* constr/destr */
 
     Window() = default;
-    Window(WindowCreateInfo info);
+    Window(WindowInfo info);
     ~Window();
 
     /* context */    

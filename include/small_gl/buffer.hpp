@@ -11,7 +11,7 @@ namespace gl {
   /**
    * Helper object to create buffer object.
    */
-  struct BufferCreateInfo {
+  struct BufferInfo {
     // Size of the buffer, in bytes
     size_t size = 0;
 
@@ -33,12 +33,12 @@ namespace gl {
     BufferCreateFlags m_flags;
 
   public:
-    using InfoType = BufferCreateInfo;
+    using InfoType = BufferInfo;
 
     /* constr/destr */
 
     Buffer() = default;
-    Buffer(BufferCreateInfo info);
+    Buffer(BufferInfo info);
     ~Buffer();
 
     /* getters/setters */

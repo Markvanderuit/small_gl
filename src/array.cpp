@@ -5,13 +5,13 @@
 
 namespace gl {
   namespace detail {
-    void attach_buffer(GLuint object, VertexBufferCreateInfo info) {
+    void attach_buffer(GLuint object, VertexBufferInfo info) {
       gl_trace_full();
       glVertexArrayVertexBuffer(object, info.index, info.buffer->object(), info.offset, info.stride);
       glVertexArrayBindingDivisor(object, info.index, info.divisor);
     }
 
-    void attach_attrib(GLuint object, VertexAttribCreateInfo info) {
+    void attach_attrib(GLuint object, VertexAttribInfo info) {
       gl_trace_full();
       switch (info.type) {
         case VertexAttribType::eInt:
@@ -38,7 +38,7 @@ namespace gl {
     }
   } // namespace detail
 
-  Array::Array(ArrayCreateInfo info)
+  Array::Array(ArrayInfo info)
   : Base(true), 
     m_has_elements(info.elements) {
     gl_trace_full();
@@ -74,11 +74,11 @@ namespace gl {
     glBindVertexArray(0);
   }
   
-  void Array::attach_buffer(std::vector<VertexBufferCreateInfo> info) {
+  void Array::attach_buffer(std::vector<VertexBufferInfo> info) {
     std::ranges::for_each(info, [&](auto &_info) { detail::attach_buffer(m_object, _info); });
   }
 
-  void Array::attach_attrib(std::vector<VertexAttribCreateInfo> info) {
+  void Array::attach_attrib(std::vector<VertexAttribInfo> info) {
     std::ranges::for_each(info, [&](auto &_info) { detail::attach_attrib(m_object, _info); });
   }
 

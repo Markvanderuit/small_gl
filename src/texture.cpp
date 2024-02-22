@@ -5,7 +5,7 @@ namespace gl {
   /* Texture section */
 
   template <typename T, uint D, uint C, TextureType Ty>
-  Texture<T, D, C, Ty>::Texture(TextureCreateInfo info)
+  Texture<T, D, C, Ty>::Texture(TextureInfo info)
   : Base(true), m_size(info.size), m_levels(info.levels) {
     gl_trace_full();
     debug::check_expr((m_size >= vect(1)).all(), "texture size must be all >= 1");
@@ -339,7 +339,7 @@ namespace gl {
   /* Texture view section */
 
   template <typename T, uint D, uint C, TextureType Ty>
-  TextureView<T, D, C, Ty>::TextureView(TextureViewCreateInfo info)
+  TextureView<T, D, C, Ty>::TextureView(TextureViewInfo info)
   : Base(true) {
     gl_trace_full();
     glGenTextures(1, &m_object);

@@ -8,7 +8,7 @@
 #include <small_gl/detail/trace.hpp>
 
 namespace gl {
-  struct RenderbufferCreateInfo {
+  struct RenderBufferInfo {
     // Multi-dimensional size of the rendebuffer; not in bytes
     eig::Array2u size;
   };
@@ -26,7 +26,7 @@ namespace gl {
     /* constr/destr */
 
     Renderbuffer() = default;
-    Renderbuffer(RenderbufferCreateInfo info);
+    Renderbuffer(RenderBufferInfo info);
     ~Renderbuffer();
 
     /* getters */

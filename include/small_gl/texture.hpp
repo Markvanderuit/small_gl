@@ -16,7 +16,7 @@ namespace gl {
             uint D,         // Nr. of dimensions (1, 2, 3)
             TextureType Ty  // Special texture type (array, cubemap, multisampled)
             = TextureType::eImage>
-  class TextureCreateInfo {
+  class TextureInfo {
     using vect = eig::Array<uint, detail::texture_dims<D, Ty>(), 1>;
 
   public:
@@ -42,7 +42,7 @@ namespace gl {
             TextureType Ty    // Special texture type (array, cubemap, multisampled)
             = TextureType::eImage>   
   class Texture : public AbstractTexture {
-    using TextureCreateInfo = TextureCreateInfo<T, D, Ty>;
+    using TextureInfo = TextureInfo<T, D, Ty>;
     using Base = detail::Handle<>;
     using vect = eig::Array<uint, detail::texture_dims<D, Ty>(), 1>;
 
@@ -50,12 +50,12 @@ namespace gl {
     vect m_size;
 
   public:
-    using InfoType = TextureCreateInfo;
+    using InfoType = TextureInfo;
 
     /* constr/destr */
     
     Texture() = default;
-    Texture(TextureCreateInfo info);
+    Texture(TextureInfo info);
     ~Texture();
 
     /* getters */
@@ -161,7 +161,7 @@ namespace gl {
   /**
    * Helper object to create texture view object.
    */
-  struct TextureViewCreateInfo {
+  struct TextureViewInfo {
     // Object handle to viewed underlying texture
     const AbstractTexture *texture;
 
@@ -191,12 +191,12 @@ namespace gl {
     uint m_levels;
 
   public:
-    using InfoType = TextureViewCreateInfo;
+    using InfoType = TextureViewInfo;
 
     /* constr/destr */
     
     TextureView() = default;
-    TextureView(TextureViewCreateInfo info);
+    TextureView(TextureViewInfo info);
     ~TextureView();
 
     /* state */

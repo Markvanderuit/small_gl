@@ -13,7 +13,7 @@ namespace gl {
     }
   } // namespace detail
 
-  Buffer::Buffer(BufferCreateInfo info)
+  Buffer::Buffer(BufferInfo info)
   : Base(true), 
     m_is_mapped(false),
     m_flags(info.flags),
