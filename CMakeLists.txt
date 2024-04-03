@@ -35,7 +35,6 @@ target_link_libraries(small_gl PRIVATE
   glad::glad
   glfw
   nlohmann_json::nlohmann_json
-  small_gl_parser_lib
   Tracy::TracyClient
 )
 target_include_directories(small_gl PUBLIC include)
