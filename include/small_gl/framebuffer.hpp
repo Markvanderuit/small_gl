@@ -24,6 +24,9 @@ namespace gl {
     // Either a texture, texture view, or render buffer
     const AbstractFramebufferAttachment *attachment;
 
+    // Layer of array texture to attach
+    uint layer = 0;
+
     // Mipmap level of texture to attach
     uint level = 0;
   };

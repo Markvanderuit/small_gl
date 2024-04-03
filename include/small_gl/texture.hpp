@@ -60,8 +60,20 @@ namespace gl {
 
     /* getters */
 
-    uint levels() const override { return m_levels; }
-    vect size() const { return m_size; }
+    uint layers() const override {
+      if constexpr (D == 3)
+        return m_size.z();
+      else
+        return 0;
+    }
+
+    uint levels() const override { 
+      return m_levels; 
+    }
+
+    vect size() const { 
+      return m_size; 
+    }
 
     /* state */
 
@@ -205,7 +217,16 @@ namespace gl {
 
     /* getters */
 
-    uint levels() const override { return m_levels; }
+    uint layers() const override {
+      /* if constexpr (D == 3)
+        return m_size.z();
+      else */
+      return 0; // Not properly handled r.n.
+    }
+
+    uint levels() const override {
+      return m_levels;
+    }
 
     /* miscellaneous */
 

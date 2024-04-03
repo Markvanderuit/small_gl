@@ -31,10 +31,19 @@ namespace gl {
         color_targets.push_back(attachment_type + info.index);
 
       if (auto attachment = dynamic_cast<const AbstractTexture *>(info.attachment)) {
-        glNamedFramebufferTexture(m_object, 
-          attachment_type + info.index, 
-          attachment->object(), 
-          info.level);
+        if (attachment->layers() > 0) {
+          glNamedFramebufferTexture3DEXT(m_object, 
+            attachment_type + info.index,
+            attachment->target(),
+            attachment->object(),
+            info.level,
+            info.layer);
+        } else {
+          glNamedFramebufferTexture(m_object, 
+            attachment_type + info.index, 
+            attachment->object(), 
+            info.level);
+        }
       } else if (auto attachment = dynamic_cast<const AbstractRenderbuffer *>(info.attachment)) {
         glNamedFramebufferRenderbuffer(m_object,
           attachment_type + info.index, 

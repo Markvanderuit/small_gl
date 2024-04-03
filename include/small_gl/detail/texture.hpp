@@ -20,6 +20,7 @@ namespace gl {
 
   struct AbstractTexture : public virtual AbstractFramebufferAttachment {
     virtual uint levels() const                                               = 0;
+    virtual uint layers() const                                               = 0;
     virtual void bind_to(TextureTargetType, uint index, uint level = 0) const = 0;
     virtual void generate_mipmaps()                                           = 0;
     virtual uint internal_format() const                                      = 0;
