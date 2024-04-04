@@ -233,6 +233,11 @@ namespace gl {
       gl_trace_full();
       glViewport(offset.x(), offset.y(), size.x(), size.y());
     }
+
+    void set_scissor(const eig::Array2u &size, const eig::Array2u &offset) {
+      gl_trace_full();
+      glScissor(offset.x(), offset.y(), size.x(), size.y());
+    }
     
     void set_line_width(float width) {
       gl_trace_full();

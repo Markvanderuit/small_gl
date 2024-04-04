@@ -126,6 +126,7 @@ namespace gl {
     
     // Various state components
     void set_viewport(const eig::Array2u &size, const eig::Array2u &offset = 0u);
+    void set_scissor(const eig::Array2u &size, const eig::Array2u &offset = 0u);
     void set_line_width(float width);
     void set_point_size(float size);
     void set_depth_range(float z_near, float z_far);
