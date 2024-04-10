@@ -31,6 +31,25 @@ namespace gl {
     std::vector<std::pair<uint, uint>> spirv_spec_const = { };
   };
 
+  std::string ShaderLoadSPIRVInfo::to_string() const {
+    std::stringstream ss;
+    ss << std::format("{}_{}_{}_{}", 
+                      static_cast<gl::uint>(type), 
+                      spirv_path.string(), 
+                      cross_path.string(), 
+                      entry_point);
+    for (const auto &[i, value] : spec_const)
+      ss << std::format("_({},{})", i, value);
+    return ss.str();
+  }
+
+  std::string ShaderLoadGLSLInfo::to_string() const {
+    return std::format("{}_{}_{}", 
+                        static_cast<gl::uint>(type), 
+                        glsl_path.string(), 
+                        cross_path.string());
+  }
+
   namespace detail {
     GLint get_shader_iv(GLuint object, GLenum name) {
       gl_trace_full();

@@ -2,11 +2,11 @@
 #include <small_gl/buffer.hpp>
 #include <small_gl/utility.hpp>
 #include <nlohmann/json.hpp>
-#include <fmt/format.h>
-#include <fmt/core.h>
 #include <array>
 #include <fstream>
 #include <ranges>
+#include <format>
+#include <print>
 
 namespace gl {
   namespace detail {
@@ -63,13 +63,13 @@ namespace gl {
           
       // Output formatted message to stdout for now
       detail::Message message;
-      message.put("info", fmt::format("type = {}, severity = {}, src = {}, code = {}",
+      message.put("info", std::format("type = {}, severity = {}, src = {}, code = {}",
                           readable_debug_type(type),
                           readable_debug_severity(severity),
                           readable_debug_src(src),
                           code));
       message.put("message", msg);
-      fmt::print(stdout, "OpenGL debug message\n{}", message.get());
+      std::print(stdout, "OpenGL debug message\n{}", message.get());
 
       // Guard against throwing on non-errorneous message types
       constexpr static std::initializer_list<uint> guard_types = { 
@@ -90,12 +90,12 @@ namespace gl {
 
       // Check that file path exists
       debug::check_expr(fs::exists(path),
-        fmt::format("failed to resolve path \"{}\"", path.string()));
+        std::format("failed to resolve path \"{}\"", path.string()));
 
       // Attempt to open file stream
       std::ifstream ifs(path, std::ios::ate | std::ios::binary);
       debug::check_expr(ifs.is_open(),
-        fmt::format("failed to open file \"{}\"", path.string()));
+        std::format("failed to open file \"{}\"", path.string()));
 
       // Read file size and construct vector to hold data
       size_t file_size = static_cast<size_t>(ifs.tellg());
@@ -114,12 +114,12 @@ namespace gl {
 
       // Check that file path exists
       debug::check_expr(fs::exists(path),
-        fmt::format("failed to resolve path \"{}\"", path.string()));
+        std::format("failed to resolve path \"{}\"", path.string()));
         
       // Attempt to open file stream
       std::ifstream ifs(path, std::ios::ate);
       debug::check_expr(ifs.is_open(),
-        fmt::format("failed to open file \"{}\"", path.string()));
+        std::format("failed to open file \"{}\"", path.string()));
         
       // Read file size and construct string to hold data
       size_t file_size = static_cast<size_t>(ifs.tellg());

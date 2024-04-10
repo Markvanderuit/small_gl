@@ -4,7 +4,6 @@
 #include <small_gl/utility.hpp>
 #include <initializer_list>
 #include <filesystem>
-#include <format>
 #include <string>
 #include <span>
 #include <unordered_map>
@@ -32,17 +31,7 @@ namespace gl {
     std::vector<std::pair<uint, uint>> spec_const = { };
 
   public: // Helpers for use in std::unordered_map in gl::ProgramCache
-    std::string to_string() const {
-      std::stringstream ss;
-      ss << std::format("{}_{}_{}_{}", 
-                        static_cast<gl::uint>(type), 
-                        spirv_path.string(), 
-                        cross_path.string(), 
-                        entry_point);
-      for (const auto &[i, value] : spec_const)
-        ss << std::format("_({},{})", i, value);
-      return ss.str();
-    }
+    std::string to_string() const;
   };
 
   /**
@@ -60,12 +49,7 @@ namespace gl {
     fs::path cross_path;
 
   public: // Helpers for use in std::unordered_map in gl::ProgramCache
-    std::string to_string() const {
-      return std::format("{}_{}_{}", 
-                         static_cast<gl::uint>(type), 
-                         glsl_path.string(), 
-                         cross_path.string());
-    }
+    std::string to_string() const;
   };
 
   /**
