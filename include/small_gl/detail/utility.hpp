@@ -14,7 +14,8 @@ namespace gl::detail {
   template <class T, class U>
   std::span<T> cast_span(std::span<U> s) {
     auto data = s.data();
-    guard(data, {});
+    if (!data)
+      return {};
     return { reinterpret_cast<T*>(data), s.size_bytes() / sizeof(T) };
   }
 

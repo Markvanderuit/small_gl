@@ -5,6 +5,7 @@
 #include <initializer_list>
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <span>
 #include <unordered_map>
 #include <variant>
@@ -156,7 +157,7 @@ namespace gl {
     // Bind specific object to a name; on BindingType::eAuto, populated object type is used
     void bind(std::string_view s, const gl::AbstractTexture &, BindingType binding = BindingType::eAuto);
     void bind(std::string_view s, const gl::Sampler         &, BindingType binding = BindingType::eAuto);
-    void bind(std::string_view s, const gl::Buffer          &, 
+    void bind(const char *s, const gl::Buffer          &, 
               size_t size = 0, size_t offset = 0, BindingType binding = BindingType::eAuto);
 
     void bind() const;

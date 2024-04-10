@@ -1,5 +1,10 @@
 #pragma once
 
+// Simple guard statement syntactic sugar
+#define guard(expr,...)      if (!(expr)) { return __VA_ARGS__ ; }
+#define guard_continue(expr) if (!(expr)) { continue; }
+#define guard_break(expr)    if (!(expr)) { break; }
+
 #include <small_gl/fwd.hpp>
 #include <small_gl/detail/eigen.hpp>
 #include <small_gl/detail/enum.hpp>
@@ -11,11 +16,6 @@
 #include <chrono>
 #include <filesystem>
 #include <source_location>
-
-// Simple guard statement syntactic sugar
-#define guard(expr,...) if (!(expr)) { return __VA_ARGS__ ; }
-#define guard_continue(expr) if (!(expr)) { continue; }
-#define guard_break(expr) if (!(expr)) { break; }
 
 // Simple range-like syntactic sugar
 #define range_iter(c) c.begin(), c.end()
