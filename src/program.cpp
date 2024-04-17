@@ -401,10 +401,10 @@ namespace gl {
     }
   }
 
-  void Program::bind(const char *s, const gl::Buffer &buffer, size_t size, size_t offset, BindingType binding) {
+  void Program::bind(std::string_view s, const gl::Buffer &buffer, size_t size, size_t offset, BindingType binding) {
     gl_trace_full();
 
-    auto f = m_binding_data.find(s);
+    auto f = m_binding_data.find(s.data());
     debug::check_expr(f != m_binding_data.end(),
       std::format("Program::bind(...) failed with name lookup for buffer name: \"{}\"", s));
 
