@@ -57,6 +57,7 @@ namespace gl {
       constexpr static std::initializer_list<uint> guard_codes = { // NOTE: keep sorted
         131154, /* nvidia: Pixel-path performance warning: Pixel transfer is synchronized with 3D rendering */
         131169, /* nvidia: The driver allocated multisample storage for renderbuffer X */
+        131204, /* warn:   Texture state usage warning: The texture object (X) bound to texture image unit X does not have a defined base level and cannot be used for texture mapping */
         131220, /* warn:   Program/shader state usage warning: A fragment program/shader is required to correctly render to an integer framebuffer */
       };
       guard(!std::ranges::binary_search(guard_codes, code));
