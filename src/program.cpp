@@ -50,6 +50,36 @@ namespace gl {
                         cross_path.string());
   }
 
+  std::string program_name_from_paths(std::span<const ShaderLoadSPIRVInfo> info) {
+    auto names 
+      = info 
+      | vws::transform([](const auto &i) { 
+        return fs::path(i.spirv_path).filename().string();
+      })
+      | rng::to<std::vector>();
+    std::stringstream ss;
+    for (const auto &str : names | vws::take(names.size() - 1)) {
+      ss << str << " -> ";
+    }
+    ss << names.back();
+    return ss.str();
+  }
+
+  std::string program_name_from_paths(std::span<const ShaderLoadGLSLInfo> info) {
+    auto names 
+      = info 
+      | vws::transform([](const auto &i) { 
+        return fs::path(i.glsl_path).filename().string();
+      })
+      | rng::to<std::vector>();
+    std::stringstream ss;
+    for (const auto &str : names | vws::take(names.size() - 1)) {
+      ss << str << " -> ";
+    }
+    ss << names.back();
+    return ss.str();
+  }
+
   namespace detail {
     GLint get_shader_iv(GLuint object, GLenum name) {
       gl_trace_full();
@@ -200,7 +230,13 @@ namespace gl {
   : Base(true) {
     gl_trace_full();
     debug::check_expr(load_info.size() > 0, "no shader info was provided");
-    
+  
+    // Output OpenGL debug message to warn of shader load+compile
+    // Format shader name from set of shader paths
+    debug::insert_message(
+      std::format("Program load and compile: {}", program_name_from_paths(load_info)), 
+      gl::DebugMessageSeverity::eLow);
+
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
     rng::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVInfo &info) {
@@ -247,6 +283,12 @@ namespace gl {
     gl_trace_full();
     debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
+    // Output OpenGL debug message to warn of shader load+compile
+    // Format shader name from set of shader paths
+    debug::insert_message(
+      std::format("Program load and compile: {}", program_name_from_paths(load_info)), 
+      gl::DebugMessageSeverity::eLow);
+
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
     rng::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLInfo &info) {
