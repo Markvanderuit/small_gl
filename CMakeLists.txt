@@ -5,6 +5,7 @@ set(CMAKE_TOOLCHAIN_FILE
   ${CMAKE_CURRENT_SOURCE_DIR}/third_party/vcpkg/scripts/buildsystems/vcpkg.cmake
   CACHE STRING "Vcpkg toolchain file")
 
+# Specify project name, languages
 project(small_gl LANGUAGES CXX)
 
 # Build options
@@ -22,11 +23,9 @@ find_package(Tracy         CONFIG REQUIRED)
 message(STATUS "small_gl  : Enabling exceptions = ${gl_enable_exceptions}")
 message(STATUS "small_gl  : Enabling Tracy      = ${gl_enable_tracy}")
 
-# Recursively gather files
-file(GLOB_RECURSE srcs 
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/small_gl/*.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-)
+# Recursively gather source files
+file(GLOB_RECURSE srcs ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE hdrs ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
 
 # Configure small_gl library build target
 add_library(small_gl ${srcs})
@@ -39,6 +38,20 @@ target_link_libraries(small_gl PRIVATE
 )
 target_include_directories(small_gl PUBLIC include)
 target_compile_features(small_gl PRIVATE cxx_std_23)
+target_precompile_headers(small_gl PUBLIC ${hdrs})
+set_target_properties(small_gl PROPERTIES 
+  UNITY_BUILD ON 
+  UNITY_BUILD_MODE BATCH 
+  UNITY_BUILD_BATCH_SIZE 8
+)
+
+# Enable /bigobj (or the closest thing for gcc)
+# Src: https://stackoverflow.com/questions/69903253/cmake-bigobj-no-such-file-or-directory
+if (MSVC)
+  target_compile_options(small_gl PRIVATE /bigobj)
+else ()
+  target_compile_options(small_gl PRIVATE -Wa,-mbig-obj)
+endif ()
 
 # Configure build options
 if (gl_enable_exceptions)
