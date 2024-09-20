@@ -113,7 +113,52 @@ namespace gl {
 
     // Create a indirect buffer object from a gl::ComputeInfo object
     static Buffer make_indirect(ComputeInfo info, BufferCreateFlags flags = { });
-  
+
+    // Common use; a buffer/ptr pair for a readable buffer map
+    template <typename Ty>
+    static std::pair<Buffer, std::span<const Ty>> make_readable_span(size_t size) {
+      gl::Buffer buffer({ .size = size * sizeof(Ty), .flags = BufferCreateFlags::eMapReadPersistent });
+      auto map = buffer.map_as<const Ty>(BufferAccessFlags::eMapReadPersistent);
+      return { std::move(buffer), map };
+    }
+
+    // Common use; a buffer/ptr pair for a writeable buffer map
+    template <typename Ty>
+    static std::pair<Buffer, std::span<Ty>> make_writeable_span(size_t size) {
+      gl::Buffer buffer({ .size = size * sizeof(Ty), .flags = BufferCreateFlags::eMapWritePersistent });
+      auto map = buffer.map_as<Ty>(BufferAccessFlags::eMapWritePersistent);
+      return { std::move(buffer), map };
+    }
+
+    // Common use; a buffer/ptr pair for a writeable, flusheable buffer map
+    template <typename Ty>
+    static std::pair<Buffer, std::span<Ty>> make_flusheable_span(size_t size) {
+      gl::Buffer buffer({ .size = size * sizeof(Ty), .flags = BufferCreateFlags::eMapWritePersistent });
+      auto map = buffer.map_as<Ty>(BufferAccessFlags::eMapWritePersistent | BufferAccessFlags::eMapFlush);
+      return { std::move(buffer), map };
+    }
+    
+    // Common use; a buffer/ptr pair for a readable buffer map
+    template <typename Ty>
+    static std::pair<Buffer, const Ty *> make_readable_object() {
+      auto [buffer, map] = make_readable_span<Ty>(1);
+      return { std::move(buffer), map.data() };
+    }
+    
+    // Common use; a buffer/ptr pair for a writeable buffer map
+    template <typename Ty>
+    static std::pair<Buffer, Ty*> make_writeable_object() {
+      auto [buffer, map] = make_writeable_span<Ty>(1);
+      return { std::move(buffer), map.data() };
+    }
+
+    // Common use; a buffer/ptr pair for a writeable, flusheable buffer map
+    template <typename Ty>
+    static std::pair<Buffer, Ty*> make_flusheable_object() {
+      auto [buffer, map] = make_flusheable_span<Ty>(1);
+      return { std::move(buffer), map.data() };
+    }
+
     inline void swap(Buffer &o) {
       using std::swap;
       Base::swap(o);
