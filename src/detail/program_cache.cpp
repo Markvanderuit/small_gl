@@ -112,11 +112,20 @@ namespace gl {
 
       // Serialize program cache to stream
       io::to_stream(m_prog_cache, str);
+
+      // Output OpenGL debug message to warn of cache save
+      debug::insert_message(
+        std::format("Program cache saved to: {}", cache_file_path.string()), 
+        gl::DebugMessageSeverity::eLow);
     }
 
     void ProgramCache::load(fs::path cache_file_path) {
       gl_trace();
       
+      // Sanity check file path
+      debug::check_expr(fs::exists(cache_file_path),
+        std::format("Program cache cannot load; cache does not exist at: {}", cache_file_path.string()));
+
       // Clear out cache first
       *this = { };
 
@@ -127,6 +136,11 @@ namespace gl {
 
       // Deserialize program cache from stream
       io::fr_stream(m_prog_cache, str);
+
+      // Output OpenGL debug message to warn of cache load
+      debug::insert_message(
+        std::format("Program cache loaded from: {}", cache_file_path.string()), 
+        gl::DebugMessageSeverity::eLow);
     }
   } // namespace detail
 } // namespace gl
