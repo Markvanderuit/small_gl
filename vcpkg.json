@@ -3,10 +3,17 @@
   "version-string" : "1.0.0",
   "dependencies" : [
     "eigen3",
-    { "name": "glad", 
-      "features": [ "extensions", "gl-api-latest" ] },
+    {
+      "name": "glad",
+      "features": [
+        "extensions",
+        "gl-api-latest"
+      ]
+    },
     "glfw3",
     "nlohmann-json",
-    "tracy"
+    "tracy",
+    "zlib",
+    "zstr"
   ]
 }
