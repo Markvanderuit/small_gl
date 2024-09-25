@@ -14,6 +14,36 @@ namespace gl {
   namespace rng = std::ranges;
   namespace vws = std::views;
   
+  namespace io {
+    // Serialization for std::unordered_map<std::string,...>
+    template <typename Ty> /* requires(!is_serializable<Ty>) */
+    void to_stream(const std::unordered_map<std::string, Ty> &v, std::ostream &str) {
+      gl_trace();
+      
+      to_stream(v.size(), str);
+      for (const auto &[key, value] : v) {
+        to_stream(key, str);
+        to_stream(value, str);
+      }
+    }
+
+    // Serialization for std::unordered_map<std::string,...>
+    template <typename Ty> /* requires (!is_serializable<Ty>) */
+    void fr_stream(std::unordered_map<std::string, Ty> &v, std::istream &str) {
+      gl_trace();
+
+      size_t n;
+      fr_stream(n, str);
+      for (size_t i = 0; i < n; ++i) {
+        std::string key;
+        Ty value;
+        fr_stream(key, str);
+        fr_stream(value, str);
+        v.insert({ key, std::move(value) });
+      }
+    }
+  } // namespace io
+
   // Internal struct used for construction 
   struct ShaderCreateInfo {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
@@ -175,38 +205,35 @@ namespace gl {
 
       GLuint object = glCreateProgram();
 
-      std::vector<GLuint> shader_objects;
-      shader_objects.reserve(info.size());
+      std::vector<GLuint> shader_objects(info.size());
 
       // Generate, compile, and attach shader objects
-      rng::transform(info, std::back_inserter(shader_objects),
-        [object] (const auto &i) { return attach_shader_object(object, i); });
+      rng::transform(info, shader_objects.begin(),
+        [object](const auto &i) { return attach_shader_object(object, i); });
       
-      glLinkProgram(object);
-      check_program_link(object);
+      // Perform program link
+      {
+        gl_trace_full_n("Program link");
+        glLinkProgram(object);
+        check_program_link(object);
+      }  
 
       // Detach and destroy shader objects
       rng::for_each(shader_objects, 
-        [object] (const auto &i) { detach_shader_object(object, i); });
+        [object](const auto &i) { detach_shader_object(object, i); });
 
+      return object;
+    }
+
+    GLuint create_program_object_from_binary(uint format, const std::vector<std::byte> &data) {
+      GLuint object = glCreateProgram();
+      glProgramBinary(object, format, data.data(), data.size());
+      check_program_link(object);
       return object;
     }
   } // namespace detail
 
-  /* Program code */
-
-  // Program::Program(const ShaderLoadSPIRVInfo &load_info)
-  // : Program({ load_info }) { }
-
-  // Program::Program(const ShaderLoadGLSLInfo &load_info)
-  // : Program({ load_info }) { }
-
-  // Program::Program(const ShaderLoadSPIRVStringInfo &load_info)
-  // : Program({ load_info }) { }
-
-  // Program::Program(const ShaderLoadGLSLStringInfo &load_info)
-  // : Program({ load_info }) { }
-  
+  /* Program code */  
   
   Program::Program(std::initializer_list<ShaderLoadSPIRVInfo> info)       
   : Program(std::span(info.begin(), info.end())) {}
@@ -241,7 +268,7 @@ namespace gl {
     std::vector<ShaderCreateInfo> create_info(load_info.size());
     rng::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVInfo &info) {
       return ShaderCreateInfo { .type              = info.type,  
-                                .data              = io::load_shader_binary(info.spirv_path), 
+                                .data              = io::load_binary(info.spirv_path), 
                                 .is_spirv          = true, 
                                 .spirv_entry_point = info.entry_point,
                                 .spirv_spec_const  = info.spec_const };
@@ -293,7 +320,7 @@ namespace gl {
     std::vector<ShaderCreateInfo> create_info(load_info.size());
     rng::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLInfo &info) {
       return ShaderCreateInfo { .type              = info.type,  
-                                .data              = io::load_shader_binary(info.glsl_path), 
+                                .data              = io::load_binary(info.glsl_path), 
                                 .is_spirv          = false };
     });
 
@@ -476,78 +503,38 @@ namespace gl {
     
     sampler.bind_to(data.binding);
   }
-
-  /* ProgramCache code */
-
-  std::pair<std::string, gl::Program &> ProgramCache::set(InfoType &&info) {
+  
+  void Program::to_stream(std::ostream &str) const {
     gl_trace();
 
-    // Visitor generates key, and tests if program exists in cache
-    auto key = std::visit([](const auto &i) { return i.to_string(); }, info);
-    auto it  = m_prog_cache.find(key);
+    // Get program binary length
+    int program_length;
+    glGetProgramiv(m_object, GL_PROGRAM_BINARY_LENGTH , &program_length);
 
-    // If program is not in cache
-    if (it == m_prog_cache.end()) {
-      // Visitor generates program
-      auto prog = std::visit([](const auto &i) { return gl::Program(i); }, info);
-      
-      // Program and info object are newly cached
-           m_info_cache.emplace(key, std::vector { std::move(info) });
-      it = m_prog_cache.emplace(key, std::move(prog)).first;
-    }
+    // Get program binary format and data
+    uint program_format;
+    std::vector<std::byte> program_data(program_length);
+    glGetProgramBinary(m_object, program_length, nullptr, &program_format, program_data.data());
 
-    return { key, it->second };
+    // Serialize binary and uniform binding data
+    io::to_stream(program_format, str);
+    io::to_stream(program_data, str);
+    io::to_stream(m_binding_data, str);
   }
 
-  std::pair<std::string, gl::Program &> ProgramCache::set(InfoList &&info) {
+  void Program::fr_stream(std::istream &str) {
     gl_trace();
 
-    // Visitor generates key, and tests if program exists in cache,
-    // by joining consecutive info objects as keys
-    auto key = std::visit([](const auto &l) {
-      return l | vws::transform([](const auto &i) { return i.to_string(); }) 
-               | vws::join 
-               | rng::to<std::string>();
-    }, info);
-    auto it  = m_prog_cache.find(key);
-
-    // If program is not in cache
-    if (it == m_prog_cache.end()) {
-      // Visitor generates program from list
-      auto prog = std::visit([](const auto &l) { return gl::Program(l); }, info);
-      
-      // Program and info object are newly cached
-      auto cval = std::visit([](const auto &l) { 
-        return l | vws::transform([](const auto &t) { return InfoType(t); }) 
-                 | rng::to<std::vector>();  }, info);
-           m_info_cache.emplace(key, std::move(cval));
-      it = m_prog_cache.emplace(key, std::move(prog)).first;
-    }
-
-    return { key, it->second };
-  }
-
-  gl::Program & ProgramCache::at(const KeyType &k) {
-    gl_trace();
-    auto f = m_prog_cache.find(k);
-    debug::check_expr(f != m_prog_cache.end(),
-      std::format("ProgramCache::at(...) failed with key lookup for key: \"{}\"", k));
-    return f->second;
-  }
-
-  void ProgramCache::clear() {
-    gl_trace();
-    m_info_cache.clear();
-    m_prog_cache.clear();
-  }
-
-  void ProgramCache::reload() {
-    gl_trace_full();
-    /* for (const auto &[key, info] : m_info_cache)
-      m_prog_cache[key] = std::visit([](const auto &i) {
-        std::span s = i;
-        return gl::Program(s); 
-      }, info); */
+    // Deserialize binary and uniform binding data
+    uint program_format;
+    std::vector<std::byte> program_data;
+    io::fr_stream(program_format, str);
+    io::fr_stream(program_data, str);
+    io::fr_stream(m_binding_data, str);
+    
+    // Instantiate program and assume ownersip over resulting object handle
+    m_is_init = true;
+    m_object  = detail::create_program_object_from_binary(program_format, program_data);
   }
   
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */

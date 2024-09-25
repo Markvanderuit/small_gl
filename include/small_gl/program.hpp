@@ -1,6 +1,7 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/detail/serialization.hpp>
 #include <small_gl/utility.hpp>
 #include <initializer_list>
 #include <filesystem>
@@ -8,7 +9,6 @@
 #include <string_view>
 #include <span>
 #include <unordered_map>
-#include <variant>
 
 namespace gl {  
   /**
@@ -56,7 +56,7 @@ namespace gl {
   /**
    * Helper object to create program object with shader object's byte
    * data provided; OpenGL's SPIR-V shader loading will be used
-  */
+   */
   struct ShaderLoadSPIRVStringInfo {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
     ShaderType type;
@@ -77,7 +77,7 @@ namespace gl {
   /**
    * Helper object to create program object with shader object's byte
    * data provided; OpenGL's GLSL shader loading will be used
-  */
+   */
   struct ShaderLoadGLSLStringInfo {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
     ShaderType type;
@@ -125,9 +125,7 @@ namespace gl {
     void populate(io::json refl_json); // Populate reflectance data from SPIRV-CROSS generated .json data
     int  loc(std::string_view s);      // Look up classic uniform location for given string name
 
-  public:
-    /* constr/destr */
-
+  public: // Construction
     Program() = default;
     ~Program();
 
@@ -149,22 +147,42 @@ namespace gl {
     Program(const ShaderLoadSPIRVStringInfo &info);
     Program(const ShaderLoadGLSLStringInfo  &info);
 
-    /* state */  
-
+  public: // Binding state  
     template <typename T>
     void uniform(std::string_view s, const T &t);
 
     // Bind specific object to a name; on BindingType::eAuto, populated object type is used
     void bind(std::string_view s, const gl::AbstractTexture &, BindingType binding = BindingType::eAuto);
-    void bind(std::string_view s, const gl::Sampler         &, BindingType binding = BindingType::eAuto);
+    void bind(std::string_view s, const gl::Sampler &, BindingType binding = BindingType::eAuto);
     void bind(std::string_view s, const gl::Buffer &,  size_t size = 0, size_t offset = 0, BindingType binding = BindingType::eAuto);
 
     void bind() const;
     void unbind() const;
     static void unbind_all();
 
-    /* miscellaneous */
+  public: // Binary data serialization
+    /**
+     * Program binary data representation used by gl::detail::ProgramCache;
+     * the result of glGetProgramBinary() for serialization/deserialization.
+     */
+    // Binary data representation used by program cache. Mostly the result
+    // of glGetProgramBinary()
+    // struct ProgramBinaryInfo {
+    //   // Binary format enum
+    //   uint format;
+
+    //   // Binary data, result of glGetProgramBinary
+    //   std::vector<std::byte> binary_data;
+
+    //   std::unordered_map<std::string, Program::BindingData> binding_data;
+    // };
     
+    // // Output program binary info object for (de)serialization
+    // ProgramBinaryInfo to_binary() const;
+    void to_stream(std::ostream &str) const;
+    void fr_stream(std::istream &str);
+
+  public: // Miscellaneous
     inline void swap(Program &o) {
       gl_trace();
       using std::swap;
@@ -178,57 +196,5 @@ namespace gl {
     }
 
     gl_declare_noncopyable(Program);
-  };
-  	
-  /**
-   * Helper object to initialize, store and load program objects
-   * based on their construction objects, to avoid unnecessary
-   * recreation of some heavier program objects.
-   */
-  class ProgramCache {
-    using KeyType  = std::string;
-    using InfoType = std::variant<ShaderLoadSPIRVInfo, ShaderLoadGLSLInfo>;
-    using InfoList = std::variant<std::initializer_list<ShaderLoadSPIRVInfo>, 
-                                  std::initializer_list<ShaderLoadGLSLInfo >>;
-    
-    std::unordered_map<KeyType, std::vector<InfoType>> m_info_cache;
-    std::unordered_map<KeyType, Program>               m_prog_cache;
-
-    // Initialize-and-return a reference to a program object
-    // Overloaded below for variant types to support 
-    // aggregate initialization from the front-end
-    std::pair<KeyType, gl::Program&> set(InfoType &&info); 
-    std::pair<KeyType, gl::Program&> set(InfoList &&info); 
-
-  public:
-    // Return an existing program for a given key
-    gl::Program& at(const KeyType &k);
-    
-    // Reload and rebuild all cached programs
-    void reload();
-
-    // Clear out program cache
-    void clear();
-
-  public:
-    // Forward to private variant constructor
-    std::pair<KeyType, gl::Program&> set(ShaderLoadSPIRVInfo &&info) {
-      return set(std::forward<InfoType>(std::forward<ShaderLoadSPIRVInfo>(info)));
-    }
-    
-    // Forward to private variant constructor
-    std::pair<KeyType, gl::Program&> set(ShaderLoadGLSLInfo &&info) {
-      return set(std::forward<InfoType>(std::forward<ShaderLoadGLSLInfo>(info)));
-    }
-
-    // Forward to private variant constructor
-    std::pair<KeyType, gl::Program&> set(std::initializer_list<ShaderLoadSPIRVInfo> &&info) {
-      return set(std::forward<InfoList>(std::forward<std::initializer_list<ShaderLoadSPIRVInfo>>(info)));
-    }
-    
-    // Forward to private variant constructor
-    std::pair<KeyType, gl::Program&> set(std::initializer_list<ShaderLoadGLSLInfo> &&info) {
-      return set(std::forward<InfoList>(std::forward<std::initializer_list<ShaderLoadGLSLInfo>>(info)));
-    }
   };
 } // namespace gl
