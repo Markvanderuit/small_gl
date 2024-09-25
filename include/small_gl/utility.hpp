@@ -27,7 +27,7 @@ namespace gl {
     using json = nlohmann::json;  // json typename shorthand
 
     // Load shader binary or char data from the given filepath
-    std::vector<std::byte> load_shader_binary(const fs::path &path);
+    std::vector<std::byte> load_binary(const fs::path &path);
 
     // Simple string load from file
     std::string load_string(const fs::path &path);

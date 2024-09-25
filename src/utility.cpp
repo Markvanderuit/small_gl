@@ -86,7 +86,7 @@ namespace gl {
   } // namespace detail
 
   namespace io {
-    std::vector<std::byte> load_shader_binary(const fs::path &path) {
+    std::vector<std::byte> load_binary(const fs::path &path) {
       gl_trace();
 
       // Check that file path exists
