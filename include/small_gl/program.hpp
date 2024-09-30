@@ -180,7 +180,7 @@ namespace gl {
     // // Output program binary info object for (de)serialization
     // ProgramBinaryInfo to_binary() const;
     void to_stream(std::ostream &str) const;
-    void fr_stream(std::istream &str);
+    void from_stream(std::istream &str);
 
   public: // Miscellaneous
     inline void swap(Program &o) {

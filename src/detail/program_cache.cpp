@@ -25,16 +25,16 @@ namespace gl {
 
     // Serialization for std::unordered_map<std::string,...>
     template <typename Ty> /* requires (!is_serializable<Ty>) */
-    void fr_stream(std::unordered_map<std::string, Ty> &v, std::istream &str) {
+    void from_stream(std::unordered_map<std::string, Ty> &v, std::istream &str) {
       gl_trace();
 
       size_t n;
-      fr_stream(n, str);
+      from_stream(n, str);
       for (size_t i = 0; i < n; ++i) {
         std::string key;
         Ty value;
-        fr_stream(key, str);
-        fr_stream(value, str);
+        from_stream(key, str);
+        from_stream(value, str);
         v.insert({ key, std::move(value) });
       }
     }
@@ -135,7 +135,7 @@ namespace gl {
       debug::check_expr(str.good());
 
       // Deserialize program cache from stream
-      io::fr_stream(m_prog_cache, str);
+      io::from_stream(m_prog_cache, str);
 
       // Output OpenGL debug message to warn of cache load
       debug::insert_message(

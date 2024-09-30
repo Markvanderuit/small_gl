@@ -29,16 +29,16 @@ namespace gl {
 
     // Serialization for std::unordered_map<std::string,...>
     template <typename Ty> /* requires (!is_serializable<Ty>) */
-    void fr_stream(std::unordered_map<std::string, Ty> &v, std::istream &str) {
+    void from_stream(std::unordered_map<std::string, Ty> &v, std::istream &str) {
       gl_trace();
 
       size_t n;
-      fr_stream(n, str);
+      from_stream(n, str);
       for (size_t i = 0; i < n; ++i) {
         std::string key;
         Ty value;
-        fr_stream(key, str);
-        fr_stream(value, str);
+        from_stream(key, str);
+        from_stream(value, str);
         v.insert({ key, std::move(value) });
       }
     }
@@ -522,15 +522,15 @@ namespace gl {
     io::to_stream(m_binding_data, str);
   }
 
-  void Program::fr_stream(std::istream &str) {
+  void Program::from_stream(std::istream &str) {
     gl_trace();
 
     // Deserialize binary and uniform binding data
     uint program_format;
     std::vector<std::byte> program_data;
-    io::fr_stream(program_format, str);
-    io::fr_stream(program_data, str);
-    io::fr_stream(m_binding_data, str);
+    io::from_stream(program_format, str);
+    io::from_stream(program_data, str);
+    io::from_stream(m_binding_data, str);
     
     // Instantiate program and assume ownersip over resulting object handle
     m_is_init = true;
