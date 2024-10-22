@@ -165,11 +165,13 @@ namespace gl {
 
     void Fence::cpu_wait() {
       gl_trace_full();
+      guard(m_is_init);
       glClientWaitSync((GLsync) m_object, GL_SYNC_FLUSH_COMMANDS_BIT, m_wait_time.count());
     }
 
     void Fence::gpu_wait() {
       gl_trace_full();
+      guard(m_is_init);
       glWaitSync((GLsync) m_object, 0, GL_TIMEOUT_IGNORED);
     }
   } // namespace sync
