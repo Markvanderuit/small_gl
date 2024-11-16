@@ -255,10 +255,8 @@ namespace gl {
 
   template <typename T, uint D, TextureType Ty = TextureType::eImage>
   using Texture1d = Texture<T, 1, D, Ty>;
-
   template <typename T, uint D, TextureType Ty = TextureType::eImage>
   using Texture2d = Texture<T, 2, D, Ty>;
-  
   template <typename T, uint D, TextureType Ty = TextureType::eImage>
   using Texture3d = Texture<T, 3, D, Ty>;
 
@@ -335,17 +333,38 @@ namespace gl {
   using Texture2dStencil = Texture2d<StencilComponent, 1>;
   using Texture3dStencil = Texture3d<StencilComponent, 1>;
 
+  /* Shorthand notations for common array texture types follow */
+
+  template <typename T, uint N, uint D> 
+  using TextureArray = Texture<T, N, D, TextureType::eImageArray>;
+  template <typename T, uint D>
+  using TextureArray1d = TextureArray< T, 1, D>;
+  template <typename T, uint D>
+  using TextureArray2d = TextureArray< T, 2, D>;
+  template <typename T, uint D>
+  using TextureArray3d = TextureArray< T, 3, D>;
+
+  using TextureArray1d1f = TextureArray1d<float, 1>;
+  using TextureArray1d2f = TextureArray1d<float, 2>;
+  using TextureArray1d3f = TextureArray1d<float, 3>;
+  using TextureArray1d4f = TextureArray1d<float, 4>;
+  using TextureArray2d1f = TextureArray2d<float, 1>;
+  using TextureArray2d2f = TextureArray2d<float, 2>;
+  using TextureArray2d3f = TextureArray2d<float, 3>;
+  using TextureArray2d4f = TextureArray2d<float, 4>;
+  using TextureArray3d1f = TextureArray3d<float, 1>;
+  using TextureArray3d2f = TextureArray3d<float, 2>;
+  using TextureArray3d3f = TextureArray3d<float, 3>;
+  using TextureArray3d4f = TextureArray3d<float, 4>;
+
   /* Shorthand notations for common texture view types follow */
 
   template <typename T, uint D, TextureType Ty = TextureType::eImage>
   using TextureView1d = TextureView<T, 1, D, Ty>;
-
   template <typename T, uint D, TextureType Ty = TextureType::eImage>
   using TextureView2d = TextureView<T, 2, D, Ty>;
-  
   template <typename T, uint D, TextureType Ty = TextureType::eImage>
   using TextureView3d = TextureView<T, 3, D, Ty>;
-
 
   using TextureView1d1f = TextureView1d<float, 1>;
   using TextureView1d2f = TextureView1d<float, 2>;
