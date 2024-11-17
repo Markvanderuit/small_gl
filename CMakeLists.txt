@@ -14,6 +14,7 @@ option(gl_enable_tracy      "Enable Tracy support"               OFF)
 
 # Include third party libraries provided through vcpkg
 find_package(Eigen3        CONFIG REQUIRED)
+find_package(fmt       CONFIG REQUIRED)
 find_package(glad          CONFIG REQUIRED)
 find_package(glfw3         CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -38,6 +39,7 @@ target_link_libraries(small_gl PRIVATE
   Eigen3::Eigen
   glad::glad
   glfw
+  fmt::fmt-header-only
   nlohmann_json::nlohmann_json
   Tracy::TracyClient
   ZLIB::ZLIB
@@ -45,11 +47,6 @@ target_link_libraries(small_gl PRIVATE
 target_include_directories(small_gl PUBLIC include ${ZSTR_INCLUDE_DIRS})
 target_compile_features(small_gl PRIVATE cxx_std_23)
 target_precompile_headers(small_gl PUBLIC ${hdrs})
-# set_target_properties(small_gl PROPERTIES 
-#   UNITY_BUILD ON 
-#   UNITY_BUILD_MODE BATCH 
-#   UNITY_BUILD_BATCH_SIZE 8
-# )
 
 # Enable /bigobj (or the closest thing for gcc)
 # Src: https://stackoverflow.com/questions/69903253/cmake-bigobj-no-such-file-or-directory
