@@ -1,6 +1,7 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <cstddef>
 #include <utility>
 #include <tuple>
 
