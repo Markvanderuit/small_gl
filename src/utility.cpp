@@ -5,7 +5,6 @@
 #include <array>
 #include <fstream>
 #include <ranges>
-#include <print>
 
 namespace gl {
   namespace detail {

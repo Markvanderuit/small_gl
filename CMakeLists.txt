@@ -48,13 +48,10 @@ target_include_directories(small_gl PUBLIC include ${ZSTR_INCLUDE_DIRS})
 target_compile_features(small_gl PRIVATE cxx_std_23)
 target_precompile_headers(small_gl PUBLIC ${hdrs})
 
-# Enable /bigobj (or the closest thing for gcc)
-# Src: https://stackoverflow.com/questions/69903253/cmake-bigobj-no-such-file-or-directory
+# Enable /bigobj to make MSVC stop complaining about its restricted object sizes
 if (MSVC)
-  target_compile_options(small_gl PRIVATE /bigobj)
-else ()
-  target_compile_options(small_gl PRIVATE -Wa,-mbig-obj)
-endif ()
+  target_compile_options(${target} PRIVATE /bigobj)
+endif()
 
 # Configure build options
 if (gl_enable_exceptions)

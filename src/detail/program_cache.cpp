@@ -79,7 +79,7 @@ namespace gl {
         // Program is are newly cached
         auto cval = std::visit([](const auto &l) { 
           return l | vws::transform([](const auto &t) { return InfoType(t); }) 
-                  | rng::to<std::vector>();  }, info);
+                   | rng::to<std::vector>();  }, info);
         it = m_prog_cache.emplace(key, std::move(prog)).first;
       }
 
