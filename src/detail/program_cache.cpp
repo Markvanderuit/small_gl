@@ -1,6 +1,7 @@
 #include <small_gl/detail/program_cache.hpp>
 #include <small_gl/program.hpp>
 #include <zstr.hpp>
+#include <algorithm>
 #include <ranges>
 #include <sstream>
 
@@ -65,9 +66,10 @@ namespace gl {
       // Visitor generates key, and tests if program exists in cache,
       // by joining consecutive info objects as keys
       auto key = std::visit([](const auto &l) {
-        return l | vws::transform([](const auto &i) { return i.to_string(); }) 
-                | vws::join 
-                | rng::to<std::string>();
+        auto in = l | vws::transform([](const auto &i) { return i.to_string(); }) | vws::join;
+        std::string out;
+        rng::copy(in, std::back_inserter(out));
+        return out;
       }, info);
       auto it  = m_prog_cache.find(key);
 
@@ -78,8 +80,11 @@ namespace gl {
         
         // Program is are newly cached
         auto cval = std::visit([](const auto &l) { 
-          return l | vws::transform([](const auto &t) { return InfoType(t); }) 
-                   | rng::to<std::vector>();  }, info);
+          auto in = l | vws::transform([](const auto &t) { return InfoType(t); });
+          std::vector<InfoType> out;
+          rng::copy(in, std::back_inserter(out));
+          return out;
+        }, info);
         it = m_prog_cache.emplace(key, std::move(prog)).first;
       }
 

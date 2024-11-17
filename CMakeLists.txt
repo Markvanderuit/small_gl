@@ -50,7 +50,7 @@ target_precompile_headers(small_gl PUBLIC ${hdrs})
 
 # Enable /bigobj to make MSVC stop complaining about its restricted object sizes
 if (MSVC)
-  target_compile_options(${target} PRIVATE /bigobj)
+  target_compile_options(small_gl PRIVATE /bigobj)
 endif()
 
 # Configure build options

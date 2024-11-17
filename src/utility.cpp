@@ -68,7 +68,7 @@ namespace gl {
                           readable_debug_src(src),
                           code));
       message.put("message", msg);
-      std::print(stdout, "OpenGL debug message\n{}", message.get());
+      fmt::print(stdout, "OpenGL debug message\n{}", message.get());
 
       // Guard against throwing on non-errorneous message types
       constexpr static std::initializer_list<uint> guard_types = { 

@@ -13,6 +13,24 @@ namespace gl {
   namespace rng = std::ranges;
   namespace vws = std::views;
   
+  // Helper code for gl::view_to<Ty>
+  // Src: https://stackoverflow.com/questions/58808030/range-view-to-stdvector
+  namespace detail {
+    // Type acts as a tag to find the correct operator| overload
+    template <typename C>
+    struct view_to { };
+    
+    // This actually does the work
+    template <typename CTy, rng::range RTy> requires (std::convertible_to<rng::range_value_t<RTy>, typename CTy::value_type>)
+    CTy operator|(RTy&& r, view_to<CTy>) {
+      return CTy { r.begin(), r.end() };
+    }
+  } // namespace detail
+
+  // Helper view; replaces std::ranges::to<Ty> given it is only supported from gcc 14 or something
+  template <rng::range CTy> requires (!rng::view<CTy>)
+  inline constexpr auto view_to() { return detail::view_to<CTy>{}; }
+
   namespace io {
     // Serialization for std::unordered_map<std::string,...>
     template <typename Ty> /* requires(!is_serializable<Ty>) */
@@ -84,8 +102,7 @@ namespace gl {
       = info 
       | vws::transform([](const auto &i) { 
         return fs::path(i.spirv_path).filename().string();
-      })
-      | rng::to<std::vector>();
+      });
     std::stringstream ss;
     for (const auto &str : names | vws::take(names.size() - 1)) {
       ss << str << " -> ";
@@ -99,8 +116,7 @@ namespace gl {
       = info 
       | vws::transform([](const auto &i) { 
         return fs::path(i.glsl_path).filename().string();
-      })
-      | rng::to<std::vector>();
+      });
     std::stringstream ss;
     for (const auto &str : names | vws::take(names.size() - 1)) {
       ss << str << " -> ";
@@ -174,8 +190,8 @@ namespace gl {
       GLuint object = glCreateShader((uint) i.type);
       if (i.is_spirv) {
         // Split specialization constants into index/value
-        auto const_i = i.spirv_spec_const | vws::elements<0> | rng::to<std::vector>();
-        auto const_v = i.spirv_spec_const | vws::elements<1> | rng::to<std::vector>();
+        auto const_i = i.spirv_spec_const | vws::elements<0> | view_to<std::vector<uint>>();
+        auto const_v = i.spirv_spec_const | vws::elements<1> | view_to<std::vector<uint>>();
 
         // Submit spir-v binary and specialize shader
         glShaderBinary(1, &object, GL_SHADER_BINARY_FORMAT_SPIR_V, ptr, size);
