@@ -5,7 +5,6 @@
 #include <array>
 #include <fstream>
 #include <ranges>
-#include <format>
 #include <print>
 
 namespace gl {
@@ -64,7 +63,7 @@ namespace gl {
           
       // Output formatted message to stdout for now
       detail::Message message;
-      message.put("info", std::format("type = {}, severity = {}, src = {}, code = {}",
+      message.put("info", fmt::format("type = {}, severity = {}, src = {}, code = {}",
                           readable_debug_type(type),
                           readable_debug_severity(severity),
                           readable_debug_src(src),
@@ -91,12 +90,12 @@ namespace gl {
 
       // Check that file path exists
       debug::check_expr(fs::exists(path),
-        std::format("failed to resolve path \"{}\"", path.string()));
+        fmt::format("failed to resolve path \"{}\"", path.string()));
 
       // Attempt to open file stream
       std::ifstream ifs(path, std::ios::ate | std::ios::binary);
       debug::check_expr(ifs.is_open(),
-        std::format("failed to open file \"{}\"", path.string()));
+        fmt::format("failed to open file \"{}\"", path.string()));
 
       // Read file size and construct vector to hold data
       size_t file_size = static_cast<size_t>(ifs.tellg());
@@ -115,12 +114,12 @@ namespace gl {
 
       // Check that file path exists
       debug::check_expr(fs::exists(path),
-        std::format("failed to resolve path \"{}\"", path.string()));
+        fmt::format("failed to resolve path \"{}\"", path.string()));
         
       // Attempt to open file stream
       std::ifstream ifs(path, std::ios::ate);
       debug::check_expr(ifs.is_open(),
-        std::format("failed to open file \"{}\"", path.string()));
+        fmt::format("failed to open file \"{}\"", path.string()));
         
       // Read file size and construct string to hold data
       size_t file_size = static_cast<size_t>(ifs.tellg());

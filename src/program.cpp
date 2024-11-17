@@ -6,7 +6,6 @@
 #include <nlohmann/json.hpp>
 #include <functional>
 #include <ranges>
-#include <format>
 #include <sstream>
 
 namespace gl {
@@ -63,18 +62,18 @@ namespace gl {
 
   std::string ShaderLoadSPIRVInfo::to_string() const {
     std::stringstream ss;
-    ss << std::format("{}_{}_{}_{}", 
+    ss << fmt::format("{}_{}_{}_{}", 
                       static_cast<gl::uint>(type), 
                       spirv_path.string(), 
                       cross_path.string(), 
                       entry_point);
     for (const auto &[i, value] : spec_const)
-      ss << std::format("_({},{})", i, value);
+      ss << fmt::format("_({},{})", i, value);
     return ss.str();
   }
 
   std::string ShaderLoadGLSLInfo::to_string() const {
-    return std::format("{}_{}_{}", 
+    return fmt::format("{}_{}_{}", 
                         static_cast<gl::uint>(type), 
                         glsl_path.string(), 
                         cross_path.string());
@@ -130,7 +129,7 @@ namespace gl {
       std::stringstream ss_o, ss_i(log);
       for (std::string line; std::getline(ss_i, line);) {
         guard_continue(line.length() > 2);
-        ss_o << std::format("{:<8}\n", line);
+        ss_o << fmt::format("{:<8}\n", line);
       }
       return ss_o.str();
     }
@@ -261,7 +260,7 @@ namespace gl {
     // Output OpenGL debug message to warn of shader load+compile
     // Format shader name from set of shader paths
     debug::insert_message(
-      std::format("Program load and compile: {}", program_name_from_paths(load_info)), 
+      fmt::format("Program load and compile: {}", program_name_from_paths(load_info)), 
       gl::DebugMessageSeverity::eLow);
 
     // Transform to internal load info object
@@ -313,7 +312,7 @@ namespace gl {
     // Output OpenGL debug message to warn of shader load+compile
     // Format shader name from set of shader paths
     debug::insert_message(
-      std::format("Program load and compile: {}", program_name_from_paths(load_info)), 
+      fmt::format("Program load and compile: {}", program_name_from_paths(load_info)), 
       gl::DebugMessageSeverity::eLow);
 
     // Transform to internal load info object
@@ -384,7 +383,7 @@ namespace gl {
       // Obtain handle and check if it is actually valid
       GLint handle = glGetUniformLocation(m_object, s.data());
       debug::check_expr(handle >= 0, 
-        std::format("Program::uniform(...) failed with name lookup for uniform name: \"{}\"", s));
+        fmt::format("Program::uniform(...) failed with name lookup for uniform name: \"{}\"", s));
 
       BindingData data { .type       = BindingType::eUniform, 
                          .access     = BindingAccess::eReadOnly,
@@ -395,7 +394,7 @@ namespace gl {
     // Test extracted value correctness
     const BindingData &data = f->second;
     debug::check_expr(data.type == BindingType::eUniform,
-      std::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
+      fmt::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
 
     return data.binding;
   }
@@ -447,11 +446,11 @@ namespace gl {
 
     auto f = m_binding_data.find(s.data());
     debug::check_expr(f != m_binding_data.end(),
-      std::format("Program::bind(...) failed with name lookup for texture name: \"{}\"", s));
+      fmt::format("Program::bind(...) failed with name lookup for texture name: \"{}\"", s));
       
     const BindingData &data = f->second;
     debug::check_expr(data.type == BindingType::eSampler || data.type == BindingType::eImage,
-      std::format("Program::bind(...) failed with type mismatch for texture name: \"{}\"", s));
+      fmt::format("Program::bind(...) failed with type mismatch for texture name: \"{}\"", s));
 
     if (data.type == BindingType::eSampler) {
       texture.bind_to(gl::TextureTargetType::eTextureUnit, data.binding, 0);
@@ -475,12 +474,12 @@ namespace gl {
 
     auto f = m_binding_data.find(s.data());
     debug::check_expr(f != m_binding_data.end(),
-      std::format("Program::bind(...) failed with name lookup for buffer name: \"{}\"", s));
+      fmt::format("Program::bind(...) failed with name lookup for buffer name: \"{}\"", s));
 
     const BindingData &data = f->second;
     debug::check_expr(
       data.type == BindingType::eUniformBuffer || data.type == BindingType::eStorageBuffer,
-      std::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
+      fmt::format("Program::bind(...) failed with type mismatch for buffer name: \"{}\"", s));
 
     // TODO; expand secondary types
     auto target = data.type == BindingType::eUniformBuffer 
@@ -494,12 +493,12 @@ namespace gl {
 
     auto f = m_binding_data.find(s.data());
     debug::check_expr(f != m_binding_data.end(),
-      std::format("Program::bind(...) failed with name lookup for sampler name: \"{}\"", s));
+      fmt::format("Program::bind(...) failed with name lookup for sampler name: \"{}\"", s));
       
     const BindingData &data = f->second;
     debug::check_expr(
       data.type == BindingType::eSampler,
-      std::format("Program::bind(...) failed with type mismatch for sampler name: \"{}\"", s));
+      fmt::format("Program::bind(...) failed with type mismatch for sampler name: \"{}\"", s));
     
     sampler.bind_to(data.binding);
   }

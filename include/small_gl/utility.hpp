@@ -163,7 +163,7 @@ namespace gl {
       detail::Exception e;
       e.put("src", "gl::debug::check_expr(...) failed, checked expression evaluated to false");
       e.put("message", msg);
-      e.put("in file", std::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
+      e.put("in file", fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
       throw e;
     }
   #else
@@ -184,7 +184,7 @@ namespace gl {
       e.put("src", "gl::debug::check_gl(...) failed, OpenGL returned an error");
       e.put("error", detail::readable_gl_error(err));
       e.put("message", msg);
-      e.put("in file", std::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
+      e.put("in file", fmt::format("{}({}:{})", sl.file_name(), sl.line(), sl.column()));
       throw e;
     }
   #else

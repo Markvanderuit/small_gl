@@ -1,7 +1,10 @@
 #pragma once
 
+#include <fmt/core.h>
+#include <fmt/format.h>
+#include <fmt/compile.h>
+#include <fmt/ranges.h>
 #include <glad/glad.h>
-#include <format>
 #include <exception>
 #include <iterator>
 #include <span>
@@ -47,7 +50,7 @@ namespace gl::detail {
 
   public:
     void put(std::string_view key, std::string_view message) {
-      std::format_to(std::back_inserter(_buffer),
+      fmt::format_to(std::back_inserter(_buffer),
                      "  {:<8} : {}\n", 
                      key, 
                      message);
@@ -68,7 +71,7 @@ namespace gl::detail {
 
   public:
     const char * what() const noexcept override {
-      _what = std::format("gl::detail::Exception thrown\n{}", get());
+      _what = fmt::format("gl::detail::Exception thrown\n{}", get());
       return _what.c_str();
     }
   };

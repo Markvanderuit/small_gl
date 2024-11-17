@@ -2,7 +2,6 @@
 #include <small_gl/program.hpp>
 #include <zstr.hpp>
 #include <ranges>
-#include <format>
 #include <sstream>
 
 namespace gl {
@@ -91,7 +90,7 @@ namespace gl {
       gl_trace();
       auto f = m_prog_cache.find(k);
       debug::check_expr(f != m_prog_cache.end(),
-        std::format("ProgramCache::at(...) failed with key lookup for key: \"{}\"", k));
+        fmt::format("ProgramCache::at(...) failed with key lookup for key: \"{}\"", k));
       return f->second;
     }
 
@@ -115,7 +114,7 @@ namespace gl {
 
       // Output OpenGL debug message to warn of cache save
       debug::insert_message(
-        std::format("Program cache saved to: {}", cache_file_path.string()), 
+        fmt::format("Program cache saved to: {}", cache_file_path.string()), 
         gl::DebugMessageSeverity::eLow);
     }
 
@@ -124,7 +123,7 @@ namespace gl {
       
       // Sanity check file path
       debug::check_expr(fs::exists(cache_file_path),
-        std::format("Program cache cannot load; cache does not exist at: {}", cache_file_path.string()));
+        fmt::format("Program cache cannot load; cache does not exist at: {}", cache_file_path.string()));
 
       // Clear out cache first
       *this = { };
@@ -139,7 +138,7 @@ namespace gl {
 
       // Output OpenGL debug message to warn of cache load
       debug::insert_message(
-        std::format("Program cache loaded from: {}", cache_file_path.string()), 
+        fmt::format("Program cache loaded from: {}", cache_file_path.string()), 
         gl::DebugMessageSeverity::eLow);
     }
   } // namespace detail
