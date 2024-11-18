@@ -23,7 +23,7 @@ namespace gl::detail {
   }
 
   // Provide a readable translation of error values returned by glGetError();
-  constexpr inline
+  inline
   std::string readable_gl_error(GLenum err) {
     switch (err) {
       case GL_INVALID_ENUM:                   return "GL_INVALID_ENUM";

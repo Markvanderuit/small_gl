@@ -42,7 +42,6 @@ namespace gl {
             TextureType Ty    // Special texture type (array, cubemap, multisampled)
             = TextureType::eImage>   
   class Texture : public AbstractTexture {
-    using TextureInfo = TextureInfo<T, D, Ty>;
     using Base = detail::Handle<>;
     using vect = eig::Array<uint, detail::texture_dims<D, Ty>(), 1>;
 
@@ -50,12 +49,12 @@ namespace gl {
     vect m_size;
 
   public:
-    using InfoType = TextureInfo;
+    using InfoType = TextureInfo<T, D, Ty>;
 
     /* constr/destr */
     
     Texture() = default;
-    Texture(TextureInfo info);
+    Texture(InfoType info);
     ~Texture();
 
     /* getters */

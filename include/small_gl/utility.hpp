@@ -154,7 +154,7 @@ namespace gl {
     // to the expression's origin if said expression fails
     // Note: can be removed on release builds
   #if defined(NDEBUG) || defined(GL_ENABLE_EXCEPTIONS)
-    constexpr inline
+    inline
     void check_expr(bool expr,
                     const std::string_view &msg = "",
                     const std::source_location sl = std::source_location::current()) {

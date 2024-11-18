@@ -47,7 +47,8 @@ namespace gl::io {
     gl_trace();
     size_t n = v.size();
     to_stream(n, str);
-    str.write(reinterpret_cast<const char *>(v.data()), sizeof(std::decay_t<decltype(v)>::value_type) * v.size());
+    using value_type = typename std::decay_t<decltype(v)>::value_type;
+    str.write(reinterpret_cast<const char *>(v.data()), sizeof(value_type) * v.size());
   }
   template <typename Ty> requires (!is_serializable<Ty>)
   void from_stream(std::vector<Ty> &v, std::istream &str) {
@@ -55,7 +56,8 @@ namespace gl::io {
     size_t n = 0;
     from_stream(n, str);
     v.resize(n);
-    str.read(reinterpret_cast<char *>(v.data()), sizeof(std::decay_t<decltype(v)>::value_type) * v.size());
+    using value_type = typename std::decay_t<decltype(v)>::value_type;
+    str.read(reinterpret_cast<char *>(v.data()), sizeof(value_type) * v.size());
   }
 
   // Serialization for objects fulfilling is_serializable contract

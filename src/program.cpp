@@ -428,20 +428,20 @@ namespace gl {
       guard(iter.contains("name") && iter.contains("binding"));
       BindingData data { .type       = type, 
                          .access     = BindingAccess::eReadOnly,
-                         .binding    = iter.at("binding").get<int>() };
-      m_binding_data.emplace(iter.at("name").get<std::string>(), data);
+                         .binding    = iter.at("binding").template get<int>() };
+      m_binding_data.emplace(iter.at("name").template get<std::string>(), data);
     };
 
     // Function to consume reflectance data from the json, for bindings with read/write qualifiers
     auto func_qualifier = [&](const auto &iter, BindingType type) {
       guard(iter.contains("name") && iter.contains("binding"));
       BindingData data { .type       = type, 
-                         .binding    = iter.at("binding").get<int>() };
-      if (iter.contains("writeonly") && iter.at("writeonly").get<bool>()) 
+                         .binding    = iter.at("binding").template get<int>() };
+      if (iter.contains("writeonly") && iter.at("writeonly").template get<bool>()) 
         data.access = BindingAccess::eWriteOnly;
-      if (iter.contains("readonly") && iter.at("readonly").get<bool>()) 
+      if (iter.contains("readonly") && iter.at("readonly").template get<bool>()) 
         data.access = BindingAccess::eReadOnly;
-      m_binding_data.emplace(iter.at("name").get<std::string>(), data);
+      m_binding_data.emplace(iter.at("name").template get<std::string>(), data);
     };
 
     using namespace std::placeholders;

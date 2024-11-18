@@ -8,7 +8,7 @@
 
 namespace gl {
   namespace detail {
-    inline constexpr
+    inline
     std::string readable_debug_src(GLenum src) {
       switch (src) {
         case GL_DEBUG_SOURCE_API:             return "api";
@@ -21,7 +21,7 @@ namespace gl {
       }
     }
 
-    inline constexpr
+    inline
     std::string readable_debug_type(GLenum type) {
       switch (type) {
         case GL_DEBUG_TYPE_ERROR:               return "error";
@@ -37,7 +37,7 @@ namespace gl {
       }
     }
 
-    inline constexpr
+    inline
     std::string readable_debug_severity(GLenum severity) {
       switch (severity) {
         case GL_DEBUG_SEVERITY_HIGH:          return "high";
