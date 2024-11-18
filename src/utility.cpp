@@ -56,19 +56,20 @@ namespace gl {
         131154, /* nvidia: Pixel-path performance warning: Pixel transfer is synchronized with 3D rendering */
         131169, /* nvidia: The driver allocated multisample storage for renderbuffer X */
         131204, /* warn:   Texture state usage warning: The texture object (X) bound to texture image unit X does not have a defined base level and cannot be used for texture mapping */
+        131218, /* warn:   Program/shader state performance warning: Vertex shader in program X is being recompiled based on GL state. */
         131220, /* warn:   Program/shader state usage warning: A fragment program/shader is required to correctly render to an integer framebuffer */
       };
       guard(!std::ranges::binary_search(guard_codes, code));
           
       // Output formatted message to stdout for now
       detail::Message message;
-      message.put("info", fmt::format("type = {}, severity = {}, src = {}, code = {}",
-                          readable_debug_type(type),
-                          readable_debug_severity(severity),
-                          readable_debug_src(src),
-                          code));
       message.put("message", msg);
-      fmt::print(stdout, "OpenGL debug message\n{}", message.get());
+      fmt::print(stdout, "OpenGL message (type = {}, severity = {}, src = {}, code = {})\n{}", 
+        readable_debug_type(type),
+        readable_debug_severity(severity),
+        readable_debug_src(src),
+        code,
+        message.get());
 
       // Guard against throwing on non-errorneous message types
       constexpr static std::initializer_list<uint> guard_types = { 
