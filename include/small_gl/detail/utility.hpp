@@ -71,7 +71,7 @@ namespace gl::detail {
 
   public:
     const char * what() const noexcept override {
-      _what = fmt::format("gl::detail::Exception thrown\n{}", get());
+      _what = fmt::format("Exception thrown\n{}", get());
       return _what.c_str();
     }
   };
