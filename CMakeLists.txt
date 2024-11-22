@@ -14,10 +14,11 @@ option(gl_enable_tracy      "Enable Tracy support"               OFF)
 
 # Include third party libraries provided through vcpkg
 find_package(Eigen3        CONFIG REQUIRED)
-find_package(fmt       CONFIG REQUIRED)
+find_package(fmt           CONFIG REQUIRED)
 find_package(glad          CONFIG REQUIRED)
 find_package(glfw3         CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(OpenMP        REQUIRED)
 find_package(Tracy         CONFIG REQUIRED)
 find_package(ZLIB          REQUIRED)
 
@@ -42,9 +43,10 @@ target_link_libraries(small_gl PRIVATE
   fmt::fmt-header-only
   nlohmann_json::nlohmann_json
   Tracy::TracyClient
+  OpenMP::OpenMP_CXX
   ZLIB::ZLIB
 )
-target_include_directories(small_gl PUBLIC include ${ZSTR_INCLUDE_DIRS})
+target_include_directories(small_gl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${ZSTR_INCLUDE_DIRS})
 target_compile_features(small_gl PRIVATE cxx_std_23)
 target_precompile_headers(small_gl PUBLIC ${hdrs})
 
