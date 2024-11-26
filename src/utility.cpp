@@ -84,6 +84,27 @@ namespace gl {
     }
   } // namespace detail
 
+  int get_variable_int(VariableName name) {
+    gl_trace_full();
+    int i;
+    glGetIntegerv((uint) name, &i);
+    return i;
+  }
+
+  VendorType get_vendor() {
+    gl_trace_full();
+    
+    const GLubyte *c_str = glGetString(GL_VENDOR);
+    std::string str = reinterpret_cast<const char *>(c_str);
+    
+    fmt::print("glGetString returned: \"{}\"\n", str);
+    
+    if (str.contains("Intel"))
+      return VendorType::eIntelHDGraphics;
+    else
+      return VendorType::eOther;
+  }
+
   namespace io {
     std::vector<std::byte> load_binary(const fs::path &path) {
       gl_trace();
@@ -254,13 +275,6 @@ namespace gl {
     void set_depth_range(float z_near, float z_far) {
       gl_trace_full();
       glDepthRangef(z_near, z_far);
-    }
-    
-    int get_variable_int(VariableName name) {
-      gl_trace_full();
-      int i;
-      glGetIntegerv((uint) name, &i);
-      return i;
     }
   } // namespace state
 

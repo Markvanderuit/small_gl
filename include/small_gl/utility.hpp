@@ -6,8 +6,8 @@
 #define guard_break(expr)    if (!(expr)) { break; }
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/enum.hpp>
 #include <small_gl/detail/eigen.hpp>
-#include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/handle.hpp>
 #include <small_gl/detail/trace.hpp>
 #include <small_gl/detail/utility.hpp>
@@ -21,6 +21,11 @@
 #define range_iter(c) c.begin(), c.end()
 
 namespace gl {  
+  // OpenGL variable queries
+  int get_variable_int(VariableName name);
+
+  VendorType get_vendor();
+
   namespace fs = std::filesystem; // STL namespace shorthand
 
   namespace io {
@@ -130,9 +135,6 @@ namespace gl {
     void set_line_width(float width);
     void set_point_size(float size);
     void set_depth_range(float z_near, float z_far);
-
-    // OpenGL variable queries
-    int get_variable_int(VariableName name);
 
     template <typename T>
     T get_variable(VariableName name);

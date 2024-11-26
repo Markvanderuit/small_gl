@@ -1,8 +1,8 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
+#include <small_gl/enum.hpp>
 #include <small_gl/detail/handle.hpp>
-#include <small_gl/detail/enum.hpp>
 #include <small_gl/detail/utility.hpp>
 #include <small_gl/dispatch.hpp>
 #include <span>

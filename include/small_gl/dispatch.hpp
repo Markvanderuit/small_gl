@@ -1,7 +1,7 @@
 #pragma once
 
 #include <small_gl/fwd.hpp>
-#include <small_gl/detail/enum.hpp>
+#include <small_gl/enum.hpp>
 #include <optional>
 #include <vector>
 

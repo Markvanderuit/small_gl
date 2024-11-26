@@ -443,4 +443,11 @@ namespace gl {
     eCore,
     eCompatibility,
   };
+
+  // Simple vendor identifier, parsed from GL_VENDOR;
+  // add vendors here and in utility.cpp if you need a specific one
+  enum class VendorType {
+    eIntelHDGraphics,
+    eOther
+  };
 } // namespace gl
