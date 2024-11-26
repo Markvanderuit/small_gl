@@ -96,11 +96,10 @@ namespace gl {
     
     const GLubyte *c_str = glGetString(GL_VENDOR);
     std::string str = reinterpret_cast<const char *>(c_str);
-    
-    fmt::print("glGetString returned: \"{}\"\n", str);
-    
+
+    // Hacky, but just update this when necessary 
     if (str.contains("Intel"))
-      return VendorType::eIntelHDGraphics;
+      return VendorType::eIntel;
     else
       return VendorType::eOther;
   }
