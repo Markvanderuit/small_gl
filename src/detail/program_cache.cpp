@@ -44,18 +44,13 @@ namespace gl {
     std::pair<std::string, gl::Program &> ProgramCache::set(InfoType &&info) {
       gl_trace();
 
-      // Visitor generates key, and tests if program exists in cache
-      auto key = std::visit([](const auto &i) { return i.to_string(); }, info);
+      // Generate key, and test if program is resident
+      auto key = info.to_string();
       auto it  = m_prog_cache.find(key);
 
-      // If program is not in cache
-      if (it == m_prog_cache.end()) {
-        // Visitor generates program
-        auto prog = std::visit([](const auto &i) { return gl::Program(i); }, info);
-        
-        // Program is newly cached
-        it = m_prog_cache.emplace(key, std::move(prog)).first;
-      }
+      // If program is not resident, generate program, then cache it
+      if (it == m_prog_cache.end())
+        it = m_prog_cache.emplace(key, Program(info)).first;
 
       return { key, it->second };
     }
@@ -63,30 +58,17 @@ namespace gl {
     std::pair<std::string, gl::Program &> ProgramCache::set(InfoList &&info) {
       gl_trace();
 
-      // Visitor generates key, and tests if program exists in cache,
-      // by joining consecutive info objects as keys
-      auto key = std::visit([](const auto &l) {
-        auto in = l | vws::transform([](const auto &i) { return i.to_string(); }) | vws::join;
-        std::string out;
-        rng::copy(in, std::back_inserter(out));
-        return out;
-      }, info);
+      // Generate key from join of consecutive info object keys
+      auto in = info | vws::transform([](const auto &i) { return i.to_string(); }) | vws::join;
+      std::string key;
+      rng::copy(in, std::back_inserter(key));
+
+      // Test if program is resident
       auto it  = m_prog_cache.find(key);
 
-      // If program is not in cache
-      if (it == m_prog_cache.end()) {
-        // Visitor generates program from list
-        auto prog = std::visit([](const auto &l) { return gl::Program(l); }, info);
-        
-        // Program is are newly cached
-        auto cval = std::visit([](const auto &l) { 
-          auto in = l | vws::transform([](const auto &t) { return InfoType(t); });
-          std::vector<InfoType> out;
-          rng::copy(in, std::back_inserter(out));
-          return out;
-        }, info);
-        it = m_prog_cache.emplace(key, std::move(prog)).first;
-      }
+      // If program is not resident, generate program, then cache it
+      if (it == m_prog_cache.end())
+        it = m_prog_cache.emplace(key, gl::Program(info)).first;
 
       return { key, it->second };
     }

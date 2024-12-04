@@ -13,80 +13,51 @@
 namespace gl {  
   /**
    * Helper object to create program object with path to shader
-   * object's file data; OpenGL's SPIR-V shader loading will be used
+   * object's file data; OpenGL's GLSL or OpenGL's SPIR-V shader 
+   * loading can be used dependent on availability. Currently, 
+   * only Intel HD forcibly falls back on GLSL loading, as linking 
+   * breaks on large files sometimes.
    */
-  struct ShaderLoadSPIRVInfo {
+  struct ShaderLoadFileInfo {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
     ShaderType type;
 
-    // Path towards SPIRV file, which will be loaded
+    // Path towards GLSL file, which may be loaded
+    fs::path glsl_path;
+
+    // Path towards SPIRV file, which may be loaded
     fs::path spirv_path;
 
     // Path towards SPIRV-Cross generated reflection json file
     fs::path cross_path;
 
-    // Override SPIRV shader entry point, if necessary
-    std::string entry_point = "main";
-
     // Pass in indexed SPIRV specialization constants
     std::vector<std::pair<uint, uint>> spec_const = { };
 
-  public: // Helpers for use in std::unordered_map in gl::ProgramCache
-    std::string to_string() const;
-  };
-
-  /**
-   * Helper object to create program object with path to shader
-   * object's file data; OpenGL's GLSL shader loading will be used
-   */
-  struct ShaderLoadGLSLInfo {
-    // Shader type (vertex, fragment, compute, geometry, tessel...)
-    ShaderType type;
-
-    // Path towards GLSL file, which will be loaded
-    fs::path glsl_path;
-
-    // Path towards SPIRV-Cross generated reflection json file
-    fs::path cross_path;
-
-  public: // Helpers for use in std::unordered_map in gl::ProgramCache
+  public: // Helpers for use in std::unordered_map in gl::detail::ProgramCache
     std::string to_string() const;
   };
 
   /**
    * Helper object to create program object with shader object's byte
-   * data provided; OpenGL's SPIR-V shader loading will be used
+   * data provided; Differentiates GLSL/SPIR-V in the same manner as 
+   * ShaderLoadFileInfo does on different platforms.
    */
-  struct ShaderLoadSPIRVStringInfo {
+  struct ShaderLoadStringInfo {
     // Shader type (vertex, fragment, compute, geometry, tessel...)
     ShaderType type;
 
-    // SPIRV shader data in byte format
+    // optional GLSL shader data in byte format
+    std::vector<std::byte> glsl_data;
+
+    // optional SPIRV shader data in byte format
     std::vector<std::byte> spirv_data;
 
     // SPIRV-Cross generated reflection json data
     std::vector<io::json> cross_json;
 
-    // Override SPIRV shader entry point, if necessary
-    std::string entry_point = "main";
-
     // Pass in indexed SPIRV specialization constants
     std::vector<std::pair<uint, uint>> spec_const = { };
-  };
-  
-  /**
-   * Helper object to create program object with shader object's byte
-   * data provided; OpenGL's GLSL shader loading will be used
-   */
-  struct ShaderLoadGLSLStringInfo {
-    // Shader type (vertex, fragment, compute, geometry, tessel...)
-    ShaderType type;
-
-    // GLSL shader data in byte format
-    std::vector<std::byte> glsl_data;
-
-    // SPIRV-Cross generated reflection json data
-    std::vector<io::json> cross_json;
   };
 
   /**
@@ -130,22 +101,16 @@ namespace gl {
     ~Program();
 
     // Constructor over non-owned info objects; primary constructor
-    Program(std::span<const ShaderLoadSPIRVInfo>       info);
-    Program(std::span<const ShaderLoadGLSLInfo>        info);
-    Program(std::span<const ShaderLoadSPIRVStringInfo> info);
-    Program(std::span<const ShaderLoadGLSLStringInfo>  info);
+    Program(std::span<const ShaderLoadFileInfo>   info);
+    Program(std::span<const ShaderLoadStringInfo> info);
     
     // Constructor over owned info objects; forwarded to above
-    Program(std::initializer_list<ShaderLoadSPIRVInfo>       info);
-    Program(std::initializer_list<ShaderLoadGLSLInfo>        info);
-    Program(std::initializer_list<ShaderLoadSPIRVStringInfo> info);
-    Program(std::initializer_list<ShaderLoadGLSLStringInfo>  info);
+    Program(std::initializer_list<ShaderLoadFileInfo>   info);
+    Program(std::initializer_list<ShaderLoadStringInfo> info);
 
     // Constructor over single info object; forwarded to above
-    Program(const ShaderLoadSPIRVInfo       &info);
-    Program(const ShaderLoadGLSLInfo        &info);
-    Program(const ShaderLoadSPIRVStringInfo &info);
-    Program(const ShaderLoadGLSLStringInfo  &info);
+    Program(const ShaderLoadFileInfo   &info);
+    Program(const ShaderLoadStringInfo &info);
 
   public: // Binding state  
     template <typename T>
@@ -161,24 +126,6 @@ namespace gl {
     static void unbind_all();
 
   public: // Binary data serialization
-    /**
-     * Program binary data representation used by gl::detail::ProgramCache;
-     * the result of glGetProgramBinary() for serialization/deserialization.
-     */
-    // Binary data representation used by program cache. Mostly the result
-    // of glGetProgramBinary()
-    // struct ProgramBinaryInfo {
-    //   // Binary format enum
-    //   uint format;
-
-    //   // Binary data, result of glGetProgramBinary
-    //   std::vector<std::byte> binary_data;
-
-    //   std::unordered_map<std::string, Program::BindingData> binding_data;
-    // };
-    
-    // // Output program binary info object for (de)serialization
-    // ProgramBinaryInfo to_binary() const;
     void to_stream(std::ostream &str) const;
     void from_stream(std::istream &str);
 

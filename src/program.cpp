@@ -2,8 +2,11 @@
 #include <small_gl/program.hpp>
 #include <small_gl/sampler.hpp>
 #include <small_gl/texture.hpp>
+#include <small_gl/utility.hpp>
 #include <small_gl/detail/eigen.hpp>
 #include <nlohmann/json.hpp>
+#include <algorithm>
+#include <execution>
 #include <functional>
 #include <ranges>
 #include <sstream>
@@ -74,49 +77,34 @@ namespace gl {
 
     // Is the attached shader data a spir-v binary?
     bool is_spirv = false;
-    std::string spirv_entry_point = "main";
     std::vector<std::pair<uint, uint>> spirv_spec_const = { };
   };
 
-  std::string ShaderLoadSPIRVInfo::to_string() const {
+  std::string ShaderLoadFileInfo::to_string() const {
     std::stringstream ss;
     ss << fmt::format("{}_{}_{}_{}", 
                       static_cast<gl::uint>(type), 
+                      glsl_path.string(), 
                       spirv_path.string(), 
-                      cross_path.string(), 
-                      entry_point);
+                      cross_path.string());
     for (const auto &[i, value] : spec_const)
       ss << fmt::format("_({},{})", i, value);
     return ss.str();
   }
 
-  std::string ShaderLoadGLSLInfo::to_string() const {
-    return fmt::format("{}_{}_{}", 
-                        static_cast<gl::uint>(type), 
-                        glsl_path.string(), 
-                        cross_path.string());
-  }
-
-  std::string program_name_from_paths(std::span<const ShaderLoadSPIRVInfo> info) {
+  std::string program_name_from_paths(std::span<const ShaderLoadFileInfo> info) {
+    // Gather filenames of relevant shader files or spirv binaries
     auto names 
       = info 
       | vws::transform([](const auto &i) { 
-        return fs::path(i.spirv_path).filename().string();
+        if (!i.spirv_path.empty() && get_vendor() != VendorType::eIntel) {
+          return i.spirv_path.filename().string();
+        } else {
+          return i.glsl_path.filename().string();
+        }
       });
-    std::stringstream ss;
-    for (const auto &str : names | vws::take(names.size() - 1)) {
-      ss << str << " -> ";
-    }
-    ss << names.back();
-    return ss.str();
-  }
-
-  std::string program_name_from_paths(std::span<const ShaderLoadGLSLInfo> info) {
-    auto names 
-      = info 
-      | vws::transform([](const auto &i) { 
-        return fs::path(i.glsl_path).filename().string();
-      });
+    
+    // Assemble into readable string
     std::stringstream ss;
     for (const auto &str : names | vws::take(names.size() - 1)) {
       ss << str << " -> ";
@@ -180,24 +168,89 @@ namespace gl {
       throw e;
     }
 
-    GLuint attach_shader_object(GLuint program, const ShaderCreateInfo &i) {
+    GLuint attach_shader_object(GLuint program, const ShaderCreateInfo &info) {
       gl_trace_full();
 
-      auto *ptr = (GLchar *) i.data.data();
-      auto size = (GLint)    i.data.size();
-
       // Assemble shader object
-      GLuint object = glCreateShader((uint) i.type);
-      if (i.is_spirv) {
+      GLuint object = glCreateShader((uint) info.type);
+      if (info.is_spirv) {
+        // Get raw ptr/size in requested types
+        auto *ptr = (GLchar *) info.data.data();
+        auto size = (GLint)    info.data.size();
+
         // Split specialization constants into index/value
-        auto const_i = i.spirv_spec_const | vws::elements<0> | view_to<std::vector<uint>>();
-        auto const_v = i.spirv_spec_const | vws::elements<1> | view_to<std::vector<uint>>();
+        auto const_i = info.spirv_spec_const | vws::elements<0> | view_to<std::vector<uint>>();
+        auto const_v = info.spirv_spec_const | vws::elements<1> | view_to<std::vector<uint>>();
 
         // Submit spir-v binary and specialize shader
         glShaderBinary(1, &object, GL_SHADER_BINARY_FORMAT_SPIR_V, ptr, size);
-        glSpecializeShader(object, i.spirv_entry_point.c_str(), 
-          i.spirv_spec_const.size(), const_i.data(), const_v.data());
+        glSpecializeShader(object, "main", info.spirv_spec_const.size(), const_i.data(), const_v.data());
       } else {
+        // As the glsl path does not support specialization constants, we replace these manually
+        std::string copy(range_iter(detail::cast_span<const char>(std::span(info.data))));
+
+        // Split into vector of lines
+        std::vector<std::string> lines;
+        auto split_view = vws::split('\n') | vws::transform([](const auto &l) { return std::string(range_iter(l)); });
+        rng::copy(copy | split_view, std::back_inserter(lines));
+
+        // Find lines of interest and override them to a specified value;
+        // expected format of line is approximately 'layout(constant_id = 2) const uint bla = 1;'
+        // TODO clean this up after presentation, no time no time
+        std::for_each(std::execution::par_unseq, range_iter(lines), [&](std::string &line) {
+          guard(line.contains("constant_id"));
+          
+          // Strip '\r'
+          line.erase(std::remove_if(range_iter(line), [](char c) { return c == '\r'; }), line.end());
+
+          // Find substring beyond '=' and before ')', then strip ' ' from what remians
+          auto subitr = line.find_first_of('=');
+          auto substr = line.substr(subitr + 1);
+          
+          // On ')', we know the constant id is the previous part
+          subitr = substr.find_first_of(')');
+          auto substr_before = substr.substr(0, subitr);
+          auto substr_after  = substr.substr(subitr + 1);
+
+          // Strip whitespace from previous part, what remains is constant id
+          substr.erase(std::remove_if(range_iter(substr), [](char c) { return c == ' '; }), substr.end());
+
+          // Split on whitespace in after part, get iterator over line data
+          std::vector<std::string> line_split;
+          auto split_view = vws::split(' ') | vws::transform([](const auto &l) { return std::string(range_iter(l)); });
+          rng::copy_if(substr_after | split_view, std::back_inserter(line_split), [](auto c) { return !c.empty(); });
+          auto line_itr = line_split.begin();
+
+          // Extract variable type, variable name, variable value;
+          // expected format is 'const type name = value', though const is optional
+          if (*line_itr == "const") 
+            line_itr++;
+          std::string type_name = *line_itr;
+          line_itr++;
+          std::string varl_name = *line_itr;
+          line_itr++;
+          line_itr++;
+          std::string varl_value = *line_itr;
+
+          // Find new spec const value and replace line entirely if specified
+          auto it = rng::find(info.spirv_spec_const, 
+                              static_cast<uint>(std::stoi(substr)), 
+                              [](const auto &pair) { return pair.first; });
+          if (it != info.spirv_spec_const.end())
+            varl_value = fmt::format("{}", it->second);
+          
+          // Finally, replace line
+          line = fmt::format("const {} {} = {};", type_name, varl_name, varl_value);
+        });
+
+        // Merge back into string
+        copy.clear();
+        rng::copy(lines | vws::join_with('\n'), std::back_inserter(copy));
+
+        // Get raw ptr/size in requested types
+        auto *ptr = (GLchar *) copy.data();
+        auto size = (GLint)    copy.size();
+
         // Submit glsl character data and compile shader
         glShaderSource(object, 1, &ptr, &size);
         glCompileShader(object);
@@ -250,46 +303,47 @@ namespace gl {
 
   /* Program code */  
   
-  Program::Program(std::initializer_list<ShaderLoadSPIRVInfo> info)       
-  : Program(std::span(info.begin(), info.end())) {}
-  Program::Program(std::initializer_list<ShaderLoadGLSLInfo> info)        
-  : Program(std::span(info.begin(), info.end())) {}
-  Program::Program(std::initializer_list<ShaderLoadSPIRVStringInfo> info) 
-  : Program(std::span(info.begin(), info.end())) {}
-  Program::Program(std::initializer_list<ShaderLoadGLSLStringInfo> info)  
-  : Program(std::span(info.begin(), info.end())) {}
-    
-  Program::Program(const ShaderLoadSPIRVInfo       &info) 
-  : Program({ info }) { }
-  Program::Program(const ShaderLoadGLSLInfo        &info) 
-  : Program({ info }) { }
-  Program::Program(const ShaderLoadSPIRVStringInfo &info) 
-  : Program({ info }) { }
-  Program::Program(const ShaderLoadGLSLStringInfo  &info) 
-  : Program({ info }) { }
-
-  Program::Program(std::span<const ShaderLoadSPIRVInfo> load_info) 
-  : Base(true) {
-    gl_trace_full();
-    debug::check_expr(load_info.size() > 0, "no shader info was provided");
+  Program::Program(std::initializer_list<ShaderLoadFileInfo> info)       
+  : Program(std::span(info.begin(), info.end())) { }
+  Program::Program(std::initializer_list<ShaderLoadStringInfo> info)       
+  : Program(std::span(info.begin(), info.end())) { }
   
+  Program::Program(const ShaderLoadFileInfo &info) 
+  : Program({ info }) { }
+  Program::Program(const ShaderLoadStringInfo &info) 
+  : Program({ info }) { }
+
+  Program::Program(std::span<const ShaderLoadFileInfo> load_info) 
+  : Base(true) {
+    gl_trace_full();
+    debug::check_expr(load_info.size() > 0, "no shader info was provided");
+
     // Output OpenGL debug message to warn of shader load+compile
     // Format shader name from set of shader paths
     debug::insert_message(
       fmt::format("Program load and compile: {}", program_name_from_paths(load_info)), 
       gl::DebugMessageSeverity::eLow);
-
+    
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
-    rng::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVInfo &info) {
-      return ShaderCreateInfo { .type              = info.type,  
-                                .data              = io::load_binary(info.spirv_path), 
-                                .is_spirv          = true, 
-                                .spirv_entry_point = info.entry_point,
-                                .spirv_spec_const  = info.spec_const };
+    rng::transform(load_info, create_info.begin(), [](const ShaderLoadFileInfo &info) {
+      if (!info.spirv_path.empty() && get_vendor() != VendorType::eIntel) {
+        // Return necessary info for spirv path
+        return ShaderCreateInfo { .type              = info.type,  
+                                  .data              = io::load_binary(info.spirv_path), 
+                                  .is_spirv          = true, 
+                                  .spirv_spec_const  = info.spec_const };
+      } else if (!info.glsl_path.empty()) {
+        // Fall back to glsl path
+        return ShaderCreateInfo { .type     = info.type,  
+                                  .data     = io::load_binary(info.glsl_path), 
+                                  .is_spirv = false };
+      } else {
+        debug::check_expr(false, "ShaderLoadFileInfo is in an incomplete state.");
+      }
     });
-
-    // Initialize program
+    
+    // Initialize program from shader info
     m_object = detail::create_program_object(create_info);
 
     // Handle reflectance data population, if available
@@ -297,67 +351,26 @@ namespace gl {
     for (const auto &info : filt) populate(info.cross_path);
   }
 
-  Program::Program(std::span<const ShaderLoadSPIRVStringInfo> load_info) 
+  Program::Program(std::span<const ShaderLoadStringInfo> load_info) 
   : Base(true) {
     gl_trace_full();
     debug::check_expr(load_info.size() > 0, "no shader info was provided");
     
     // Transform to internal load info object
     std::vector<ShaderCreateInfo> create_info(load_info.size());
-    rng::transform(load_info, create_info.begin(), [](const ShaderLoadSPIRVStringInfo &info) {
-      return ShaderCreateInfo { .type              = info.type,  
-                                .data              = info.spirv_data, 
-                                .is_spirv          = true, 
-                                .spirv_entry_point = info.entry_point,
-                                .spirv_spec_const  = info.spec_const };
-    });
-
-    // Initialize program
-    m_object = detail::create_program_object(create_info);
-
-    // Handle reflectance data population, if available
-    auto filt = load_info | vws::filter([](const auto &info) { return !info.cross_json.empty(); });
-    for (const auto &info : filt) populate(info.cross_json);
-  }
-
-  Program::Program(std::span<const ShaderLoadGLSLInfo> load_info) 
-  : Base(true) {
-    gl_trace_full();
-    debug::check_expr(load_info.size() > 0, "no shader info was provided");
-    
-    // Output OpenGL debug message to warn of shader load+compile
-    // Format shader name from set of shader paths
-    debug::insert_message(
-      fmt::format("Program load and compile: {}", program_name_from_paths(load_info)), 
-      gl::DebugMessageSeverity::eLow);
-
-    // Transform to internal load info object
-    std::vector<ShaderCreateInfo> create_info(load_info.size());
-    rng::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLInfo &info) {
-      return ShaderCreateInfo { .type              = info.type,  
-                                .data              = io::load_binary(info.glsl_path), 
-                                .is_spirv          = false };
-    });
-
-    // Initialize program
-    m_object = detail::create_program_object(create_info);
-
-    // Handle reflectance data population, if available
-    auto filt = load_info | vws::filter([](const auto &info) { return !info.cross_path.empty(); });
-    for (const auto &info : filt) populate(info.cross_path);
-  }
-
-  Program::Program(std::span<const ShaderLoadGLSLStringInfo> load_info) 
-  : Base(true) {
-    gl_trace_full();
-    debug::check_expr(load_info.size() > 0, "no shader info was provided");
-    
-    // Transform to internal load info object
-    std::vector<ShaderCreateInfo> create_info(load_info.size());
-    rng::transform(load_info, create_info.begin(), [](const ShaderLoadGLSLStringInfo &info) {
-      return ShaderCreateInfo { .type              = info.type,  
-                                .data              = info.glsl_data, 
-                                .is_spirv          = false };
+    rng::transform(load_info, create_info.begin(), [](const ShaderLoadStringInfo &info) {
+      if (!info.spirv_data.empty() && get_vendor() != VendorType::eIntel) {
+        return ShaderCreateInfo { .type              = info.type,  
+                                  .data              = info.spirv_data, 
+                                  .is_spirv          = true, 
+                                  .spirv_spec_const  = info.spec_const };
+      } else if (!info.glsl_data.empty()) {
+        return ShaderCreateInfo { .type              = info.type,  
+                                  .data              = info.glsl_data, 
+                                  .is_spirv          = false };
+      } else {
+        debug::check_expr(false, "ShaderLoadStringInfo is in an incomplete state.");
+      }
     });
 
     // Initialize program
