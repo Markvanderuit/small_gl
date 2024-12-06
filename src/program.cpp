@@ -5,6 +5,7 @@
 #include <small_gl/utility.hpp>
 #include <small_gl/detail/eigen.hpp>
 #include <nlohmann/json.hpp>
+#include <zstr.hpp>
 #include <algorithm>
 #include <execution>
 #include <functional>
@@ -563,6 +564,94 @@ namespace gl {
     // Instantiate program and assume ownersip over resulting object handle
     m_is_init = true;
     m_object  = detail::create_program_object_from_binary(program_format, program_data);
+  }
+
+  std::pair<std::string, gl::Program &> ProgramCache::set(InfoType &&info) {
+    gl_trace();
+
+    // Generate key, and test if program is resident
+    auto key = info.to_string();
+    auto it  = m_prog_cache.find(key);
+
+    // If program is not resident, generate program, then cache it
+    if (it == m_prog_cache.end())
+      it = m_prog_cache.emplace(key, Program(info)).first;
+
+    return { key, it->second };
+  }
+
+  std::pair<std::string, gl::Program &> ProgramCache::set(InfoList &&info) {
+    gl_trace();
+
+    // Generate key from join of consecutive info object keys
+    auto in = info | vws::transform([](const auto &i) { return i.to_string(); }) | vws::join;
+    std::string key;
+    rng::copy(in, std::back_inserter(key));
+
+    // Test if program is resident
+    auto it  = m_prog_cache.find(key);
+
+    // If program is not resident, generate program, then cache it
+    if (it == m_prog_cache.end())
+      it = m_prog_cache.emplace(key, gl::Program(info)).first;
+
+    return { key, it->second };
+  }
+
+  gl::Program & ProgramCache::at(const KeyType &k) {
+    gl_trace();
+    auto f = m_prog_cache.find(k);
+    debug::check_expr(f != m_prog_cache.end(),
+      fmt::format("ProgramCache::at(...) failed with key lookup for key: \"{}\"", k));
+    return f->second;
+  }
+
+  void ProgramCache::clear() {
+    gl_trace();
+    m_prog_cache.clear();
+  }
+
+  ProgramCache::ProgramCache(fs::path cache_file_path) { load(cache_file_path); }
+
+  void ProgramCache::save(fs::path cache_file_path) const {
+    gl_trace();
+
+    // Attempt opening zlib compressed stream
+    constexpr auto str_flags = std::ios::out | std::ios::binary | std::ios::trunc;
+    auto str = zstr::ofstream(cache_file_path.string(), str_flags, Z_BEST_SPEED);
+    debug::check_expr(str.good());
+
+    // Serialize program cache to stream
+    io::to_stream(m_prog_cache, str);
+
+    // Output OpenGL debug message to warn of cache save
+    debug::insert_message(
+      fmt::format("Program cache saved to: {}", cache_file_path.string()), 
+      gl::DebugMessageSeverity::eLow);
+  }
+
+  void ProgramCache::load(fs::path cache_file_path) {
+    gl_trace();
+    
+    // Sanity check file path
+    debug::check_expr(fs::exists(cache_file_path),
+      fmt::format("Program cache cannot load; cache does not exist at: {}", cache_file_path.string()));
+
+    // Clear out cache first
+    *this = { };
+
+    // Next, attempt opening zlib compressed stream, and deserialize to scene object
+    constexpr auto str_flags = std::ios::in  | std::ios::binary;
+    auto str = zstr::ifstream(cache_file_path.string(), str_flags);
+    debug::check_expr(str.good());
+
+    // Deserialize program cache from stream
+    io::from_stream(m_prog_cache, str);
+
+    // Output OpenGL debug message to warn of cache load
+    debug::insert_message(
+      fmt::format("Program cache loaded from: {}", cache_file_path.string()), 
+      gl::DebugMessageSeverity::eLow);
   }
   
   /* Explicit template instantiations of gl::Program::uniform<...>(...) */

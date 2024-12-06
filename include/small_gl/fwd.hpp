@@ -11,6 +11,7 @@ namespace gl {
   struct Fence;
   struct Framebuffer;
   struct Program;
+  struct ProgramCache;
   struct Sampler;
   struct Shader;
   struct Window;
