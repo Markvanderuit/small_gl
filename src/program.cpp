@@ -470,6 +470,22 @@ namespace gl {
     if (js.contains("images"))
       rng::for_each(js.at("images"), std::bind(func_qualifier, _1, BindingType::eImage));
   }
+
+  void Program::bind(std::string_view s, const gl::AbstractTexture &texture, const gl::Sampler &sampler, BindingType binding) {
+    gl_trace_full();
+
+    auto f = m_binding_data.find(s.data());
+    debug::check_expr(f != m_binding_data.end(),
+      fmt::format("Program::bind(...) failed with name lookup for texture name: \"{}\"", s));
+      
+    const BindingData &data = f->second;
+    debug::check_expr(data.type == BindingType::eSampler,
+      fmt::format("Program::bind(...) failed with type mismatch for texture name: \"{}\"", s));
+    
+    texture.bind_to(gl::TextureTargetType::eTextureUnit, data.binding, 0);
+    sampler.bind_to(data.binding);
+  }
+
   
   void Program::bind(std::string_view s, const gl::AbstractTexture &texture, BindingType binding) {
     gl_trace_full();
