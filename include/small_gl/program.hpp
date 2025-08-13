@@ -177,6 +177,9 @@ namespace gl {
     // Return an existing program for a given key
     gl::Program& at(const KeyType &k);
 
+    // Reload programs from disk
+    void reload();
+
     // Clear out program cache
     void clear();
 

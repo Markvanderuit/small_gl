@@ -590,8 +590,11 @@ namespace gl {
     auto it  = m_prog_cache.find(key);
 
     // If program is not resident, generate program, then cache it
-    if (it == m_prog_cache.end())
-      it = m_prog_cache.emplace(key, Program(info)).first;
+    if (it == m_prog_cache.end()) {
+      Program prog(info);
+      it = m_prog_cache.emplace(key, std::move(prog)).first;
+      m_info_cache.emplace(key, std::vector { info });
+    }
 
     return { key, it->second };
   }
@@ -608,8 +611,10 @@ namespace gl {
     auto it  = m_prog_cache.find(key);
 
     // If program is not resident, generate program, then cache it
-    if (it == m_prog_cache.end())
-      it = m_prog_cache.emplace(key, gl::Program(info)).first;
+    if (it == m_prog_cache.end()) {
+      it = m_prog_cache.emplace(key, Program(info)).first;
+      m_info_cache.emplace(key, info);
+    }
 
     return { key, it->second };
   }
@@ -620,6 +625,13 @@ namespace gl {
     debug::check_expr(f != m_prog_cache.end(),
       fmt::format("ProgramCache::at(...) failed with key lookup for key: \"{}\"", k));
     return f->second;
+  }
+
+  void ProgramCache::reload() {
+    gl_trace();
+    for (const auto &[key, info] : m_info_cache) {
+      m_prog_cache[key] = Program(info);
+    } 
   }
 
   void ProgramCache::clear() {
