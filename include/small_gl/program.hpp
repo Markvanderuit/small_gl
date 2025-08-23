@@ -2,6 +2,7 @@
 
 #include <small_gl/fwd.hpp>
 #include <small_gl/detail/serialization.hpp>
+#include <small_gl/detail/filewatcher.hpp>
 #include <small_gl/utility.hpp>
 #include <initializer_list>
 #include <filesystem>
@@ -37,6 +38,10 @@ namespace gl {
 
   public: // Helpers for use in std::unordered_map in gl::ProgramCache
     std::string to_string() const;
+    
+  public: // Binary data serialization
+    void to_stream(std::ostream &str) const;
+    void from_stream(std::istream &str);
   };
 
   /**
@@ -154,13 +159,19 @@ namespace gl {
    * serialize/deserialize program binaries to/from disk.
    */
   class ProgramCache {
-    using KeyType  = std::string;
     using InfoType = ShaderLoadFileInfo; 
-    using InfoList = std::initializer_list<ShaderLoadFileInfo>;
     
-    // Data caches
-    std::unordered_map<KeyType, std::vector<InfoType>> m_info_cache;
-    std::unordered_map<KeyType, Program>               m_prog_cache;
+    // Data cache
+    struct ProgramData {
+      std::vector<InfoType>            info;     // Collective info used for construction
+      gl::Program                      program;  // Constructed program object
+      std::vector<detail::FileWatcher> watchers; // File watchers to help rebuild stale programs
+    
+    public: // Binary data serialization
+      void to_stream(std::ostream &str) const;
+      void from_stream(std::istream &str);
+    };
+    std::unordered_map<std::string, ProgramData> m_data_cache;
 
   public:
     // Default constructor
@@ -171,11 +182,11 @@ namespace gl {
 
   public:
     // Initialize-and-return a reference to a program object
-    std::pair<KeyType, gl::Program&> set(InfoType &&info); 
-    std::pair<KeyType, gl::Program&> set(InfoList &&info); 
+    std::pair<std::string, gl::Program&> set(InfoType                        &&info); 
+    std::pair<std::string, gl::Program&> set(std::initializer_list<InfoType> &&info); 
 
     // Return an existing program for a given key
-    gl::Program& at(const KeyType &k);
+    gl::Program& at(const std::string &k);
 
     // Reload programs from disk
     void reload();

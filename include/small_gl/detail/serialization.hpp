@@ -40,6 +40,18 @@ namespace gl::io {
     ty.resize(size);
     str.read(ty.data(), size);
   }
+  
+  // Serialization for std::filesystem::path
+  inline void to_stream(const fs::path &ty, std::ostream &str) {
+    gl_trace();
+    io::to_stream(ty.string(), str);
+  }
+  inline void from_stream(fs::path &ty, std::istream &str) {
+    gl_trace();
+    std::string s;
+    io::from_stream(s, str);
+    ty = s;
+  }
 
   // Serialization for std::vector of most types
   template <typename Ty> requires (!is_serializable<Ty>)

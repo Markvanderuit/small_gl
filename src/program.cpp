@@ -300,6 +300,28 @@ namespace gl {
       check_program_link(object);
       return object;
     }
+
+    FileWatcher create_file_watcher_from_path(const ShaderLoadFileInfo &info) {
+      if (!info.spirv_path.empty()) {
+        return FileWatcher(info.spirv_path);
+      } else if (!info.glsl_path.empty()) {
+        return FileWatcher(info.glsl_path);
+      } else {
+        debug::check_expr(false, "ShaderLoadFileInfo is in an incomplete state.");
+      }
+    }
+
+    std::vector<FileWatcher> create_file_watchers_from_paths(std::initializer_list<ShaderLoadFileInfo> info) {
+      std::vector<FileWatcher> watchers;
+      rng::transform(info, std::back_inserter(watchers), create_file_watcher_from_path);
+      return watchers;
+    }
+
+    std::vector<FileWatcher> create_file_watchers_from_paths(const std::vector<ShaderLoadFileInfo> &info) {
+      std::vector<FileWatcher> watchers;
+      rng::transform(info, std::back_inserter(watchers), create_file_watcher_from_path);
+      return watchers;
+    }
   } // namespace detail
 
   /* Program code */  
@@ -582,24 +604,59 @@ namespace gl {
     m_object  = detail::create_program_object_from_binary(program_format, program_data);
   }
 
+  void ShaderLoadFileInfo::to_stream(std::ostream &str) const {
+    gl_trace();
+    io::to_stream(type,       str);
+    io::to_stream(glsl_path,  str);
+    io::to_stream(spirv_path, str);
+    io::to_stream(cross_path, str);
+    io::to_stream(spec_const, str);
+  }
+
+  void ShaderLoadFileInfo::from_stream(std::istream &str) {
+    gl_trace();
+    io::from_stream(type,       str);
+    io::from_stream(glsl_path,  str);
+    io::from_stream(spirv_path, str);
+    io::from_stream(cross_path, str);
+    io::from_stream(spec_const, str);
+  }
+
+  void ProgramCache::ProgramData::to_stream(std::ostream &str) const {
+    gl_trace();
+    io::to_stream(info,     str);
+    io::to_stream(program,  str);
+    io::to_stream(watchers, str);
+  }
+
+  void ProgramCache::ProgramData::from_stream(std::istream &str) {
+    gl_trace();
+    io::from_stream(info,     str);
+    io::from_stream(program,  str);
+    io::from_stream(watchers, str);
+  }
+
   std::pair<std::string, gl::Program &> ProgramCache::set(InfoType &&info) {
     gl_trace();
 
     // Generate key, and test if program is resident
     auto key = info.to_string();
-    auto it  = m_prog_cache.find(key);
+    auto it  = m_data_cache.find(key);
 
     // If program is not resident, generate program, then cache it
-    if (it == m_prog_cache.end()) {
-      Program prog(info);
-      it = m_prog_cache.emplace(key, std::move(prog)).first;
-      m_info_cache.emplace(key, std::vector { info });
+    if (it == m_data_cache.end()) {
+      ProgramData data = {
+        .info     = { info },
+        .program  = gl::Program(info),
+        .watchers = { detail::create_file_watcher_from_path(info) }
+      };
+      it = m_data_cache.emplace(key, std::move(data)).first;
     }
 
-    return { key, it->second };
+    return { key, it->second.program };
   }
 
-  std::pair<std::string, gl::Program &> ProgramCache::set(InfoList &&info) {
+  std::pair<std::string, gl::Program &> ProgramCache::set(std::initializer_list<InfoType> &&info) {
     gl_trace();
 
     // Generate key from join of consecutive info object keys
@@ -608,35 +665,50 @@ namespace gl {
     rng::copy(in, std::back_inserter(key));
 
     // Test if program is resident
-    auto it  = m_prog_cache.find(key);
+    auto it  = m_data_cache.find(key);
 
     // If program is not resident, generate program, then cache it
-    if (it == m_prog_cache.end()) {
-      it = m_prog_cache.emplace(key, Program(info)).first;
-      m_info_cache.emplace(key, info);
+    if (it == m_data_cache.end()) {
+      ProgramData data = {
+        .info     = info,
+        .program  = gl::Program(info),
+        .watchers = detail::create_file_watchers_from_paths(info)
+      };
+      it = m_data_cache.emplace(key, std::move(data)).first;
     }
 
-    return { key, it->second };
+    return { key, it->second.program };
   }
 
-  gl::Program & ProgramCache::at(const KeyType &k) {
+  gl::Program & ProgramCache::at(const std::string &k) {
     gl_trace();
-    auto f = m_prog_cache.find(k);
-    debug::check_expr(f != m_prog_cache.end(),
+    
+    // Find program data in cache
+    auto f = m_data_cache.find(k);
+    debug::check_expr(f != m_data_cache.end(),
       fmt::format("ProgramCache::at(...) failed with key lookup for key: \"{}\"", k));
-    return f->second;
+    auto &data = f->second;
+
+    // Check file watcher, rebuild program if necessary
+    bool is_stale = false;
+    for (auto &watcher : data.watchers)
+      is_stale |= watcher.update();
+    if (is_stale)
+      data.program = Program(data.info);
+
+    return data.program;
   }
 
   void ProgramCache::reload() {
     gl_trace();
-    for (const auto &[key, info] : m_info_cache) {
-      m_prog_cache[key] = Program(info);
+    for (auto &[key, data] : m_data_cache) {
+      data.program = Program(data.info);
     } 
   }
 
   void ProgramCache::clear() {
     gl_trace();
-    m_prog_cache.clear();
+    m_data_cache.clear();
   }
 
   ProgramCache::ProgramCache(fs::path cache_file_path) { load(cache_file_path); }
@@ -650,7 +722,7 @@ namespace gl {
     debug::check_expr(str.good());
 
     // Serialize program cache to stream
-    io::to_stream(m_prog_cache, str);
+    io::to_stream(m_data_cache, str);
 
     // Output OpenGL debug message to warn of cache save
     debug::insert_message(
@@ -674,7 +746,7 @@ namespace gl {
     debug::check_expr(str.good());
 
     // Deserialize program cache from stream
-    io::from_stream(m_prog_cache, str);
+    io::from_stream(m_data_cache, str);
 
     // Output OpenGL debug message to warn of cache load
     debug::insert_message(
